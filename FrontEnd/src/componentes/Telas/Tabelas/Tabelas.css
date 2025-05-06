@@ -1,0 +1,36 @@
+.table-wrap {
+    overflow: hidden; /* Remove qualquer barra de rolagem */
+    margin: 0;
+}
+
+/* Ajuste do padding */
+table th, table td {
+    padding: 0.2rem 0.2rem !important; /* Reduz o espaçamento interno das células */
+    font-size: 0.875rem; /* Define o tamanho da fonte para manter a consistência */
+    text-align: center; /* Centraliza o texto */
+    vertical-align: middle; /* Alinha verticalmente ao centro */
+    white-space: nowrap; /* Impede quebra de linha */
+    overflow: hidden; /* Esconde conteúdo que ultrapassar os limites */
+    text-overflow: ellipsis; /* Adiciona "..." caso o texto seja muito longo */
+}
+
+/* Mantém o cabeçalho consistente */
+table th {
+    background-color: #f8f9fa; /* Fundo claro para o cabeçalho */
+    font-weight: bold;
+    border-bottom: 2px solid #dee2e6; /* Adiciona uma borda inferior mais forte no cabeçalho */
+}
+
+
+table th {
+    background-color: #f8f9fa; /* Define cor de fundo para o cabeçalho */
+    font-weight: bold;
+}
+
+.d-flex.gap-3 {
+    gap: 10px; /* Ajuste para espaçamento consistente entre botões */
+}
+
+body {
+    overflow-x: hidden; /* Remove qualquer barra horizontal na página */
+}

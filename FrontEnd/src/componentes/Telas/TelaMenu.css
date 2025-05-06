@@ -1,0 +1,67 @@
+main {
+    flex: 1;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+
+.articles-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Dois artigos por linha */
+    gap: 20px; /* Espaçamento entre os artigos */
+}
+
+article {
+    background-color: #f8f8f8;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+article h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+article p {
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
+article a {
+    color: #191970;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+article a:hover {
+    text-decoration: underline;
+}
+
+.container, .container-fluid {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.icon-hover {
+    transition: transform 0.2s ease-in-out;
+}
+
+.icon-hover:hover {
+    transform: scale(1.2); /* Aumenta o tamanho do ícone */
+}
+
+/* Corrige qualquer margem extra ou overflow */
+.icon-hover {
+    display: inline-block;
+    overflow: hidden; /* Previne barras de rolagem */
+}
+
+
+.fw-bold.bg-light {
+    font-weight: bold;
+    background-color: #e9ecef;
+}
+
