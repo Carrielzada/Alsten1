@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import TelaMenu from "./componentes/Telas/TelaMenu";
 import Tela404 from "./componentes/Telas/Tela404";
 import TelaLogin from "./componentes/Telas/TelaLogin";
-import TelaNetworking from "./componentes/Telas/TelaCadNetworking";
+import TelaPagamento from "./componentes/Telas/TelaCadPagamento";
 import TelaCadClientePF from "./componentes/Telas/TelaCadClientePF";
 import TelaCadClientePJ from "./componentes/Telas/TelaCadClientePJ";
 import TelaPropagandaPF from "./componentes/Telas/TelaCadPropagandaPF";
@@ -70,7 +70,7 @@ function App() {
               path="/networking"
               element={
                 <ProtectedComponent allowedRoles={[1, 2]} usuarioLogado={usuarioLogado}>
-                  <TelaNetworking />
+                  <TelaPagamento />
                 </ProtectedComponent>
               }
             />

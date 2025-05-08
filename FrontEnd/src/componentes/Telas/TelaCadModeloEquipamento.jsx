@@ -1,40 +1,37 @@
 import { Button, Container, Row, Col } from "react-bootstrap";
-import Pagina from "../Templates2/Pagina";
-import FormCadNetworking from "./Formularios/FormCadNetworking";
-import TabelaNetworking from "./Tabelas/TabelaNetworking";
+import Pagina from "../Templates2/Pagina.jsx";
+import FormCadastroModelo from "./Formularios/FormCadastroModelo.jsx";
+import TabelaModelosEquipamentos from "./Tabelas/TabelaModelosEquipamentos.jsx";
 import { useState, useEffect, useContext } from "react";
-import { buscarTodosNetworking } from "../../servicos/networkingService.js";
-import { ContextoUsuarioLogado } from "../../App";
+import { buscarTodosModelos } from "../../servicos/modeloService.js";
+import { ContextoUsuarioLogado } from "../../App.js";
 import { FaPlus } from "react-icons/fa";
 
-export default function TelaCadNetworking(props) {
+export default function TelaCadastroModelo(props) {
     const contextoUsuario = useContext(ContextoUsuarioLogado);
 
     const [exibirTabela, setExibirTabela] = useState(true);
     const [atualizarTela, setAtualizarTela] = useState(false);
-    const [listaDeNetworking, setListaDeNetworking] = useState([]);
+    const [listaDeModelos, setListaDeModelos] = useState([]);
 
-    // Estados adicionais
     const [modoEdicao, setModoEdicao] = useState(false);
-    const [networkingSelecionado, setNetworkingSelecionado] = useState({
-        nome: "",
-        contato: "",
-        email: "",
-        data_nascimento: "",
-        observacoes: "",
+    const [modeloSelecionado, setModeloSelecionado] = useState({
+        modelo: "",
+        criado_em: "",
+        atualizado_em: ""
     });
 
     useEffect(() => {
         const token = contextoUsuario.usuarioLogado.token;
-        buscarTodosNetworking(token)
+        buscarTodosModelos(token)
             .then((resposta) => {
                 if (resposta.status) {
-                    setListaDeNetworking(resposta.listaNetworking);
+                    setListaDeModelos(resposta.listaModelos);
                 }
                 setAtualizarTela(false);
             })
             .catch((erro) => {
-                alert("Erro ao enviar a requisição: " + erro.message);
+                alert("Erro ao buscar Modelos: " + erro.message);
             });
     }, [exibirTabela, atualizarTela]);
 
@@ -44,7 +41,7 @@ export default function TelaCadNetworking(props) {
                 <Container fluid>
                     <Row className="align-items-center">
                         <Col md={10}>
-                            <h4>Gestão de Networking</h4>
+                            <h4>Gestão de Modelos de Equipamentos</h4>
                         </Col>
                         <Col md={2} className="text-end">
                             {exibirTabela && (
@@ -53,13 +50,11 @@ export default function TelaCadNetworking(props) {
                                     variant="primary"
                                     onClick={() => {
                                         setExibirTabela(false);
-                                        setModoEdicao(false); // Modo de edição desligado ao adicionar novo registro
-                                        setNetworkingSelecionado({
-                                            nome: "",
-                                            contato: "",
-                                            email: "",
-                                            data_nascimento: "",
-                                            observacoes: "",
+                                        setModoEdicao(false);
+                                        setModeloSelecionado({
+                                            modelo: "",
+                                            criado_em: "",
+                                            atualizado_em: ""
                                         });
                                     }}
                                     style={{ backgroundColor: "#191970", borderColor: "#191970" }}
@@ -72,22 +67,22 @@ export default function TelaCadNetworking(props) {
                     </Row>
                 </Container>
             </div>
+
             {exibirTabela ? (
-                <TabelaNetworking
-                    exibirTabela={exibirTabela}
+                <TabelaModelosEquipamentos
+                    listaDeModelos={listaDeModelos}
                     setExibirTabela={setExibirTabela}
-                    listaDeNetworking={listaDeNetworking}
                     setAtualizarTela={setAtualizarTela}
                     setModoEdicao={setModoEdicao}
-                    setNetworkingSelecionado={setNetworkingSelecionado}
+                    setModeloSelecionado={setModeloSelecionado}
                 />
             ) : (
-                <FormCadNetworking
+                <FormCadastroModelo
                     setExibirTabela={setExibirTabela}
                     setModoEdicao={setModoEdicao}
                     modoEdicao={modoEdicao}
-                    networkingSelecionado={networkingSelecionado}
-                    setNetworkingSelecionado={setNetworkingSelecionado}
+                    modeloSelecionado={modeloSelecionado}
+                    setModeloSelecionado={setModeloSelecionado}
                     setAtualizarTela={setAtualizarTela}
                 />
             )}
