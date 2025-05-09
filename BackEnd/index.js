@@ -14,6 +14,9 @@ import rotaAutenticacao from './Rotas/rotaAutenticacao.js'; // Rota de autentica
 import rotaClientes from "./Rotas/rotaClientes.js";
 import rotaUsers from './Rotas/rotaUsers.js';
 import rotaMensagem from './Rotas/rotaMensagem.js';
+import rotaModelo from './Rotas/rotaModelo.js'
+import rotaPagamento from './Rotas/rotaPagamento.js'
+import rotaUrgencia from './Rotas/rotaUrgencia.js'
 import { verificarAutenticacao } from './Seguranca/autenticar.js';
 
 dotenv.config();
@@ -71,6 +74,9 @@ app.use('/logs', verificarAutenticacao, rotaLogs); // Logs
 app.use('/api/cliente', rotaClientes);
 app.use('/users', rotaUsers);
 app.use('/mensagem', verificarAutenticacao, rotaMensagem);
+app.use('/pagamento', verificarAutenticacao, rotaPagamento)
+app.use('/modelo', verificarAutenticacao, rotaModelo)
+app.use('/urgencia', verificarAutenticacao, rotaUrgencia)
 
 
 app.get('/', (_req, res) => {
