@@ -1,7 +1,7 @@
-const Database = require("../database")
-const database = new Database()
+import Database from "../database.js";
+const database = new Database();
 
-class UrgenciaModel {
+export default class UrgenciaModel {
     constructor(id, urgencia) {
         this.id = id;
         this.urgencia = urgencia;
@@ -34,5 +34,3 @@ class UrgenciaModel {
         return urgencias;
     }
 }
-
-module.exports = UrgenciaModel;

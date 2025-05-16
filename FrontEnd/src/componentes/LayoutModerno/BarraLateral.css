@@ -1,0 +1,101 @@
+/* BarraLateral.css */
+.barra-lateral {
+  width: 260px; /* Largura da barra lateral */
+  background-color: #2c3e50; /* Cor de fundo escura, ex: azul petróleo escuro */
+  color: #ecf0f1; /* Cor do texto clara */
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  height: 100vh; /* Ocupa toda a altura da viewport */
+  position: fixed; /* Fixa na tela */
+  left: 0;
+  top: 0;
+  overflow-y: auto; /* Adiciona scroll se o conteúdo for maior */
+}
+
+.logo-container {
+  padding: 0 20px 20px 20px;
+  text-align: center;
+  border-bottom: 1px solid #34495e; /* Linha separadora sutil */
+  margin-bottom: 20px;
+}
+
+.logo-texto {
+  font-size: 1.8em;
+  color: #ffffff; /* Branco para o logo */
+  font-weight: bold;
+  margin: 0;
+}
+
+.menu-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-item {
+  /* Espaçamento e estilo para itens principais */
+}
+
+.menu-link-header {
+  display: block;
+  padding: 12px 20px;
+  color: #bdc3c7; /* Cinza claro para cabeçalhos de submenu */
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 0.95em;
+  /* Adicionar ícone aqui se necessário */
+}
+
+.menu-link {
+  display: block;
+  padding: 12px 20px;
+  color: #ecf0f1;
+  text-decoration: none;
+  font-size: 1em;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border-left: 3px solid transparent; /* Para indicar item ativo */
+}
+
+.menu-link:hover,
+.menu-link.active {
+  background-color: #34495e; /* Cor de fundo ao passar o mouse/ativo */
+  color: #ffffff; /* Cor do texto ao passar o mouse/ativo */
+  border-left-color: #3498db; /* Cor da borda para item ativo (azul) */
+}
+
+.menu-icon {
+  margin-right: 10px;
+  font-size: 1.2em;
+}
+
+/* Estilos para Submenu */
+.submenu-lista {
+  list-style: none;
+  padding-left: 20px; /* Indentação para subitens */
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.menu-item:hover > .submenu-lista, /* Mostrar submenu no hover do item pai */
+.menu-item .submenu-lista.open { /* Ou se tiver uma classe 'open' */
+  max-height: 500px; /* Altura suficiente para os subitens, ajuste conforme necessário */
+}
+
+.submenu-item .menu-link {
+  padding-left: 30px; /* Maior indentação para links de submenu */
+  font-size: 0.9em;
+  color: #bdc3c7; /* Cor mais suave para subitens */
+}
+
+.submenu-item .menu-link:hover,
+.submenu-item .menu-link.active {
+  color: #ffffff;
+  background-color: #2c3e50; /* Fundo um pouco diferente para subitem ativo */
+  border-left-color: #2980b9; /* Azul um pouco mais escuro para subitem ativo */
+}
+
+/* Adicionar media queries para responsividade se necessário */
+

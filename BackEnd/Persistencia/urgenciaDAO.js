@@ -1,9 +1,9 @@
-import Urgencia from '../Modelo/urgencia.js';
+import UrgenciaModel from '../Modelo/urgencia.js';
 import conectar from './conexao.js';
 
 export default class UrgenciaDAO {
     async incluir(urgencia) {
-        if (urgencia instanceof Urgencia) {
+        if (urgencia instanceof UrgenciaModel) {
             const conexao = await conectar();
             const sql = `INSERT INTO urgencia (urgencia) VALUES (?)`;
             const valores = [urgencia.urgencia];
@@ -13,7 +13,7 @@ export default class UrgenciaDAO {
     }
 
     async alterar(urgencia) {
-        if (urgencia instanceof Urgencia) {
+        if (urgencia instanceof UrgenciaModel) {
             const conexao = await conectar();
             const sql = `UPDATE urgencia 
                          SET urgencia = ? 
@@ -39,23 +39,31 @@ export default class UrgenciaDAO {
         }
     }
 
-    async consultar(termo) {
-        const conexao = await conectar();
-        const sql = `SELECT * FROM urgencia WHERE urgencia LIKE ? ORDER BY urgencia`;
-        const valores = [`%${termo}%`];
-        const [rows] = await conexao.query(sql, valores);
-        global.poolConexoes.releaseConnection(conexao);
-    
-        const listaUrgencias = [];
-        for (const row of rows) {
-            const urgencia = new Urgencia(
-                row.id,
-                row.urgencia
-            );
-            listaUrgencias.push(urgencia);
-        }
-        return listaUrgencias;
+    async consultar(termo = '') {
+    const conexao = await conectar();
+    let sql = 'SELECT * FROM urgencia';
+    let valores = [];
+
+    if (termo) {
+        sql += ' WHERE urgencia LIKE ?';
+        valores.push(`%${termo}%`);
     }
+
+    sql += ' ORDER BY urgencia';
+
+    const [rows] = await conexao.query(sql, valores);
+    global.poolConexoes.releaseConnection(conexao);
+
+    const listaUrgencias = [];
+    for (const row of rows) {
+        const urgencia = new UrgenciaModel(
+            row.id,
+            row.urgencia
+        );
+        listaUrgencias.push(urgencia);
+    }
+    return listaUrgencias;
+}
 
     async consultarPorId(id) {
         const conexao = await conectar();
@@ -65,7 +73,7 @@ export default class UrgenciaDAO {
     
         if (rows.length > 0) {
             const row = rows[0];
-            return new Urgencia(
+            return new UrgenciaModel(
                 row.id, 
                 row.urgencia
             );
@@ -73,5 +81,4 @@ export default class UrgenciaDAO {
             return null;
         }
     }
-    
 }

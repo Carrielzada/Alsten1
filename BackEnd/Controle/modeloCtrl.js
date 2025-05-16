@@ -1,33 +1,35 @@
-const Database = require("../database")
-const database = new Database()
+import Database from "../database.js"; // Alterado para import ES Module
+
+// Removido: const database = new Database() - Instanciar onde for usado ou passar como dependência
 
 class ModeloModel {
     constructor(id, modelo) {
         this.id = id;
         this.modelo = modelo;
+        this.database = new Database(); // Instanciando database aqui ou injetar via construtor
     }
     async obterTodos() {
-        const listaModelos = await database.ExecutaComando('select * from modelo order by modelo asc');
+        const listaModelos = await this.database.ExecutaComando("select * from modelo order by modelo asc");
         return listaModelos;
     }
     async obterPorId(id){
-        const result =await database.ExecutaComando('select * from modelo where id=? ', [id])
-        return result[0]
+        const result = await this.database.ExecutaComando("select * from modelo where id=? ", [id]);
+        return result[0];
     }
     async adicionar(dadosModelo) {
-        await database.ExecutaComandoNonQuery('insert into modelo set ?', dadosModelo)
+        await this.database.ExecutaComandoNonQuery("insert into modelo set ?", dadosModelo);
     }
     async atualizar (id,dadosModelo){
-        await database.ExecutaComandoNonQuery('update modelo set ? where id = ?', [
+        await this.database.ExecutaComandoNonQuery("update modelo set ? where id = ?", [
             dadosModelo,
             id
-        ])
+        ]);
     }
     async delete (id){
-        await database.ExecutaComandoNonQuery('delete from modelo where id=?',[id])
+        await this.database.ExecutaComandoNonQuery("delete from modelo where id=?",[id]);
     }
     async filtrar(termobusca) {
-        const modelos = await database.ExecutaComando(
+        const modelos = await this.database.ExecutaComando(
             "select * from modelo where modelo like ?",
             [`%${termobusca}%`]
         );
@@ -35,4 +37,5 @@ class ModeloModel {
     }
 }
 
-module.exports = ModeloModel;
+export default ModeloModel; // Alterado para export default
+

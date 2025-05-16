@@ -1,13 +1,15 @@
-const ModeloController = require('../Controle/modeloCtrl.js');
-const modeloController = new ModeloController();
-const express = require('express');
+import express from 'express';
+import ModeloController from '../Controle/modeloCtrl.js'; // Alterado para import ES Module
+
 const router = express.Router();
+const modeloController = new ModeloController();
 
-router.get('/modelo', modeloController.obterTodos);
-router.post('/modelo', modeloController.adicionar);
-router.get('/modelo/:id', modeloController.obterPorId);
-router.put('/modelo/:id', modeloController.atualizar);
-router.delete('/modelo/:id', modeloController.excluir);
-router.get('/modelo/filtrar/:termobusca', modeloController.filtrar);
+router.get('/', modeloController.obterTodos.bind(modeloController));
+router.post('/', modeloController.adicionar.bind(modeloController));
+router.get('/:id', modeloController.obterPorId.bind(modeloController));
+router.put('/:id', modeloController.atualizar.bind(modeloController));
+router.delete('/:id', modeloController.delete.bind(modeloController)); // Corrigido de 'excluir' para 'delete'
+router.get('/filtrar/:termobusca', modeloController.filtrar.bind(modeloController));
 
-module.exports = router;
+export default router;
+

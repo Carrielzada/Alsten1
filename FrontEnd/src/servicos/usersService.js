@@ -48,38 +48,3 @@ export async function consultarPorRole(role_id, token) {
     return await resposta.json();
 }
 
-export async function vincularUsuarioPublicidade(userId, idDados, propPubl, token) {
-    const resposta = await fetch(`${urlBase}/${userId}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": token,
-        },
-        credentials: "include",
-        body: JSON.stringify({ id_dados: idDados, prop_publ: propPubl }),
-    });
-
-    if (!resposta.ok) {
-        throw new Error(`Erro ao vincular usuário: ${resposta.statusText}`);
-    }
-
-    return await resposta.json();
-}
-
-export async function vincularUsuarioPropaganda(userId, idDados, propPubl, token) {
-    const resposta = await fetch(`${urlBase}/${userId}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": token,
-        },
-        credentials: "include",
-        body: JSON.stringify({ id_dados: idDados, prop_publ: propPubl }),
-    });
-
-    if (!resposta.ok) {
-        throw new Error(`Erro ao vincular usuário: ${resposta.statusText}`);
-    }
-
-    return await resposta.json();
-}

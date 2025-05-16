@@ -29,8 +29,6 @@ export default function TelaLogin() {
                     logado: true,
                     token: resposta.token,
                     role: resposta.role, // Certifique-se de usar o campo correto do backend
-                    id_dados: resposta.id_dados,
-                    prop_publ: resposta.prop_publ,
                 };
 
                 contexto.setUsuarioLogado(usuarioLogado);
@@ -56,10 +54,9 @@ function realizarCadastro(evento) {
         email: usuario.usuario,
         password: usuario.senha,
         role_id: 3, // Por exemplo, definir um role padrão para o cadastro
-        id_dados: null,
     };
 
-    registrar(dadosCadastro.nome, dadosCadastro.email, dadosCadastro.password, dadosCadastro.role_id, dadosCadastro.id_dados)
+    registrar(dadosCadastro.nome, dadosCadastro.email, dadosCadastro.password, dadosCadastro.role_id)
         .then((resposta) => {
             if (resposta?.status) {
                 alert("Usuário cadastrado com sucesso!");

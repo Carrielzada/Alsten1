@@ -5,16 +5,13 @@ export default class UsersDAO {
     async incluir(users) {
         if (users instanceof Users) {
             const conexao = await conectar();
-            const sql = `INSERT INTO users (nome, email, password, role_id, id_dados, criado_em, atualizado_em) 
-                         VALUES (?, ?, ?, ?, ?, NOW(), NOW())`;
+            const sql = `INSERT INTO users (nome, email, password, role_id, criado_em, atualizado_em) 
+                         VALUES (?, ?, ?, ?, NOW(), NOW())`;
             const valores = [
                 users.nome,
                 users.email,
                 users.password,
                 users.role_id,
-                users.id_dados,
-                users.criado_em,
-                users.atualizado_em
             ];
             await conexao.query(sql, valores);
             global.poolConexoes.releaseConnection(conexao);
@@ -32,9 +29,7 @@ export default class UsersDAO {
             await conexao.query(sql, valores);
             global.poolConexoes.releaseConnection(conexao);
         }
-    }
-    
-    
+    } 
 
     async excluir(id) {
         const conexao = await conectar();
@@ -44,12 +39,9 @@ export default class UsersDAO {
         global.poolConexoes.releaseConnection(conexao);
     
         if (resultado.affectedRows === 0) {
-            throw new Error("Cliente não encontrado ou já excluído.");
+            throw new Error("Usuário não encontrado ou já excluído.");
         }
     }
-    
-    
-    
 
     async consultar(termo) {
         const conexao = await conectar();
@@ -66,7 +58,6 @@ export default class UsersDAO {
                 row.email,
                 row.password,
                 row.role_id,
-                row.id_dados,
                 row.criado_em,
                 row.atualizado_em
             );
@@ -88,43 +79,79 @@ export default class UsersDAO {
             row.email,
             row.password,
             row.role_id,
-            row.id_dados,
             row.criado_em,
             row.atualizado_em
         ));
     }
     
-    async atualizarIdDados(id, prop_publ, novoId) {
-        const conexao = await conectar();
+    async atualizarDadosUsuario(id, dados) {
+    const conexao = await conectar();
     
-        // Buscar o valor atual de id_dados no banco
-        const sqlBusca = "SELECT id_dados FROM users WHERE id = ?";
-        const [rows] = await conexao.query(sqlBusca, [id]);
+    // Construir a query dinamicamente com base nos campos fornecidos
+    let sqlCampos = [];
+    let valores = [];
     
-        if (rows.length === 0) {
-            throw new Error("Usuário não encontrado.");
-        }
-    
-        // Obter a lista de IDs existente ou inicializar um array vazio
-        const id_dadosAtual = rows[0].id_dados 
-            ? rows[0].id_dados.split(",").map(Number).filter((num) => !isNaN(num)) 
-            : [];
-    
-        // Adicionar o novo ID à lista, evitando duplicatas
-        if (!id_dadosAtual.includes(Number(novoId))) {
-            id_dadosAtual.push(Number(novoId));
-        }
-    
-        // Converter de volta para string separada por vírgulas
-        const novosIdDados = id_dadosAtual.join(",");
-    
-        // Atualizar o banco
-        const sqlAtualiza = "UPDATE users SET prop_publ = ?, id_dados = ? WHERE id = ?";
-        await conexao.query(sqlAtualiza, [prop_publ, novosIdDados, id]);
-    
-        global.poolConexoes.releaseConnection(conexao);
+    if (dados.nome !== undefined) {
+        sqlCampos.push("nome = ?");
+        valores.push(dados.nome);
     }
     
+    if (dados.email !== undefined) {
+        sqlCampos.push("email = ?");
+        valores.push(dados.email);
+    }
+    
+    if (dados.role_id !== undefined) {
+        sqlCampos.push("role_id = ?");
+        valores.push(dados.role_id);
+    }
+    
+    // Se não há campos para atualizar, retornar
+    if (sqlCampos.length === 0) {
+        global.poolConexoes.releaseConnection(conexao);
+        return;
+    }
+    
+    // Adicionar o id ao final do array de valores
+    valores.push(id);
+    
+    const sql = `UPDATE users SET ${sqlCampos.join(", ")}, atualizado_em = NOW() WHERE id = ?`;
+    
+    try {
+        const [resultado] = await conexao.query(sql, valores);
+        
+        if (resultado.affectedRows === 0) {
+            throw new Error("Usuário não encontrado.");
+        }
+        
+        return resultado;
+    } finally {
+        global.poolConexoes.releaseConnection(conexao);
+    }
+}
+
+
+    async consultarPorId(id) {
+        const conexao = await conectar();
+        const sql = "SELECT * FROM users WHERE id = ?";
+        const [rows] = await conexao.query(sql, [id]);
+        global.poolConexoes.releaseConnection(conexao);
+        
+        if (rows.length === 0) {
+            return null;
+        }
+        
+        const row = rows[0];
+        return new Users(
+            row.id,
+            row.nome,
+            row.email,
+            row.password,
+            row.role_id,
+            row.criado_em,
+            row.atualizado_em
+        );
+    }
     
 
     async consultarPorEmail(email) {

@@ -1,13 +1,14 @@
-const UrgenciaController = require('../Controle/urgenciaCtrl.js');
-const urgenciaController = new UrgenciaController();
-const express = require('express');
+import express from 'express';
+import UrgenciaController from '../Controle/urgenciaCtrl.js'; // Alterado para import ES Module
+
 const router = express.Router();
+const urgenciaController = new UrgenciaController();
 
-router.get('/urgencia', urgenciaController.obterTodos);
-router.post('/urgencia', urgenciaController.adicionar);
-router.get('/urgencia/:id', urgenciaController.obterPorId);
-router.put('/urgencia/:id', urgenciaController.atualizar);
-router.delete('/urgencia/:id', urgenciaController.excluir);
-router.get('/urgencia/filtrar/:termobusca', urgenciaController.filtrar);
+router.get('/', urgenciaController.obterTodos.bind(urgenciaController));
+router.get('/:id', urgenciaController.obterPorId.bind(urgenciaController));
+router.post('/', urgenciaController.incluir.bind(urgenciaController));
+router.put('/:id', urgenciaController.alterar.bind(urgenciaController));
+router.delete('/:id', urgenciaController.excluir.bind(urgenciaController)); // 'delete' é método do controller
+router.get('/filtrar/:termobusca', urgenciaController.filtrar.bind(urgenciaController));
 
-module.exports = router;
+export default router;

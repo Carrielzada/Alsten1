@@ -7,7 +7,7 @@ export default class UsersCtrl {
         res.type("application/json");
 
         if (req.method === "POST" && req.is("application/json")) {
-            const { nome, email, password, role_id, prop_publ, id_dados } = req.body;
+            const { nome, email, password, role_id,} = req.body;
 
             if (nome && email && password) { // Campos obrigatórios
                 try {
@@ -15,7 +15,7 @@ export default class UsersCtrl {
                     const hashedPassword = await bcrypt.hash(password, 10);
 
                     // Criar instância do modelo Users
-                    const user = new Users(null, nome, email, hashedPassword, role_id, prop_publ, id_dados);
+                    const user = new Users(null, nome, email, hashedPassword, role_id,);
 
                     // Salvar no banco de dados
                     await user.gravar();
@@ -98,7 +98,7 @@ export default class UsersCtrl {
     excluir(requisicao, resposta) {
         resposta.type("application/json");
     
-        const id = requisicao.params.id; // Pegando o CPF da URL
+        const id = requisicao.params.id;
         
         if (id) {
             const users = new Users(id);
@@ -184,47 +184,39 @@ export default class UsersCtrl {
         }
     }
     
-    async atualizarIdDados(req, res) {
-        res.type("application/json");
-    
-        const { id } = req.params; // ID do usuário
-        const { id_dados: novoId, prop_publ } = req.body; // Novo ID a ser adicionado
-    
-        if (!id || !novoId || !prop_publ) {
-            return res.status(400).json({
-                status: false,
-                mensagem: "Parâmetros 'id', 'id_dados' ou 'prop_publ' não fornecidos.",
-            });
-        }
-    
-        if (isNaN(Number(novoId))) {
-            return res.status(400).json({
-                status: false,
-                mensagem: "O 'id_dados' fornecido não é um número válido.",
-            });
-        }
-    
-        try {
-            const usersDAO = new UsersDAO();
-            await usersDAO.atualizarIdDados(id, prop_publ, novoId);
-    
-            res.status(200).json({
-                status: true,
-                mensagem: "ID vinculado com sucesso ao usuário.",
-            });
-        } catch (erro) {
-            console.error("Erro ao atualizar id_dados:", erro);
-            res.status(500).json({
-                status: false,
-                mensagem: erro.message || "Erro ao atualizar id_dados.",
-            });
-        }
+   async atualizarDadosUsuario(req, res) {
+    res.type("application/json");
+
+    const { id } = req.params; // ID do usuário
+    const { nome, email, role_id } = req.body; // Dados para atualização
+
+    if (!id) {
+        return res.status(400).json({
+            status: false,
+            mensagem: "ID do usuário não fornecido."
+        });
     }
-    
-    
-    
-    
-    
-    
-    
-}
+
+    // Verificar se ao menos um campo para atualização foi fornecido
+    if (!nome && !email && role_id === undefined) {
+        return res.status(400).json({
+            status: false,
+            mensagem: "Nenhum dado fornecido para atualização."
+        });
+    }
+
+    try {
+        const usersDAO = new UsersDAO();
+        await usersDAO.atualizarDadosUsuario(id, { nome, email, role_id });
+
+        res.status(200).json({
+            status: true,
+            mensagem: "Dados do usuário atualizados com sucesso."
+        });
+    } catch (erro) {
+        console.error("Erro ao atualizar dados do usuário:", erro);
+        res.status(500).json({
+            status: false,
+            mensagem: erro.message || "Erro ao atualizar dados do usuário."
+        });
+    }}}

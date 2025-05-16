@@ -36,8 +36,6 @@ export async function login(req, res) {
             nome: user.nome, // Enviar o nome do usuário
             email: user.email, // Enviar o email do usuário
             role: user.role_id, // Enviar role com o nome correto
-            id_dados: user.id_dados,
-            prop_publ: user.prop_publ,
         });
         
     } catch (error) {
@@ -46,35 +44,67 @@ export async function login(req, res) {
     }
 }
 
+export function verificarAutenticacao(req, res, next) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
 
+    if (!token) {
+        return res.status(401).json({
+            status: false,
+            mensagem: "Token não fornecido! Faça o login na aplicação!",
+        });
+    }
+
+    try {
+        const tokenVerificado = verificarAssinatura(token);
+        
+        // Adiciona os dados do token à requisição
+        req.user = tokenVerificado;
+
+        next();
+    } catch (e) {
+        return res.status(401).json({
+            status: false,
+            mensagem: "Token inválido ou expirado! Faça o login novamente!",
+        });
+    }
+}
+
+//função de verificarAutenticação via browser, verificando também o email, será útil mais tarde
+
+/*
 export function verificarAutenticacao(req, resp, next){
-    const token = req.headers['authorization'];
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1]; // Extrai o token do formato "Bearer <token>"
     
-    let tokenVerificado = undefined;
-    if (token){
-        tokenVerificado = verificarAssinatura(token);
+    if (token == null) return resp.status(401).json(
+        {
+            status: false,
+            mensagem: "Token não fornecido! Faça o login na aplicação!"
+        }
+    ); // se não há token, não autorizado
 
-        if (tokenVerificado && tokenVerificado.email === req.session.usuario) {
+    let tokenVerificado = undefined;
+    try {
+        tokenVerificado = verificarAssinatura(token);
+        if (tokenVerificado && tokenVerificado.email === req.session.usuario) { // Verifica se o email do token corresponde ao da sessão
             next();
-        }        
-        else{
+        } else {
             resp.status(401).json(
                 {
                     status: false,
-                    mensagem: 'Acesso não autorizado! Faça o login na aplicação!'
+                    mensagem: "Acesso não autorizado ou sessão inválida! Faça o login novamente!"
                 });
         }
-    }
-    else{
+    } catch (e) {
         resp.status(401).json(
             {
                 status: false,
-                mensagem: 'Acesso não autorizado! Faça o login na aplicação!'
+                mensagem: "Token inválido ou expirado! Faça o login novamente!"
             });
     }
-
 }
-
+*/
 
 export function logout(req, res) {
     req.session.destroy(); // Destruir a sessão
@@ -83,29 +113,17 @@ export function logout(req, res) {
 
 export function verificarRole(...requiredRoles) {
     return (req, res, next) => {
-        const token = req.headers['authorization']; // Extraindo o token do cabeçalho
-        if (!token) {
-            return res.status(401).json({ mensagem: "Token não fornecido!" });
+        const usuario = req.user;
+
+        if (!usuario) {
+            return res.status(401).json({ mensagem: "Usuário não autenticado!" });
         }
 
-        try {
-            // Decodificar o token
-            const decoded = jwt.verify(token, process.env.CHAVE_SECRETA);
-            
-            // Validar o papel do usuário
-            if (!requiredRoles.includes(decoded.role)) {
-                return res.status(403).json({ mensagem: "Acesso negado! Permissão insuficiente." });
-            }
-
-            // Adicionar o usuário decodificado à requisição
-            req.user = decoded;
-
-            // Passar para o próximo middleware
-            next();
-        } catch (error) {
-            console.error("Erro na verificação do token:", error);
-            return res.status(401).json({ mensagem: "Token inválido!" });
+        if (!requiredRoles.includes(usuario.role)) {
+            return res.status(403).json({ mensagem: "Acesso negado! Permissão insuficiente." });
         }
+
+        next();
     };
 }
 

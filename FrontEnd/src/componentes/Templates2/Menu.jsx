@@ -8,8 +8,40 @@ import Button from "react-bootstrap/Button";
 import { Link, useNavigate } from "react-router-dom";
 import { FaSignOutAlt, FaBell, FaRegEnvelope, FaHome } from "react-icons/fa";
 import { ContextoUsuarioLogado } from "../../App";  
-import { alterarSenha } from "../../servicos/usersService";
-import { buscarMensagens } from "../../servicos/mensagemService";
+// import { alterarSenha } from "../../servicos/usersService"; // Removido - Legado
+// import { buscarMensagens } from "../../servicos/mensagemService"; // Removido - Legado
+
+// Mock da função buscarMensagens para MVP (retorna array vazio)
+const buscarMensagensMock = async (token) => {
+    console.log("buscarMensagensMock chamado com token:", token);
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve({ 
+                status: true, 
+                listaMensagem: [] 
+            });
+        }, 300);
+    });
+};
+
+// Mock da função alterarSenha para MVP (apenas exibe alerta)
+const alterarSenhaMock = async (token, email, senhaAtual, novaSenha, confirmarSenha) => {
+    console.log("alterarSenhaMock chamado com:", { token, email, senhaAtual, novaSenha, confirmarSenha });
+    return new Promise(resolve => {
+        setTimeout(() => {
+            if (novaSenha !== confirmarSenha) {
+                resolve({ status: false, mensagem: "A nova senha e a confirmação não conferem (Mock)." });
+                return;
+            }
+            // Simula sucesso ou falha simples
+            if (senhaAtual === "123") { // Simula senha atual correta
+                 resolve({ status: true, mensagem: "Senha alterada com sucesso (Mock)!" });
+            } else {
+                 resolve({ status: false, mensagem: "Senha atual incorreta (Mock)." });
+            }
+        }, 500);
+    });
+};
 
 export default function Menu() {
   const navigate = useNavigate();
@@ -27,44 +59,42 @@ export default function Menu() {
   });
 
   useEffect(() => {
-    if (showNotificacoes) {
+    if (showNotificacoes && usuarioLogado && usuarioLogado.token) { // Adicionado guarda para usuarioLogado
         const carregarMensagens = async () => {
             try {
-                const resultado = await buscarMensagens(usuarioLogado.token, "Enviada");
+                const resultado = await buscarMensagensMock(usuarioLogado.token); // Usando mock
                 const lista = resultado?.listaMensagem || [];
                 setMensagens(lista);
-
-                // Atualiza a quantidade de mensagens pendentes
                 setQuantidadeMensagensPendentes(lista.length);
-
-                // Atualiza a flag caso existam mensagens pendentes
                 setTemNovasMensagens(lista.length > 0);
             } catch (error) {
-                console.error("Erro ao buscar mensagens:", error);
+                console.error("Erro ao buscar mensagens (Mock):", error);
             }
         };
         carregarMensagens();
     }
-}, [showNotificacoes, usuarioLogado.token]);
+}, [showNotificacoes, usuarioLogado]); // Removido usuarioLogado.token, adicionado usuarioLogado
 
 
 useEffect(() => {
-  const verificarMensagens = async () => {
-      try {
-          const resultado = await buscarMensagens(usuarioLogado.token, "Enviada");
-          const lista = resultado?.listaMensagem || [];
-          setQuantidadeMensagensPendentes(lista.length);
-          setTemNovasMensagens(lista.length > 0);
-      } catch (error) {
-          console.error("Erro ao verificar mensagens:", error);
-      }
-  };
-  verificarMensagens();
-}, [usuarioLogado.token]);
+  if (usuarioLogado && usuarioLogado.token) { // Adicionado guarda para usuarioLogado
+    const verificarMensagens = async () => {
+        try {
+            const resultado = await buscarMensagensMock(usuarioLogado.token); // Usando mock
+            const lista = resultado?.listaMensagem || [];
+            setQuantidadeMensagensPendentes(lista.length);
+            setTemNovasMensagens(lista.length > 0);
+        } catch (error) {
+            console.error("Erro ao verificar mensagens (Mock):", error);
+        }
+    };
+    verificarMensagens();
+  }
+}, [usuarioLogado]); // Removido usuarioLogado.token, adicionado usuarioLogado
 
 
 function handleLogout() {
-  setUsuarioLogado({ nome: "", logado: false, token: "", role: null }); // Corrigido para usar setUsuarioLogado
+  setUsuarioLogado({ nome: "", logado: false, token: "", role: null }); 
   localStorage.removeItem("usuarioLogado");
   navigate("/");
 }
@@ -82,7 +112,7 @@ function handleLogout() {
     }
 
     try {
-      const resultado = await alterarSenha(
+      const resultado = await alterarSenhaMock( // Usando mock
         usuarioLogado?.token,
         usuarioLogado?.email,
         senha.senhaAtual,
@@ -90,150 +120,59 @@ function handleLogout() {
         senha.confirmarSenha
       );
 
+      alert(resultado.mensagem); // Exibe a mensagem do mock
       if (resultado.status) {
-        alert("Senha alterada com sucesso!");
         setShowModal(false);
-      } else {
-        alert(resultado.mensagem);
       }
     } catch (error) {
-      console.error("Erro ao alterar senha:", error);
-      alert("Erro ao alterar senha. Tente novamente.");
+      console.error("Erro ao alterar senha (Mock):", error);
+      alert("Erro ao alterar senha (Mock). Tente novamente.");
     }
   };
 
+  // Lógica de exibição de cadastros simplificada para o MVP
+  const cadastrosMVP = (
+    <NavDropdown title="Cadastros (MVP)" id="cadastros-mvp-nav-dropdown">
+        <NavDropdown.Item as={Link} to="/cadastros/modelo-equipamento">Modelos de Equipamentos</NavDropdown.Item>
+        <NavDropdown.Item as={Link} to="/cadastros/pagamento">Tipos de Pagamento</NavDropdown.Item>
+        <NavDropdown.Item as={Link} to="/cadastros/urgencia">Níveis de Urgência</NavDropdown.Item>
+        {/* Adicionar outros cadastros do MVP aqui conforme necessário */}
+    </NavDropdown>
+  );
 
   return (
     <>
       <Navbar expand="lg" className="bg-light shadow-sm" sticky="top">
         <Container fluid className="w-100 mx-2">
-          {usuarioLogado.role === 1 || usuarioLogado.role === 2 || usuarioLogado.role === 4 ? (
-            <Navbar.Brand as={Link} to="/" className="d-flex align-items-center ms-2">
-              <FaHome className="me-1" /> Home
-            </Navbar.Brand>
-          ) : (
-            <>
-              <Navbar.Brand as={Link} to="/home-cliente" className="d-flex align-items-center ms-2">
-                <FaHome className="me-1" /> Home
-              </Navbar.Brand>
-              <Navbar.Brand as={Link} to="/dashboard-cliente">Dashboard</Navbar.Brand>
-            </>
-          )}
-
+          <Navbar.Brand as={Link} to={usuarioLogado.logado ? "/ordens-servico" : "/"} className="d-flex align-items-center ms-2">
+            <FaHome className="me-1" /> Home OS
+          </Navbar.Brand>
+        
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              {usuarioLogado.role === 1 && (
-                <NavDropdown title="Cadastros" id="cadastros-nav-dropdown">
-                  <NavDropdown.Item as={Link} to="/networking">Networking</NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/clientes/pf">Clientes Pessoa Física</NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/clientes/pj">Clientes Pessoa Jurídica</NavDropdown.Item>
-                </NavDropdown>
-              )}
-
-              {usuarioLogado.role === 4 && (
-                <>
-                  <Nav.Link as={Link} to="/dashboard-cliente">Dashboard</Nav.Link>
-                  <NavDropdown title="Cadastro de Publicidade" id="publicidade-nav-dropdown">
-                    <NavDropdown.Item as={Link} to="/publicidade/pj">Publicidade Pessoa Jurídica</NavDropdown.Item>
-                  </NavDropdown>
-                </>
-              )}
-
-              {usuarioLogado.role === 2 && (
-                <>
-                  <NavDropdown title="Cadastros" id="cadastros-nav-dropdown">
-                    <NavDropdown.Item as={Link} to="/networking">Networking</NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/clientes/pf">Clientes Pessoa Física</NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/clientes/pj">Clientes Pessoa Jurídica</NavDropdown.Item>
-                  </NavDropdown>
-                  <NavDropdown title="Publicidade" id="publicidade-nav-dropdown">
-                    <NavDropdown.Item as={Link} to="/publicidade/pj">Publicidade Pessoa Jurídica</NavDropdown.Item>
-                  </NavDropdown>
-                  <NavDropdown title="Propaganda" id="propaganda-nav-dropdown">
-                    <NavDropdown.Item as={Link} to="/propaganda/pf">Propaganda Pessoa Física</NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/propaganda/pj">Propaganda Pessoa Jurídica</NavDropdown.Item>
-                  </NavDropdown>
-                  <Nav.Link as={Link} to="/mensagem" className="d-flex align-items-center ms-2">
-                    <FaRegEnvelope className="me-1" /> Mensagens
-                  </Nav.Link>
-                </>
-              )}
+              {usuarioLogado.logado && cadastrosMVP} {/* Exibe cadastros MVP se logado */}
+              {/* Outros links de navegação específicos do MVP podem ser adicionados aqui */}
             </Nav>
 
             <Nav className="ms-auto">
-            {usuarioLogado.role === 2 && (
-              <NavDropdown
-                title={
-                  <span className="position-relative">
-                    <FaBell style={{ color: temNovasMensagens ? "Blue" : "inherit" }} />
-                    {quantidadeMensagensPendentes > 0 && (
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: "-5px",
-                          right: "-15px",
-                          background: "red",
-                          color: "white",
-                          borderRadius: "50%",
-                          padding: "2px 6px",
-                          fontSize: "10px",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {quantidadeMensagensPendentes}
-                      </span>
-                    )}
-                  </span>
-                }
-                id="notificacoes-dropdown"
-                align="end"
-                show={showNotificacoes}
-                onToggle={(isOpen) => setShowNotificacoes(isOpen)}
-              >
-                <div
-                  className="notification-container"
-                  style={{ maxHeight: "600px", overflowY: "auto", width: "350px" }}
-                >
-                  {mensagens && mensagens.length > 0 ? (
-                    mensagens.map((mensagem) => (
-                      <NavDropdown.Item
-                        key={mensagem.id}
-                        onClick={() => navigate("/mensagem")}
-                        className="p-2 border-bottom"
-                      >
-                        <div className="d-flex flex-column gap-1">
-                          <div className="d-flex justify-content-between">
-                            <strong className="text-dark">{mensagem.nome_user}</strong>
-                            <span className="text-muted fs-sm">
-                              {new Date(mensagem.data_hora).toLocaleString("pt-BR")}
-                            </span>
-                          </div>
-                          <small className="text-truncate">{mensagem.mensagem}</small>
-                        </div>
-                      </NavDropdown.Item>
-                    ))
-                  ) : (
-                    <NavDropdown.Item className="text-center py-3">
-                      <small className="text-muted">Sem novas mensagens</small>
-                    </NavDropdown.Item>
-                  )}
-                </div>
-              </NavDropdown>
-            )}
+            {/* Seção de notificações e mensagens removida/simplificada para o MVP */}
+            {/* {usuarioLogado.logado && usuarioLogado.role === 2 && ( ... ) } */}
 
-            <NavDropdown
-              title={usuarioLogado?.nome || "Usuário"}
-              id="usuario-nav-dropdown"
-              align="end"
-            >
-              <NavDropdown.Item onClick={() => setShowModal(true)}>
-                Alterar Senha
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={handleLogout}>
-                <FaSignOutAlt /> Sair
-              </NavDropdown.Item>
-            </NavDropdown>
+            {usuarioLogado.logado && (
+                <NavDropdown
+                title={usuarioLogado?.nome || "Usuário"}
+                id="usuario-nav-dropdown"
+                align="end"
+                >
+                <NavDropdown.Item onClick={() => setShowModal(true)}>
+                    Alterar Senha (Mock)
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={handleLogout}>
+                    <FaSignOutAlt /> Sair
+                </NavDropdown.Item>
+                </NavDropdown>
+            )}
           </Nav>
 
           </Navbar.Collapse>
@@ -242,7 +181,7 @@ function handleLogout() {
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Alteração de Senha</Modal.Title>
+          <Modal.Title>Alteração de Senha (Mock)</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form>
@@ -286,3 +225,4 @@ function handleLogout() {
     </>
   );
 }
+

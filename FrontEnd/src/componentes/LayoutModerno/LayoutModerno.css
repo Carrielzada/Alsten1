@@ -1,0 +1,7 @@
+/* LayoutModerno.css */
+.layout-moderno {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f4f7f6; /* Um cinza claro para o fundo geral, pode ser ajustado */
+}
+

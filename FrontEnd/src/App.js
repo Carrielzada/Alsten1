@@ -1,18 +1,24 @@
 import { useState, useEffect, createContext } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import TelaMenu from "./componentes/Telas/TelaMenu";
+// import TelaMenu from "./componentes/Telas/TelaMenu"; // Será substituído/integrado ao LayoutModerno
 import Tela404 from "./componentes/Telas/Tela404";
 import TelaLogin from "./componentes/Telas/TelaLogin";
-import TelaPagamento from "./componentes/Telas/TelaCadPagamento";
-import TelaCadClientePF from "./componentes/Telas/TelaCadClientePF";
-import TelaCadClientePJ from "./componentes/Telas/TelaCadClientePJ";
-import TelaPropagandaPF from "./componentes/Telas/TelaCadPropagandaPF";
-import TelaPropagandaPJ from "./componentes/Telas/TelaCadPropagandaPJ";
-import TelaPublicidadePJ from "./componentes/Telas/TelaCadPublicidadePJ";
 import TelaHomeCliente from "./componentes/Telas/TelaHomeCliente";
-import TelaCliente from "./componentes/Telas/TelaCliente";
-import TelaMensagem from "./componentes/Telas/TelaMensagem";
 import ProtectedComponent from "./ProtectedComponent";
+import TelaListagemOS from "./componentes/Telas/TelaListagemOS";
+import FormUploadArquivo from "./componentes/Telas/Formularios/FormUploadArquivo";
+
+// Cadastros do MVP (serão adaptados ao novo layout)
+import TelaCadModeloEquipamento from "./componentes/Telas/TelaCadModeloEquipamento";
+import TelaCadPagamento from "./componentes/Telas/TelaCadPagamento";
+import TelaCadUrgencia from "./componentes/Telas/TelaCadUrgencia";
+import TelaCadTipoLacre from "./componentes/Telas/TelaCadTipoLacre"; // Importar tela de Tipo de Lacre
+import TelaCadTipoAnalise from "./componentes/Telas/TelaCadTipoAnalise"; // Importar tela de Tipo de Análise
+import TelaCadFabricante from "./componentes/Telas/TelaCadFabricante"; // Importar tela de Fabricante
+import TelaCadDefeitoAlegado from "./componentes/Telas/TelaCadDefeitoAlegado"; // Importar tela de Defeito Alegado
+
+// Novo Layout
+import LayoutModerno from "./componentes/LayoutModerno/LayoutModerno";
 
 export const ContextoUsuarioLogado = createContext(null);
 
@@ -22,134 +28,74 @@ function App() {
     nome: "",
     logado: false,
     token: "",
-    role: null, // Define a role do usuário (1 = Admin, 2 = Gerente, 3 = Cliente)
+    role: null,
     id_dados: null,
     prop_publ: null,
   });
 
-  // UseEffect para carregar os dados do localStorage
   useEffect(() => {
     const usuarioSalvo = localStorage.getItem("usuarioLogado");
     if (usuarioSalvo) {
       const usuario = JSON.parse(usuarioSalvo);
       setUsuarioLogado(usuario);
     }
-  }, []); // Executa apenas uma vez, ao montar o componente
+  }, []);
+
+  // Define as rotas que usarão o LayoutModerno
+  const RotasProtegidasComLayout = () => (
+    <LayoutModerno>
+      <Routes>
+        {/* Rota inicial para admin/técnico agora é a listagem de OS */}
+        <Route path="/" element={<Navigate to="/ordens-servico" />} /> 
+        <Route path="/ordens-servico" element={<TelaListagemOS />} />
+        <Route path="/upload-teste" element={<FormUploadArquivo osId={null} onUploadSuccess={(filePath) => console.log("Upload Teste OK:", filePath)} />} />
+        <Route path="/cadastros/modelo-equipamento" element={<TelaCadModeloEquipamento />} />
+        <Route path="/cadastros/pagamento" element={<TelaCadPagamento />} />
+        <Route path="/cadastros/urgencia" element={<TelaCadUrgencia />} />
+        {/* Novas rotas de cadastro (a serem criadas as telas) */}
+        <Route path="/cadastros/tipo-lacre" element={<TelaCadTipoLacre />} />
+        <Route path="/cadastros/tipo-analise" element={<TelaCadTipoAnalise />} />
+        <Route path="/cadastros/fabricante" element={<TelaCadFabricante />} />
+        <Route path="/cadastros/defeito-alegado" element={<TelaCadDefeitoAlegado />} />
+        <Route path="/sua-conta" element={<div>Tela Sua Conta (Em construção)</div>} />
+        {/* Adicionar outras rotas protegidas aqui */}
+        <Route path="*" element={<Tela404 />} /> {/* Fallback para rotas não encontradas dentro do layout */}
+      </Routes>
+    </LayoutModerno>
+  );
 
   return (
     <ContextoUsuarioLogado.Provider value={{ usuarioLogado, setUsuarioLogado }}>
-      {!usuarioLogado.logado ? (
-        <TelaLogin />
-      ) : (
-        <BrowserRouter>
-          <Routes>
-            {/* Rota inicial - redireciona de acordo com a role */}
-            <Route
-              path="/"
-              element={
-                usuarioLogado.role === 1 || usuarioLogado.role === 2 ? (
-                  <Navigate to="/menu" />
-                ) : usuarioLogado.role === 3 || usuarioLogado.role === 4 ? (
-                  <Navigate to="/home-cliente" />
-                ) : (
-                  <Tela404 />
-                )
-              }
-            />
-            {/* Tela de Menu */}
-            <Route
-              path="/menu"
-              element={
-                <ProtectedComponent allowedRoles={[1, 2]} usuarioLogado={usuarioLogado}>
-                  <TelaMenu />
-                </ProtectedComponent>
-              }
-            />
-            {/* Networking */}
-            <Route
-              path="/networking"
-              element={
-                <ProtectedComponent allowedRoles={[1, 2]} usuarioLogado={usuarioLogado}>
-                  <TelaPagamento />
-                </ProtectedComponent>
-              }
-            />
-            {/* Clientes */}
-            <Route
-              path="/clientes/pf"
-              element={
-                <ProtectedComponent allowedRoles={[1, 2]} usuarioLogado={usuarioLogado}>
-                  <TelaCadClientePF />
-                </ProtectedComponent>
-              }
-            />
-            <Route
-              path="/clientes/pj"
-              element={
-                <ProtectedComponent allowedRoles={[1, 2]} usuarioLogado={usuarioLogado}>
-                  <TelaCadClientePJ />
-                </ProtectedComponent>
-              }
-            />
-            {/* Propagandas */}
-            <Route
-              path="/propaganda/pf"
-              element={
-                <ProtectedComponent allowedRoles={[2]} usuarioLogado={usuarioLogado}>
-                  <TelaPropagandaPF />
-                </ProtectedComponent>
-              }
-            />
-            <Route
-              path="/propaganda/pj"
-              element={
-                <ProtectedComponent allowedRoles={[2]} usuarioLogado={usuarioLogado}>
-                  <TelaPropagandaPJ />
-                </ProtectedComponent>
-              }
-            />
-            {/* Publicidade */}
-            <Route
-              path="/publicidade/pj"
-              element={
-                <ProtectedComponent allowedRoles={[2, 4]} usuarioLogado={usuarioLogado}>
-                  <TelaPublicidadePJ />
-                </ProtectedComponent>
-              }
-            />
-            {/* Home do Cliente */}
-            <Route
-              path="/home-cliente"
-              element={
-                <ProtectedComponent allowedRoles={[3, 4]} usuarioLogado={usuarioLogado}>
-                  <TelaHomeCliente />
-                </ProtectedComponent>
-              }
-            />
-            {/* Dashboard do Cliente */}
-            <Route
-              path="/dashboard-cliente"
-              element={
-                <ProtectedComponent allowedRoles={[3, 4]} usuarioLogado={usuarioLogado}>
-                  <TelaCliente />
-                </ProtectedComponent>
-              }
-            />
-            <Route
-              path="/mensagem"
-              element={
-                <ProtectedComponent allowedRoles={[2, 3, 4]} usuarioLogado={usuarioLogado}>
-                  <TelaMensagem />
-                </ProtectedComponent>
-              }
-            />
-            {/* Página não encontrada */}
-            <Route path="*" element={<Tela404 />} />
-          </Routes>
-        </BrowserRouter>
-      )}
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<TelaLogin />} />
+          {
+            usuarioLogado.logado ? (
+              // Se logado, verifica o role para direcionar
+              (usuarioLogado.role === 1 || usuarioLogado.role === 2) ? (
+                // Rotas de Admin/Técnico com o novo layout
+                <Route path="/*" element={<ProtectedComponent allowedRoles={[1, 2]} usuarioLogado={usuarioLogado}><RotasProtegidasComLayout /></ProtectedComponent>} />
+              ) : (usuarioLogado.role === 3 || usuarioLogado.role === 4) ? (
+                // Rotas de Cliente (podem ou não usar o mesmo layout, a definir)
+                // Por enquanto, mantendo separadas e simples
+                <>
+                  <Route path="/home-cliente" element={<ProtectedComponent allowedRoles={[3, 4]} usuarioLogado={usuarioLogado}><TelaHomeCliente /></ProtectedComponent>} />
+                  <Route path="/*" element={<Navigate to="/home-cliente" />} /> {/* Redireciona outras rotas para home-cliente */}
+                </>
+              ) : (
+                // Se tem role desconhecido, volta para login
+                <Route path="/*" element={<Navigate to="/login" />} />
+              )
+            ) : (
+              // Se não está logado, todas as rotas levam para login, exceto /login em si
+              <Route path="/*" element={<Navigate to="/login" />} />
+            )
+          }
+        </Routes>
+      </BrowserRouter>
     </ContextoUsuarioLogado.Provider>
   );
 }
 
 export default App;
+

@@ -1,0 +1,30 @@
+/* ConteudoPrincipal.css */
+.conteudo-principal {
+  flex-grow: 1; /* Ocupa o espaço restante */
+  padding: 30px;
+  margin-left: 260px; /* Mesma largura da barra lateral para não sobrepor */
+  background-color: #ecf0f1; /* Um cinza bem claro para a área de conteúdo */
+  /* Para o gradiente azul solicitado nas referências, poderia ser algo como:
+  background-image: linear-gradient(to bottom right, #e0f2f7, #d1e0e8);
+  Ajustar cores conforme a paleta final.
+  */
+  overflow-y: auto; /* Adiciona scroll se o conteúdo for maior que a tela */
+}
+
+/* Estilos para títulos dentro do conteúdo principal */
+.conteudo-principal h2 {
+  font-size: 1.8em;
+  color: #2c3e50; /* Cor escura para títulos */
+  margin-bottom: 20px;
+  border-bottom: 2px solid #3498db; /* Linha azul abaixo do título */
+  padding-bottom: 10px;
+}
+
+/* Adicionar media queries para responsividade se necessário */
+@media (max-width: 768px) {
+  .conteudo-principal {
+    margin-left: 0; /* Em telas menores, a barra lateral pode ser recolhida ou sobrepor */
+    padding: 20px;
+  }
+}
+

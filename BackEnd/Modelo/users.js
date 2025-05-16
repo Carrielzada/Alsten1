@@ -6,19 +6,15 @@ export default class Users {
     #email;
     #password;
     #role_id;
-    #prop_publ;
-    #id_dados;
     #criado_em;
     #atualizado_em;
 
-    constructor(id, nome, email, password, role_id, prop_publ, id_dados, criado_em = null, atualizado_em = null) {
+    constructor(id, nome, email, password, role_id, criado_em = null, atualizado_em = null) {
         this.#id = id;
         this.#nome = nome;
         this.#email = email;
         this.#password = password;
         this.#role_id = role_id;
-        this.#prop_publ = prop_publ;
-        this.#id_dados = id_dados;
         this.#criado_em = criado_em;
         this.#atualizado_em = atualizado_em;
     }
@@ -39,12 +35,6 @@ export default class Users {
     get role_id() { return this.#role_id; }
     set role_id(novoIdRole) { this.#role_id = novoIdRole; }
 
-    get prop_publ() { return this.#prop_publ; }
-    set prop_publ(novaPropPubl) { this.#prop_publ = novaPropPubl; }
-
-    get id_dados() { return this.#id_dados; }
-    set id_dados(novoIdDados) { this.#id_dados = novoIdDados; }
-
     get criado_em() { return this.#criado_em; }
     set criado_em(novaData) { this.#criado_em = novaData; }
 
@@ -59,8 +49,6 @@ export default class Users {
             email: this.#email,
             password: this.#password,
             role_id: this.#role_id,
-            prop_publ: this.#prop_publ,
-            id_dados: this.#id_dados,
             criado_em: this.#criado_em,
             atualizado_em: this.#atualizado_em,
         };
