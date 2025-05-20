@@ -1,13 +1,15 @@
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
 import "./TelaLogin.css";
 import { ContextoUsuarioLogado } from "../../App";
 import { login } from "../../servicos/loginService";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { registrar } from "../../servicos/usersService";
 import logoImage from "../../assets/imagens/logoalsten.jpg";
+import { useNavigate } from "react-router-dom";
 
 export default function TelaLogin() {
   const contexto = useContext(ContextoUsuarioLogado);
+  const navigate = useNavigate();
   const [usuario, setUsuario] = useState({
     usuario: "",
     senha: "",
@@ -15,36 +17,34 @@ export default function TelaLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
 
-  function realizarLogin(evento) {
+function realizarLogin(evento) {
     evento.preventDefault();
 
     login(usuario.usuario, usuario.senha)
-        .then((resposta) => {
-            if (resposta?.status) {
-                // Atualizar o estado global com os dados do usuário
-                const usuarioLogado = {
-                    id: resposta.id,
-                    nome: resposta.nome,
-                    email: resposta.email,
-                    logado: true,
-                    token: resposta.token,
-                    role: resposta.role, // Certifique-se de usar o campo correto do backend
-                };
+      .then((resposta) => {
+        if (resposta?.status) {
+          const usuarioLogado = {
+            id: resposta.id,
+            nome: resposta.nome,
+            email: resposta.email,
+            logado: true,
+            token: resposta.token,
+            role: resposta.role,
+          };
 
-                contexto.setUsuarioLogado(usuarioLogado);
+          contexto.setUsuarioLogado(usuarioLogado);
+          localStorage.setItem("usuarioLogado", JSON.stringify(usuarioLogado));
 
-                // Salvar no localStorage para persistência
-                localStorage.setItem("usuarioLogado", JSON.stringify(usuarioLogado));
-            } else {
-                alert(resposta.mensagem); // Mensagem de erro
-            }
-        })
-        .catch((erro) => {
-            alert("Erro ao realizar login: " + erro.message);
-        });
-}
+          navigate("/ordens-servico");
 
-
+        } else {
+          alert(resposta.mensagem);
+        }
+      })
+      .catch((erro) => {
+        alert("Erro ao realizar login: " + erro.message);
+      });
+  }
 
 function realizarCadastro(evento) {
     evento.preventDefault();

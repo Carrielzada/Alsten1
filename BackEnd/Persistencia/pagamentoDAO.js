@@ -1,77 +1,64 @@
-import Pagamento from '../Modelo/pagamento.js';
-import conectar from './conexao.js';
+import Pagamento from "../Modelo/pagamento.js";
+import conectar from "./conexao.js";
 
 export default class PagamentoDAO {
-    async incluir(pagamento) {
+    async gravar(pagamento) {
         if (pagamento instanceof Pagamento) {
             const conexao = await conectar();
-            const sql = `INSERT INTO pagamento (pagamento) VALUES (?)`;
-            const valores = [pagamento.pagamento];
-            await conexao.query(sql, valores);
+            const sql = "INSERT INTO pagamento (pagamento) VALUES (?)";
+            const parametros = [pagamento.pagamento];
+            const resultado = await conexao.query(sql, parametros);
+            pagamento.id = resultado[0].insertId;
+            global.poolConexoes.releaseConnection(conexao);
+            return pagamento;
+        }
+    }
+
+    async atualizar(pagamento) {
+        if (pagamento instanceof Pagamento) {
+            const conexao = await conectar();
+            const sql = "UPDATE pagamento SET pagamento = ? WHERE id = ?";
+            const parametros = [pagamento.pagamento, pagamento.id];
+            await conexao.query(sql, parametros);
             global.poolConexoes.releaseConnection(conexao);
         }
     }
 
-    async alterar(pagamento) {
+    async excluir(pagamento) {
         if (pagamento instanceof Pagamento) {
             const conexao = await conectar();
-            const sql = `UPDATE pagamento 
-                         SET pagamento = ? 
-                         WHERE id = ?`;
-            const valores = [
-                pagamento.pagamento,
-                pagamento.id
-            ];
-            await conexao.query(sql, valores);
+            const sql = "DELETE FROM pagamento WHERE id = ?";
+            const parametros = [pagamento.id];
+            await conexao.query(sql, parametros);
             global.poolConexoes.releaseConnection(conexao);
         }
     }
 
-    async excluir(id) {
-        const conexao = await conectar();
-        const sql = "DELETE FROM pagamento WHERE id = ?";
-        const valores = [id];
-        const [resultado] = await conexao.query(sql, valores);
-        global.poolConexoes.releaseConnection(conexao);
-    
-        if (resultado.affectedRows === 0) {
-            throw new Error("Forma de Pagamento não encontrada ou já excluído.");
+    async consultar(termoBusca) {
+        let sql = "";
+        let parametros = [];
+        if (!termoBusca) {
+            termoBusca = "";
         }
-    }
 
-    async consultar(termo) {
         const conexao = await conectar();
-        const sql = `SELECT * FROM pagamento WHERE pagamento LIKE ? ORDER BY pagamento`;
-        const valores = [`%${termo}%`];
-        const [rows] = await conexao.query(sql, valores);
-        global.poolConexoes.releaseConnection(conexao);
-    
-        const listaPagamentos = [];
-        for (const row of rows) {
-            const pagamento = new Pagamento(
-                row.id,
-                row.pagamento
-            );
+
+        if (!isNaN(parseInt(termoBusca))) { // Se o termo de busca for um número, pesquisa por ID
+            sql = "SELECT * FROM pagamento WHERE id = ?";
+            parametros = [parseInt(termoBusca)];
+        }
+        else { // Senão, pesquisa por tipo de análise
+            sql = `SELECT * FROM pagamento WHERE pagamento LIKE ?`;
+            parametros = ["%" + termoBusca + "%"];
+        }
+        
+        const [registros] = await conexao.query(sql, parametros);
+        let listaPagamentos = [];
+        for (const registro of registros) {
+            const pagamento = new Pagamento(registro.id, registro.pagamento);
             listaPagamentos.push(pagamento);
         }
+        global.poolConexoes.releaseConnection(conexao);
         return listaPagamentos;
     }
-
-    async consultarPorId(id) {
-        const conexao = await conectar();
-        const sql = `SELECT * FROM pagamento WHERE id = ?`;
-        const [rows] = await conexao.query(sql, [id]);
-        global.poolConexoes.releaseConnection(conexao);
-    
-        if (rows.length > 0) {
-            const row = rows[0];
-            return new Pagamento(
-                row.id, 
-                row.pagamento
-            );
-        } else {
-            return null;
-        }
-    }
-    
 }

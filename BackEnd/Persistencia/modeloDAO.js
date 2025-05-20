@@ -39,23 +39,20 @@ export default class ModeloDAO {
         }
     }
 
-    async consultar(termo) {
-        const conexao = await conectar();
-        const sql = `SELECT * FROM modelo WHERE modelo LIKE ? ORDER BY modelo`;
-        const valores = [`%${termo}%`];
-        const [rows] = await conexao.query(sql, valores);
-        global.poolConexoes.releaseConnection(conexao);
-    
-        const listaPagamentos = [];
-        for (const row of rows) {
-            const modelo = new Modelo(
-                row.id,
-                row.modelo
-            );
-            listaPagamentos.push(modelo);
-        }
-        return listaPagamentos;
+async consultar(termo = "") {
+    const conexao = await conectar();
+    const sql = `SELECT * FROM modelo ORDER BY modelo`; // ❌ removido WHERE
+    const [rows] = await conexao.query(sql); // ❌ removido valores
+    global.poolConexoes.releaseConnection(conexao);
+
+    const listaModelos = [];
+    for (const row of rows) {
+        const modelo = new Modelo(row.id, row.modelo);
+        listaModelos.push(modelo);
     }
+    return listaModelos;
+}
+
 
     async consultarPorId(id) {
         const conexao = await conectar();
@@ -73,5 +70,21 @@ export default class ModeloDAO {
             return null;
         }
     }
+
+    async filtrar(termobusca) {
+    const conexao = await conectar();
+    const sql = `SELECT * FROM modelo WHERE modelo LIKE ? ORDER BY modelo`;
+    const valores = [`%${termobusca}%`];
+    const [rows] = await conexao.query(sql, valores);
+    global.poolConexoes.releaseConnection(conexao);
+
+    const lista = [];
+    for (const row of rows) {
+        const modelo = new Modelo(row.id, row.modelo);
+        lista.push(modelo);
+    }
+    return lista;
+}
+
     
 }

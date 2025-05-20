@@ -1,41 +1,136 @@
-import Database from "../database.js"; // Alterado para import ES Module
+import ModeloDAO from "../Persistencia/modeloDAO.js";
+import ModeloModel from "../Modelo/modelo.js";
 
-// Removido: const database = new Database() - Instanciar onde for usado ou passar como dependência
+export default class ModeloController {
+  async obterTodos(req, res) {
+    res.type("application/json");
+    try {
+      const dao = new ModeloDAO();
+      const lista = await dao.consultar();
+      res.status(200).json({ status: true, listaModelos: lista });
+            console.log('Resultado de consultar modelo:', JSON.stringify(lista, null, 2));
+    } catch (erro) {
+      console.error("Erro ao obter pagamentos:", erro);
+      res.status(500).json({ status: false, mensagem: "Erro ao obter pagamentos" });
+    }
+  }
 
-class ModeloModel {
-    constructor(id, modelo) {
-        this.id = id;
-        this.modelo = modelo;
-        this.database = new Database(); // Instanciando database aqui ou injetar via construtor
+  async obterPorId(req, res) {
+    res.type("application/json");
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ status: false, mensagem: "ID não fornecido!" });
     }
-    async obterTodos() {
-        const listaModelos = await this.database.ExecutaComando("select * from modelo order by modelo asc");
-        return listaModelos;
+
+    try {
+      const dao = new ModeloDAO();
+      const registro = await dao.consultarPorId(id);
+
+      if (!registro) {
+        return res.status(404).json({ status: false, mensagem: "Urgência não encontrada!" });
+      }
+
+      res.status(200).json({ status: true, modelo: registro });
+    } catch (erro) {
+      console.error("Erro ao obter pagamento:", erro);
+      res.status(500).json({ status: false, mensagem: "Erro ao obter pagamento." });
     }
-    async obterPorId(id){
-        const result = await this.database.ExecutaComando("select * from modelo where id=? ", [id]);
-        return result[0];
+  }
+
+  async incluir(req, res) {
+    res.type("application/json");
+
+    if (req.method === "POST" && req.is("application/json")) {
+      const { modelo } = req.body;
+
+      if (!modelo) {
+        return res.status(400).json({ status: false, mensagem: "Campo 'modelo' é obrigatório!" });
+      }
+
+      try {
+        const model = new ModeloModel(null, modelo);
+        const dao = new ModeloDAO();
+        await dao.incluir(model);
+
+        res.status(201).json({
+          status: true,
+          mensagem: "Modelo cadastrada com sucesso!"
+        });
+      } catch (erro) {
+        console.error("Erro ao cadastrar modelo:", erro);
+        res.status(500).json({ status: false, mensagem: "Erro ao cadastrar modelo." });
+      }
+    } else {
+      res.status(400).json({
+        status: false,
+        mensagem: "Método não permitido ou cliente no formato JSON não fornecido! Consulte a documentação da API."
+      });
     }
-    async adicionar(dadosModelo) {
-        await this.database.ExecutaComandoNonQuery("insert into modelo set ?", dadosModelo);
+  }
+
+  async alterar(req, res) {
+    res.type("application/json");
+
+    if (req.method === "PUT" && req.is("application/json")) {
+      const { id } = req.params;
+      const { modelo } = req.body;
+
+      if (!id || !modelo) {
+        return res.status(400).json({ status: false, mensagem: "ID e campo 'modelo' são obrigatórios!" });
+      }
+
+      try {
+        const model = new ModeloModel(id, modelo);
+        const dao = new ModeloDAO();
+        await dao.alterar(model);
+
+        res.status(200).json({ status: true, mensagem: "Modelo atualizado com sucesso!" });
+      } catch (erro) {
+        console.error("Erro ao atualizar modelo:", erro);
+        res.status(500).json({ status: false, mensagem: "Erro ao atualizar modelo." });
+      }
+    } else {
+      res.status(400).json({
+        status: false,
+        mensagem: "Método não permitido ou cliente no formato JSON não fornecido! Consulte a documentação da API."
+      });
     }
-    async atualizar (id,dadosModelo){
-        await this.database.ExecutaComandoNonQuery("update modelo set ? where id = ?", [
-            dadosModelo,
-            id
-        ]);
+  }
+
+  async excluir(req, res) {
+    res.type("application/json");
+
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ status: false, mensagem: "ID não fornecido!" });
     }
-    async delete (id){
-        await this.database.ExecutaComandoNonQuery("delete from modelo where id=?",[id]);
+
+    try {
+      const dao = new ModeloDAO();
+      await dao.excluir(id);
+
+      res.status(200).json({ status: true, mensagem: "Modelo excluído com sucesso!" });
+    } catch (erro) {
+      console.error("Erro ao excluir modelo:", erro);
+      res.status(500).json({ status: false, mensagem: "Erro ao excluir modelo." });
     }
-    async filtrar(termobusca) {
-        const modelos = await this.database.ExecutaComando(
-            "select * from modelo where modelo like ?",
-            [`%${termobusca}%`]
-        );
-        return modelos;
+  }
+
+  async filtrar(req, res) {
+    res.type("application/json");
+
+    const { termobusca } = req.params;
+
+    try {
+      const dao = new ModeloDAO();
+      const lista = await dao.filtrar(termobusca);
+
+      res.status(200).json({ status: true, listaModelos: lista });
+    } catch (erro) {
+      console.error("Erro ao filtrar modelos:", erro);
+      res.status(500).json({ status: false, mensagem: "Erro ao filtrar modelos." });
     }
+  }
 }
-
-export default ModeloModel; // Alterado para export default
-

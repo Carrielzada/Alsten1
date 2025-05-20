@@ -1,4 +1,4 @@
-const urlBase = "https://publicidadepropaganda.thiagocamponez.site/autenticacao";
+const urlBase = "http://localhost:4000/autenticacao";
 
 export async function login(email, password){
     const resposta = await fetch(urlBase + "/login", 

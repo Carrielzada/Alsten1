@@ -1,4 +1,5 @@
-const urlBase = "https://publicidadepropaganda.thiagocamponez.site/users";
+const urlBase = "http://localhost:4000/users";
+
 
 export async function registrar(nome, email, password, role_id, id_dados) {
     const resposta = await fetch(urlBase + "/registrar", {

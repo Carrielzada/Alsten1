@@ -16,10 +16,10 @@ export default async function conectar() {
     try {
         const pool = mysql.createPool({
             host: 'localhost',
-            port: 3306,
+            port: 3307,
             user: process.env.DB_USER,
             password: process.env.DB_SENHA,
-            database: 'alsten_os',
+            database: process.env.DB_NOME,
             connectionLimit: 50,
             maxIdle: 30,
             idleTimeout: 60000,

@@ -1,179 +1,186 @@
-import { Button, Container, Row, Col } from "react-bootstrap";
-// import Pagina from "../Templates2/Pagina.jsx"; // Removido o layout antigo
-import CardModerno from "../LayoutModerno/CardModerno"; // Importa o novo CardModerno
-import { useState, useEffect, useContext } from "react";
-import { ContextoUsuarioLogado } from "../../App.js";
-import { FaPlus } from "react-icons/fa";
+import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import LayoutModerno from '../LayoutModerno/LayoutModerno';
+import CardModerno from '../LayoutModerno/CardModerno';
+import { useState, useEffect} from "react";
+import { buscarUrgencia, adicionarUrgencia, atualizarUrgencia, excluirUrgencia } from '../../servicos/urgenciaService.js'; // Caminho corrigido e real
 
-// Mock da função buscarTodosNiveisUrgencia para MVP
-const buscarTodosNiveisUrgenciaMock = async (token) => {
-    console.log("buscarTodosNiveisUrgenciaMock chamado com token:", token);
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({ 
-                status: true, 
-                listaNiveis: [
-                    { id: 1, nome: "Não Urgente (Mock)", descricao: "Pode aguardar" },
-                    { id: 2, nome: "Pouco Urgente (Mock)", descricao: "Resolver em breve" },
-                    { id: 3, nome: "Urgente (Mock)", descricao: "Resolver agora" },
-                ]
-            });
-        }, 300);
-    });
-};
 
-// Componente de Formulário Mock para Nível de Urgência (simples)
-const FormCadNivelUrgenciaMock = ({ setExibirTabela, modoEdicao, nivelUrgenciaSelecionado, setAtualizarTela }) => {
-    const [nomeInput, setNomeInput] = useState(modoEdicao ? nivelUrgenciaSelecionado.nome : "");
-    const [descricaoInput, setDescricaoInput] = useState(modoEdicao ? nivelUrgenciaSelecionado.descricao : "");
+const TelaCadUrgencia = () => {
+  const [urgencia, setUrgencia] = useState([]);
+  const [urgenciaAtual, setUrgenciaAtual] = useState('');
+  const [idAtual, setIdAtual] = useState(null);
+  const [modoEdicao, setModoEdicao] = useState(false);
+  const [termoBusca, setTermoBusca] = useState('');
+  const [feedback, setFeedback] = useState({ urgencia: '', mensagem: '' });
 
-    const handleSubmit = () => {
-        console.log("Formulário de Nível de Urgência Enviado (Mock):", { nome: nomeInput, descricao: descricaoInput }, "Modo Edição:", modoEdicao, "Selecionado:", nivelUrgenciaSelecionado);
-        alert(`Nível de Urgência ${modoEdicao ? 'atualizado' : 'cadastrado'} (Mock): ${nomeInput}`);
-        setAtualizarTela(prevState => !prevState); // Alterna para disparar useEffect
-        setExibirTabela(true);
-    };
+  const carregarUrgencia = async (termo = '') => {
+    try {
+      const resposta = await buscarUrgencia(termo);
+      setUrgencia(resposta.listaUrgencias || []); 
+    } catch (error) {
+      setFeedback({ tipo: 'danger', mensagem: `Erro ao carregar urgências: ${error.message}` });
+      setUrgencia([]);
+    }
+  };
 
-    return (
-        <CardModerno titulo={modoEdicao ? "Editar Nível de Urgência" : "Adicionar Novo Nível de Urgência"}>
-            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-                <div className="mb-3">
-                    <label htmlFor="nomeUrgenciaInput" className="form-label">Nome do Nível de Urgência</label>
-                    <input 
-                        type="text" 
-                        id="nomeUrgenciaInput"
-                        value={nomeInput} 
-                        onChange={(e) => setNomeInput(e.target.value)} 
-                        placeholder="Digite o nome do nível de urgência"
-                        className="form-control"
-                        required
-                    />
+  useEffect(() => {
+    carregarUrgencia();
+  }, []);
+
+  const handleChange = (e) => {
+    setUrgenciaAtual(e.target.value);
+  };
+
+  const handleBuscaChange = (e) => {
+    setTermoBusca(e.target.value);
+  };
+
+  const handleBuscar = (e) => {
+    e.preventDefault();
+    carregarUrgencia(termoBusca);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!urgenciaAtual.trim()) {
+      setFeedback({ tipo: 'warning', mensagem: 'Por favor, informe a urgência.' });
+      return;
+    }
+
+    const dadosUrgencia = { urgencia: urgenciaAtual }; // Corrigido para urgencia
+    if (modoEdicao && idAtual) {
+      dadosUrgencia.id = idAtual;
+    }
+
+    try {
+      if (modoEdicao) {
+        await atualizarUrgencia(dadosUrgencia);
+        setFeedback({ tipo: 'success', mensagem: 'Urgencia atualizada com sucesso!' });
+      } else {
+        await adicionarUrgencia(dadosUrgencia);
+        setFeedback({ tipo: 'success', mensagem: 'Urgencia adicionada com sucesso!' });
+      }
+      limparFormulario();
+      carregarUrgencia();
+    } catch (error) {
+      setFeedback({ tipo: 'danger', mensagem: `Erro ao salvar urgencia: ${error.message}` });
+    }
+  };
+
+  const handleEditar = (urgencia) => {
+    setModoEdicao(true);
+    setIdAtual(urgencia.id);
+    setUrgenciaAtual(urgencia.urgencia); // Corrigido para urgencia
+    setFeedback({ tipo: '', mensagem: '' });
+  };
+
+  const handleExcluir = async (id) => {
+    if (window.confirm('Tem certeza que deseja excluir esta urgência?')) {
+      try {
+        await excluirUrgencia(id);
+        setFeedback({ tipo: 'info', mensagem: 'Urgência excluído com sucesso!' });
+        carregarUrgencia();
+        limparFormulario();
+      } catch (error) {
+        setFeedback({ tipo: 'danger', mensagem: `Erro ao excluir urgência: ${error.message}` });
+      }
+    }
+  };
+
+  const limparFormulario = () => {
+    setUrgenciaAtual('');
+    setIdAtual(null);
+    setModoEdicao(false);
+    setFeedback({ tipo: '', mensagem: '' });
+  };
+
+  return (
+    <LayoutModerno>
+      <Container fluid>
+        <Row className="justify-content-center">
+          <Col md={8} lg={6}>
+            <CardModerno titulo="Cadastro de Níveis de Urgência">
+              {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label htmlFor="urgencia">Nível de Urgencia</Form.Label>
+                  <Form.Control
+                    type="text"
+                    id="urgencia"
+                    value={urgenciaAtual}
+                    onChange={handleChange}
+                    placeholder="Ex: Alta, baixíssima"
+                    required
+                  />
+                </Form.Group>
+                <div className="d-flex justify-content-end">
+                  <Button variant="secondary" type="button" onClick={limparFormulario} className="me-2">
+                    Cancelar
+                  </Button>
+                  <Button variant="primary" type="submit">
+                    {modoEdicao ? 'Atualizar' : 'Salvar'}
+                  </Button>
                 </div>
-                <div className="mb-3">
-                    <label htmlFor="descricaoUrgenciaInput" className="form-label">Descrição (Opcional)</label>
-                    <textarea 
-                        id="descricaoUrgenciaInput"
-                        value={descricaoInput} 
-                        onChange={(e) => setDescricaoInput(e.target.value)} 
-                        placeholder="Descreva o nível de urgência"
-                        className="form-control"
-                        rows="3"
-                    />
-                </div>
-                <Button type="submit" variant="primary" className="me-2">Salvar</Button>
-                <Button onClick={() => setExibirTabela(true)} variant="secondary">Cancelar</Button>
-            </form>
-        </CardModerno>
-    );
-};
-
-// Componente de Tabela Mock para Nível de Urgência (simples)
-const TabelaNivelUrgenciaMock = ({ listaDeNiveisUrgencia, setExibirTabela, setModoEdicao, setNivelUrgenciaSelecionado }) => {
-    return (
-        <table className="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nome</th>
-                    <th>Descrição</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {listaDeNiveisUrgencia.length === 0 ? (
-                    <tr><td colSpan="4">Nenhum nível de urgência cadastrado.</td></tr>
-                ) : (
-                    listaDeNiveisUrgencia.map(nivel => (
-                        <tr key={nivel.id}>
-                            <td>{nivel.id}</td>
-                            <td>{nivel.nome}</td>
-                            <td>{nivel.descricao}</td>
-                            <td>
-                                <Button variant="warning" size="sm" className="me-2" onClick={() => {
-                                    setNivelUrgenciaSelecionado(nivel);
-                                    setModoEdicao(true);
-                                    setExibirTabela(false);
-                                }}>Editar</Button>
-                                <Button variant="danger" size="sm" onClick={() => {
-                                    alert(`Excluir nível de urgência ${nivel.id} (Mock)`);
-                                    // Aqui viria a lógica de exclusão e atualização da lista
-                                    }} >Excluir</Button>
-                            </td>
-                        </tr>
-                    ))
-                )}
-            </tbody>
-        </table>
-    );
-};
-
-export default function TelaCadNivelUrgencia(props) {
-    const contextoUsuario = useContext(ContextoUsuarioLogado);
-
-    const [exibirTabela, setExibirTabela] = useState(true);
-    const [atualizarTela, setAtualizarTela] = useState(false);
-    const [listaDeNiveisUrgencia, setListaDeNiveisUrgencia] = useState([]);
-
-    const [modoEdicao, setModoEdicao] = useState(false);
-    const [nivelUrgenciaSelecionado, setNivelUrgenciaSelecionado] = useState({
-        id: null,
-        nome: "",
-        descricao: ""
-    });
-
-    useEffect(() => {
-        if (!contextoUsuario || !contextoUsuario.usuarioLogado) return;
-        const token = contextoUsuario.usuarioLogado.token;
-        buscarTodosNiveisUrgenciaMock(token)
-            .then((resposta) => {
-                if (resposta.status) {
-                    setListaDeNiveisUrgencia(resposta.listaNiveis);
-                }
-            })
-            .catch((erro) => {
-                alert("Erro ao buscar Níveis de Urgência (Mock): " + erro.message);
-            })
-            .finally(() => {
-                setAtualizarTela(false); // Garante que para de atualizar após a busca
-            });
-    }, [exibirTabela, atualizarTela, contextoUsuario]);
-
-    return (
-        // Removido o <Pagina>, o LayoutModerno já está no App.js envolvendo as rotas
-        <Container fluid className="pt-3 pb-3">
-            <CardModerno titulo="Gestão de Níveis de Urgência">
-                {exibirTabela ? (
-                    <>
-                        <div className="d-flex justify-content-end mb-3">
-                            <Button
-                                variant="primary"
-                                onClick={() => {
-                                    setExibirTabela(false);
-                                    setModoEdicao(false);
-                                    setNivelUrgenciaSelecionado({ id: null, nome: "", descricao: "" });
-                                }}
-                            >
-                                <FaPlus className="me-2" />
-                                Adicionar Novo Nível
-                            </Button>
-                        </div>
-                        <TabelaNivelUrgenciaMock
-                            listaDeNiveisUrgencia={listaDeNiveisUrgencia}
-                            setExibirTabela={setExibirTabela}
-                            setModoEdicao={setModoEdicao}
-                            setNivelUrgenciaSelecionado={setNivelUrgenciaSelecionado}
-                        />
-                    </>
-                ) : (
-                    <FormCadNivelUrgenciaMock
-                        setExibirTabela={setExibirTabela}
-                        modoEdicao={modoEdicao}
-                        nivelUrgenciaSelecionado={nivelUrgenciaSelecionado}
-                        setAtualizarTela={setAtualizarTela} // Passa setAtualizarTela
-                    />
-                )}
+              </Form>
             </CardModerno>
-        </Container>
-    );
-}
+          </Col>
+        </Row>
 
+        <Row className="mt-4 justify-content-center">
+          <Col md={10} lg={8}>
+            <CardModerno titulo="Níveis de Urgência Cadastrados">
+              <Form onSubmit={handleBuscar} className="mb-3">
+                <Row>
+                  <Col md={8}>
+                    <Form.Control
+                      type="text"
+                      value={termoBusca}
+                      onChange={handleBuscaChange}
+                      placeholder="Buscar por nível de urgência..."
+                    />
+                  </Col>
+                  <Col md={4} className="d-flex align-items-end">
+                    <Button variant="info" type="submit" className="w-100">
+                      Buscar
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
+              {urgencia.length > 0 ? (
+                <Table striped bordered hover responsive size="sm">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Urgencia</th>
+                      <th style={{ width: '120px' }}>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {urgencia.map((urgencia) => (
+                      <tr key={urgencia.id}>
+                        <td>{urgencia.id}</td>
+                        <td>{urgencia.urgencia}</td>
+                        <td>
+                          <Button variant="warning" size="sm" onClick={() => handleEditar(urgencia)} className="me-1">
+                            Editar
+                          </Button>
+                          <Button variant="danger" size="sm" onClick={() => handleExcluir(urgencia.id)}>
+                            Excluir
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <Alert variant="info">Nenhum nível de urgência encontrado.</Alert>
+              )}
+            </CardModerno>
+          </Col>
+        </Row>
+      </Container>
+    </LayoutModerno>
+  );
+};
+
+export default TelaCadUrgencia;

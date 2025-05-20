@@ -1,165 +1,189 @@
-import { Button, Container, Row, Col } from "react-bootstrap";
-// import Pagina from "../Templates2/Pagina.jsx"; // Removido o layout antigo
-import CardModerno from "../LayoutModerno/CardModerno"; // Importa o novo CardModerno
-import { useState, useEffect, useContext } from "react";
-import { ContextoUsuarioLogado } from "../../App.js";
-import { FaPlus } from "react-icons/fa";
+import { useState, useEffect } from 'react';
+import LayoutModerno from '../LayoutModerno/LayoutModerno';
+import CardModerno from '../LayoutModerno/CardModerno';
+import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import { buscarModelo, atualizarModelo, excluirModelo, adicionarModelo } from "../../servicos/modeloService.js";
 
-// Mock da função buscarTodosModelos para MVP
-const buscarTodosModelosMock = async (token) => {
-    console.log("buscarTodosModelosMock chamado com token:", token);
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({ 
-                status: true, 
-                listaModelos: [
-                    { id: 1, modelo: "Modelo Equip A (Mock)", criado_em: new Date().toISOString(), atualizado_em: new Date().toISOString() },
-                    { id: 2, modelo: "Modelo Equip B (Mock)", criado_em: new Date().toISOString(), atualizado_em: new Date().toISOString() },
-                ]
-            });
-        }, 300);
-    });
-};
 
-// Componente de Formulário Mock para MVP (simples)
-const FormCadastroModeloMock = ({ setExibirTabela, modoEdicao, modeloSelecionado, setAtualizarTela }) => {
-    const [modeloInput, setModeloInput] = useState(modoEdicao ? modeloSelecionado.modelo : "");
+const TelaCadModeloEquipamento = () => {
+  const [modelo, setModelo] = useState([]);
+  const [modeloAtual, setModeloAtual] = useState('');
+  const [idAtual, setIdAtual] = useState(null);
+  const [modoEdicao, setModoEdicao] = useState(false);
+  const [termoBusca, setTermoBusca] = useState('');
+  const [feedback, setFeedback] = useState({ modelo: '', mensagem: '' });
 
-    const handleSubmit = () => {
-        console.log("Formulário de Modelo Enviado (Mock):", modeloInput, "Modo Edição:", modoEdicao, "Selecionado:", modeloSelecionado);
-        alert(`Modelo ${modoEdicao ? 'atualizado' : 'cadastrado'} (Mock): ${modeloInput}`);
-        setAtualizarTela(prevState => !prevState); // Alterna para disparar useEffect
-        setExibirTabela(true);
+
+    const carregarModelo = async (termo = '') => {
+      try {
+        const resposta = await buscarModelo(termo);
+        setModelo(resposta.listaModelos || []); 
+      } catch (error) {
+        setFeedback({ tipo: 'danger', mensagem: `Erro ao carregar formas de modelo: ${error.message}` });
+        setModelo([]);
+      }
     };
 
-    return (
-        <CardModerno titulo={modoEdicao ? "Editar Modelo de Equipamento" : "Adicionar Novo Modelo de Equipamento"}>
-            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-                <div className="mb-3">
-                    <label htmlFor="modeloInput" className="form-label">Nome do Modelo</label>
-                    <input 
-                        type="text" 
-                        id="modeloInput"
-                        value={modeloInput} 
-                        onChange={(e) => setModeloInput(e.target.value)} 
-                        placeholder="Digite o nome do modelo"
-                        className="form-control"
-                        required
-                    />
+
+  useEffect(() => {
+    carregarModelo();
+  }, []);
+
+  const handleChange = (e) => {
+    setModeloAtual(e.target.value);
+  };
+
+  const handleBuscaChange = (e) => {
+    setTermoBusca(e.target.value);
+  };
+
+  const handleBuscar = (e) => {
+    e.preventDefault();
+    carregarModelo(termoBusca);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!modeloAtual.trim()) {
+      setFeedback({ tipo: 'warning', mensagem: 'Por favor, informe a forma de modelo.' });
+      return;
+    }
+
+    const dadosModelo = { modelo: modeloAtual };
+    if (modoEdicao && idAtual) {
+      dadosModelo.id = idAtual;
+    }
+
+    try {
+      if (modoEdicao) {
+        await atualizarModelo(dadosModelo);
+        setFeedback({ tipo: 'success', mensagem: 'Forma de modelo atualizada com sucesso!' });
+      } else {
+        await adicionarModelo(dadosModelo);
+        setFeedback({ tipo: 'success', mensagem: 'Forma de modelo adicionada com sucesso!' });
+      }
+      limparFormulario();
+      carregarModelo();
+    } catch (error) {
+      setFeedback({ tipo: 'danger', mensagem: `Erro ao salvar forma de modelo: ${error.message}` });
+    }
+  };
+
+  const handleEditar = (modelo) => {
+    setModoEdicao(true);
+    setIdAtual(modelo.id);
+    setModeloAtual(modelo.modelo); 
+    setFeedback({ tipo: '', mensagem: '' });
+  };
+
+  const handleExcluir = async (id) => {
+    if (window.confirm('Tem certeza que deseja excluir esta forma de modelo?')) {
+      try {
+        await excluirModelo(id);
+        setFeedback({ tipo: 'info', mensagem: 'Forma de modelo excluída com sucesso!' });
+        carregarModelo();
+        limparFormulario();
+      } catch (error) {
+        setFeedback({ tipo: 'danger', mensagem: `Erro ao excluir forma de modelo: ${error.message}` });
+      }
+    }
+  };
+
+  const limparFormulario = () => {
+    setModeloAtual('');
+    setIdAtual(null);
+    setModoEdicao(false);
+    setFeedback({ tipo: '', mensagem: '' });
+  };
+
+  return (
+    <LayoutModerno>
+      <Container fluid>
+        <Row className="justify-content-center">
+          <Col md={8} lg={6}>
+            <CardModerno titulo="Cadastro de Modelos de Equipamento">
+              {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label htmlFor="modelo">Modelo de equipamento</Form.Label>
+                  <Form.Control
+                    type="text"
+                    id="modelo"
+                    value={modeloAtual}
+                    onChange={handleChange}
+                    placeholder="Insira aqui os dados"
+                    required
+                  />
+                </Form.Group>
+                <div className="d-flex justify-content-end">
+                  <Button variant="secondary" type="button" onClick={limparFormulario} className="me-2">
+                    Cancelar
+                  </Button>
+                  <Button variant="primary" type="submit">
+                    {modoEdicao ? 'Atualizar' : 'Salvar'}
+                  </Button>
                 </div>
-                <Button type="submit" variant="primary" className="me-2">Salvar</Button>
-                <Button onClick={() => setExibirTabela(true)} variant="secondary">Cancelar</Button>
-            </form>
-        </CardModerno>
-    );
-};
-
-// Componente de Tabela Mock para MVP (simples)
-const TabelaModelosEquipamentosMock = ({ listaDeModelos, setExibirTabela, setModoEdicao, setModeloSelecionado }) => {
-    return (
-        <table className="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Modelo</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {listaDeModelos.length === 0 ? (
-                    <tr><td colSpan="3">Nenhum modelo cadastrado.</td></tr>
-                ) : (
-                    listaDeModelos.map(modelo => (
-                        <tr key={modelo.id}>
-                            <td>{modelo.id}</td>
-                            <td>{modelo.modelo}</td>
-                            <td>
-                                <Button variant="warning" size="sm" className="me-2" onClick={() => {
-                                    setModeloSelecionado(modelo);
-                                    setModoEdicao(true);
-                                    setExibirTabela(false);
-                                }}>Editar</Button>
-                                <Button variant="danger" size="sm" onClick={() => {
-                                     alert(`Excluir modelo ${modelo.id} (Mock)`);
-                                     // Aqui viria a lógica de exclusão e atualização da lista
-                                     }}>Excluir</Button>
-                            </td>
-                        </tr>
-                    ))
-                )}
-            </tbody>
-        </table>
-    );
-};
-
-export default function TelaCadastroModelo(props) {
-    const contextoUsuario = useContext(ContextoUsuarioLogado);
-
-    const [exibirTabela, setExibirTabela] = useState(true);
-    const [atualizarTela, setAtualizarTela] = useState(false);
-    const [listaDeModelos, setListaDeModelos] = useState([]);
-
-    const [modoEdicao, setModoEdicao] = useState(false);
-    const [modeloSelecionado, setModeloSelecionado] = useState({
-        id: null,
-        modelo: "",
-        criado_em: "",
-        atualizado_em: ""
-    });
-
-    useEffect(() => {
-        if (!contextoUsuario || !contextoUsuario.usuarioLogado) return;
-        const token = contextoUsuario.usuarioLogado.token;
-        buscarTodosModelosMock(token)
-            .then((resposta) => {
-                if (resposta.status) {
-                    setListaDeModelos(resposta.listaModelos);
-                }
-            })
-            .catch((erro) => {
-                alert("Erro ao buscar Modelos (Mock): " + erro.message);
-            })
-            .finally(() => {
-                setAtualizarTela(false); // Garante que para de atualizar após a busca
-            });
-    }, [exibirTabela, atualizarTela, contextoUsuario]);
-
-    return (
-        // Removido o <Pagina>, o LayoutModerno já está no App.js envolvendo as rotas
-        <Container fluid className="pt-3 pb-3">
-            <CardModerno titulo="Gestão de Modelos de Equipamentos">
-                {exibirTabela ? (
-                    <>
-                        <div className="d-flex justify-content-end mb-3">
-                            <Button
-                                variant="primary"
-                                onClick={() => {
-                                    setExibirTabela(false);
-                                    setModoEdicao(false);
-                                    setModeloSelecionado({ id: null, modelo: "", criado_em: "", atualizado_em: "" });
-                                }}
-                            >
-                                <FaPlus className="me-2" />
-                                Adicionar Novo Modelo
-                            </Button>
-                        </div>
-                        <TabelaModelosEquipamentosMock
-                            listaDeModelos={listaDeModelos}
-                            setExibirTabela={setExibirTabela}
-                            setModoEdicao={setModoEdicao}
-                            setModeloSelecionado={setModeloSelecionado}
-                        />
-                    </>
-                ) : (
-                    <FormCadastroModeloMock
-                        setExibirTabela={setExibirTabela}
-                        modoEdicao={modoEdicao}
-                        modeloSelecionado={modeloSelecionado}
-                        setAtualizarTela={setAtualizarTela} // Passa setAtualizarTela
-                    />
-                )}
+              </Form>
             </CardModerno>
-        </Container>
-    );
-}
+          </Col>
+        </Row>
+
+        <Row className="mt-4 justify-content-center">
+          <Col md={10} lg={8}>
+            <CardModerno titulo="Formas de Modelo Cadastradas">
+              <Form onSubmit={handleBuscar} className="mb-3">
+                <Row>
+                  <Col md={8}>
+                    <Form.Control
+                      type="text"
+                      value={termoBusca}
+                      onChange={handleBuscaChange}
+                      placeholder="Buscar por modelos de equipamentos..."
+                    />
+                  </Col>
+                  <Col md={4} className="d-flex align-items-end">
+                    <Button variant="info" type="submit" className="w-100">
+                      Buscar
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
+              {modelo.length > 0 ? (
+                <Table striped bordered hover responsive size="sm">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Modelo de Equipamento</th>
+                      <th style={{ width: '120px' }}>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {modelo.map((modelo) => (
+                      <tr key={modelo.id}>
+                        <td>{modelo.id}</td>
+                        <td>{modelo.modelo}</td>
+                        <td>
+                          <Button variant="warning" size="sm" onClick={() => handleEditar(modelo)} className="me-1">
+                            Editar
+                          </Button>
+                          <Button variant="danger" size="sm" onClick={() => handleExcluir(modelo.id)}>
+                            Excluir
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <Alert variant="info">Nenhum modelo de equipamento encontrado.</Alert>
+              )}
+            </CardModerno>
+          </Col>
+        </Row>
+      </Container>
+    </LayoutModerno>
+  );
+};
+
+export default TelaCadModeloEquipamento;
 

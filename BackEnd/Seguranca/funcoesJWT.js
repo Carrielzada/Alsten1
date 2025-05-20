@@ -5,7 +5,7 @@ export function assinar(usuario) {
     const token = jwt.sign(
         { id: usuario.id, email: usuario.email, role: usuario.role }, // Inclua o campo role aqui
         process.env.CHAVE_SECRETA,
-        { expiresIn: '1800s' }
+        { expiresIn: '24h' }
     );
     return token;
 }

@@ -1,15 +1,15 @@
-import express from 'express';
-import ModeloController from '../Controle/modeloCtrl.js'; // Alterado para import ES Module
+import { Router } from "express";
+import { verificarAutenticacao } from "../Seguranca/autenticar.js";
+import ModeloController from "../Controle/modeloCtrl.js";
 
-const router = express.Router();
+const rotaModelo = new Router();
 const modeloController = new ModeloController();
 
-router.get('/', modeloController.obterTodos.bind(modeloController));
-router.post('/', modeloController.adicionar.bind(modeloController));
-router.get('/:id', modeloController.obterPorId.bind(modeloController));
-router.put('/:id', modeloController.atualizar.bind(modeloController));
-router.delete('/:id', modeloController.delete.bind(modeloController)); // Corrigido de 'excluir' para 'delete'
-router.get('/filtrar/:termobusca', modeloController.filtrar.bind(modeloController));
+rotaModelo.post("/", verificarAutenticacao, modeloController.incluir)
+          .put("/:id", verificarAutenticacao, modeloController.alterar)
+          .delete("/:id", verificarAutenticacao, modeloController.excluir)
+          .get("/filtro/:termobusca", verificarAutenticacao, modeloController.filtrar)
+          .get("/id/:id", verificarAutenticacao, modeloController.obterPorId)
+          .get("/", verificarAutenticacao, modeloController.obterTodos);
 
-export default router;
-
+export default rotaModelo;

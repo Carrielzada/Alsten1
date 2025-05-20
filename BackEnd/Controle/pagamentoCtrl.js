@@ -1,39 +1,147 @@
-import Database from "../database.js"; // Alterado para import ES Module
+import Pagamento from "../Modelo/pagamento.js";
 
-class PagamentoModel {
-    constructor(id, pagamento) {
-        this.id = id;
-        this.pagamento = pagamento;
-        this.database = new Database(); // Instanciando database aqui ou injetar via construtor
+export default class PagamentoCtrl {
+    async gravar(requisicao, resposta) {
+        resposta.type("application/json");
+        if (requisicao.method === "POST" && requisicao.is("application/json")) {
+            const dados = requisicao.body;
+            const pagamento= dados.pagamento;
+
+            if (pagamento) {
+                const novoPagamento = new Pagamento(0, pagamento);
+                try {
+                    await novoPagamento.gravar();
+                    resposta.status(201).json({
+                        status: true,
+                        mensagem: "Forma de pagamento cadastrado com sucesso!",
+                        id_pagamento: novoPagamento.id
+                    });
+                }
+                catch (erro) {
+                    resposta.status(500).json({
+                        status: false,
+                        mensagem: "Erro ao registrar a forma de pagamento: " + erro.message
+                    });
+                }
+            }
+            else {
+                resposta.status(400).json({
+                    status: false,
+                    mensagem: "Informe a forma de pagamento!"
+                });
+            }
+        }
+        else {
+            resposta.status(400).json({
+                status: false,
+                mensagem: "Método não permitido ou forma de pagamento no formato JSON não fornecido!"
+            });
+        }
     }
-    async obterTodos() {
-        const listaPagamentos = await this.database.ExecutaComando("select * from pagamento order by pagamento asc");
-        return listaPagamentos;
+
+    async atualizar(requisicao, resposta) {
+        resposta.type("application/json");
+        if ((requisicao.method === "PUT" || requisicao.method === "PATCH") && requisicao.is("application/json")) {
+            const dados = requisicao.body;
+            const id = dados.id;
+            const pagamento = dados.pagamento;
+
+            if (id && pagamento) {
+                const pagamentoParaAtualizar = new Pagamento(id, pagamento);
+                try {
+                    await pagamentoParaAtualizar.atualizar();
+                    resposta.status(200).json({
+                        status: true,
+                        mensagem: "forma de pagamento atualizada com sucesso!"
+                    });
+                }
+                catch (erro) {
+                    resposta.status(500).json({
+                        status: false,
+                        mensagem: "Erro ao atualizar a forma de pagamento: " + erro.message
+                    });
+                }
+            }
+            else {
+                resposta.status(400).json({
+                    status: false,
+                    mensagem: "Informe o ID e a forma de pagamento!"
+                });
+            }
+        }
+        else {
+            resposta.status(400).json({
+                status: false,
+                mensagem: "Método não permitido ou dados no formato JSON não fornecidos!"
+            });
+        }
     }
-    async obterPorId(id){
-        const result = await this.database.ExecutaComando("select * from pagamento where id=? ", [id]);
-        return result[0];
+
+    async excluir(requisicao, resposta) {
+        resposta.type("application/json");
+        if (requisicao.method === "DELETE" && requisicao.is("application/json")) {
+            const dados = requisicao.body;
+            const id = dados.id;
+
+            if (id) {
+                const pagamentoParaExcluir = new Pagamento(id, "");
+                try {
+                    await pagamentoParaExcluir.excluir();
+                    resposta.status(200).json({
+                        status: true,
+                        mensagem: "forma de pagamento excluída com sucesso!"
+                    });
+                }
+                catch (erro) {
+                    resposta.status(500).json({
+                        status: false,
+                        mensagem: "Erro ao excluir a forma de pagamento: " + erro.message
+                    });
+                }
+            }
+            else {
+                resposta.status(400).json({
+                    status: false,
+                    mensagem: "Informe o ID da forma de pagamento a ser excluído!"
+                });
+            }
+        }
+        else {
+            resposta.status(400).json({
+                status: false,
+                mensagem: "Método não permitido ou ID no formato JSON não fornecido!"
+            });
+        }
     }
-    async adicionar(dadosPagamento) {
-        await this.database.ExecutaComandoNonQuery("insert into pagamento set ?", dadosPagamento);
-    }
-    async atualizar (id,dadosPagamento){
-        await this.database.ExecutaComandoNonQuery("update pagamento set ? where id = ?", [
-            dadosPagamento,
-            id
-        ]);
-    }
-    async delete (id){
-        await this.database.ExecutaComandoNonQuery("delete from pagamento where id=?",[id]);
-    }
-    async filtrar(termobusca) {
-        const pagamentos = await this.database.ExecutaComando(
-            "select * from pagamento where pagamento like ?",
-            [`%${termobusca}%`]
-        );
-        return pagamentos;
+
+    async consultar(requisicao, resposta) {
+        resposta.type("application/json");
+        let termo = requisicao.params.termo;
+        if (!termo) {
+            termo = "";
+        }
+        if (requisicao.method === "GET") {
+            const pagamentoDAO = new Pagamento(0, ""); 
+            try {
+                const listaPagamentos = await pagamentoDAO.consultar(termo);
+                resposta.json({
+                    status: true,
+                    listaPagamentos: listaPagamentos
+                });
+            }
+            catch (erro) {
+                resposta.status(500).json({
+                    status: false,
+                    mensagem: "Erro ao consultar tipos de análise: " + erro.message
+                });
+            }
+        }
+        else {
+            resposta.status(400).json({
+                status: false,
+                mensagem: "Método não permitido! Consulte utilizando GET."
+            });
+        }
     }
 }
-
-export default PagamentoModel; // Alterado para export default
 

@@ -1,6 +1,5 @@
 import { useState, useEffect, createContext } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-// import TelaMenu from "./componentes/Telas/TelaMenu"; // Será substituído/integrado ao LayoutModerno
 import Tela404 from "./componentes/Telas/Tela404";
 import TelaLogin from "./componentes/Telas/TelaLogin";
 import TelaHomeCliente from "./componentes/Telas/TelaHomeCliente";
@@ -12,10 +11,10 @@ import FormUploadArquivo from "./componentes/Telas/Formularios/FormUploadArquivo
 import TelaCadModeloEquipamento from "./componentes/Telas/TelaCadModeloEquipamento";
 import TelaCadPagamento from "./componentes/Telas/TelaCadPagamento";
 import TelaCadUrgencia from "./componentes/Telas/TelaCadUrgencia";
-import TelaCadTipoLacre from "./componentes/Telas/TelaCadTipoLacre"; // Importar tela de Tipo de Lacre
-import TelaCadTipoAnalise from "./componentes/Telas/TelaCadTipoAnalise"; // Importar tela de Tipo de Análise
-import TelaCadFabricante from "./componentes/Telas/TelaCadFabricante"; // Importar tela de Fabricante
-import TelaCadDefeitoAlegado from "./componentes/Telas/TelaCadDefeitoAlegado"; // Importar tela de Defeito Alegado
+import TelaCadTipoLacre from "./componentes/Telas/TelaCadTipoLacre"; 
+import TelaCadTipoAnalise from "./componentes/Telas/TelaCadTipoAnalise";
+import TelaCadFabricante from "./componentes/Telas/TelaCadFabricante"; 
+import TelaCadDefeitoAlegado from "./componentes/Telas/TelaCadDefeitoAlegado"; 
 
 // Novo Layout
 import LayoutModerno from "./componentes/LayoutModerno/LayoutModerno";
@@ -29,8 +28,6 @@ function App() {
     logado: false,
     token: "",
     role: null,
-    id_dados: null,
-    prop_publ: null,
   });
 
   useEffect(() => {
@@ -41,7 +38,6 @@ function App() {
     }
   }, []);
 
-  // Define as rotas que usarão o LayoutModerno
   const RotasProtegidasComLayout = () => (
     <LayoutModerno>
       <Routes>

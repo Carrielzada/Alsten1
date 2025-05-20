@@ -1,5 +1,5 @@
-const Database = require("../database")
-const database = new Database()
+import Database from "../database.js";
+const database = new Database();
 
 class ModeloModel {
     constructor(id, modelo) {
@@ -35,4 +35,4 @@ class ModeloModel {
     }
 }
 
-module.exports = ModeloModel;
+export default ModeloModel;

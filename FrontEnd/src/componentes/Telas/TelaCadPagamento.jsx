@@ -1,166 +1,189 @@
-import { Button, Container, Row, Col } from "react-bootstrap";
-// import Pagina from "../Templates2/Pagina.jsx"; // Removido o layout antigo
-import CardModerno from "../LayoutModerno/CardModerno"; // Importa o novo CardModerno
-import { useState, useEffect, useContext } from "react";
-import { ContextoUsuarioLogado } from "../../App.js";
-import { FaPlus } from "react-icons/fa";
+import { useState, useEffect } from 'react';
+import LayoutModerno from '../LayoutModerno/LayoutModerno';
+import CardModerno from '../LayoutModerno/CardModerno';
+import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import { buscarPagamento, atualizarPagamento, excluirPagamento, adicionarPagamento } from "../../servicos/pagamentoService.js";
 
-// Mock da função buscarTodosPagamentos para MVP
-const buscarTodosPagamentosMock = async (token) => {
-    console.log("buscarTodosPagamentosMock chamado com token:", token);
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({ 
-                status: true, 
-                listaPagamentos: [
-                    { id: 1, pagamento: "Débito (Mock)", criado_em: new Date().toISOString(), atualizado_em: new Date().toISOString() },
-                    { id: 2, pagamento: "Crédito (Mock)", criado_em: new Date().toISOString(), atualizado_em: new Date().toISOString() },
-                    { id: 3, pagamento: "PIX (Mock)", criado_em: new Date().toISOString(), atualizado_em: new Date().toISOString() },
-                ]
-            });
-        }, 300);
-    });
-};
 
-// Componente de Formulário Mock para Pagamento (simples)
-const FormCadPagamentoMock = ({ setExibirTabela, modoEdicao, pagamentoSelecionado, setAtualizarTela }) => {
-    const [pagamentoInput, setPagamentoInput] = useState(modoEdicao ? pagamentoSelecionado.pagamento : "");
+const TelaCadPagamento = () => {
+  const [pagamento, setPagamento] = useState([]);
+  const [pagamentoAtual, setPagamentoAtual] = useState('');
+  const [idAtual, setIdAtual] = useState(null);
+  const [modoEdicao, setModoEdicao] = useState(false);
+  const [termoBusca, setTermoBusca] = useState('');
+  const [feedback, setFeedback] = useState({ pagamento: '', mensagem: '' });
 
-    const handleSubmit = () => {
-        console.log("Formulário de Pagamento Enviado (Mock):", pagamentoInput, "Modo Edição:", modoEdicao, "Selecionado:", pagamentoSelecionado);
-        alert(`Forma de Pagamento ${modoEdicao ? 'atualizada' : 'cadastrada'} (Mock): ${pagamentoInput}`);
-        setAtualizarTela(prevState => !prevState); // Alterna para disparar useEffect
-        setExibirTabela(true);
+
+    const carregarPagamento = async (termo = '') => {
+      try {
+        const resposta = await buscarPagamento(termo);
+        setPagamento(resposta.listaPagamentos || []); 
+      } catch (error) {
+        setFeedback({ tipo: 'danger', mensagem: `Erro ao carregar formas de pagamento: ${error.message}` });
+        setPagamento([]);
+      }
     };
 
-    return (
-        <CardModerno titulo={modoEdicao ? "Editar Forma de Pagamento" : "Adicionar Nova Forma de Pagamento"}>
-             <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-                <div className="mb-3">
-                    <label htmlFor="pagamentoInput" className="form-label">Nome da Forma de Pagamento</label>
-                    <input 
-                        type="text" 
-                        id="pagamentoInput"
-                        value={pagamentoInput} 
-                        onChange={(e) => setPagamentoInput(e.target.value)} 
-                        placeholder="Digite a forma de pagamento"
-                        className="form-control"
-                        required
-                    />
+
+  useEffect(() => {
+    carregarPagamento();
+  }, []);
+
+  const handleChange = (e) => {
+    setPagamentoAtual(e.target.value);
+  };
+
+  const handleBuscaChange = (e) => {
+    setTermoBusca(e.target.value);
+  };
+
+  const handleBuscar = (e) => {
+    e.preventDefault();
+    carregarPagamento(termoBusca);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!pagamentoAtual.trim()) {
+      setFeedback({ tipo: 'warning', mensagem: 'Por favor, informe a forma de pagamento.' });
+      return;
+    }
+
+    const dadosPagamento = { pagamento: pagamentoAtual };
+    if (modoEdicao && idAtual) {
+      dadosPagamento.id = idAtual;
+    }
+
+    try {
+      if (modoEdicao) {
+        await atualizarPagamento(dadosPagamento);
+        setFeedback({ tipo: 'success', mensagem: 'Forma de pagamento atualizada com sucesso!' });
+      } else {
+        await adicionarPagamento(dadosPagamento);
+        setFeedback({ tipo: 'success', mensagem: 'Forma de pagamento adicionada com sucesso!' });
+      }
+      limparFormulario();
+      carregarPagamento();
+    } catch (error) {
+      setFeedback({ tipo: 'danger', mensagem: `Erro ao salvar forma de pagamento: ${error.message}` });
+    }
+  };
+
+  const handleEditar = (pagamento) => {
+    setModoEdicao(true);
+    setIdAtual(pagamento.id);
+    setPagamentoAtual(pagamento.pagamento); 
+    setFeedback({ tipo: '', mensagem: '' });
+  };
+
+  const handleExcluir = async (id) => {
+    if (window.confirm('Tem certeza que deseja excluir esta forma de pagamento?')) {
+      try {
+        await excluirPagamento(id);
+        setFeedback({ tipo: 'info', mensagem: 'Forma de pagamento excluída com sucesso!' });
+        carregarPagamento();
+        limparFormulario();
+      } catch (error) {
+        setFeedback({ tipo: 'danger', mensagem: `Erro ao excluir forma de pagamento: ${error.message}` });
+      }
+    }
+  };
+
+  const limparFormulario = () => {
+    setPagamentoAtual('');
+    setIdAtual(null);
+    setModoEdicao(false);
+    setFeedback({ tipo: '', mensagem: '' });
+  };
+
+  return (
+    <LayoutModerno>
+      <Container fluid>
+        <Row className="justify-content-center">
+          <Col md={8} lg={6}>
+            <CardModerno titulo="Cadastro de Formas de Pagamento">
+              {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label htmlFor="pagamento">Formas de Pagamento</Form.Label>
+                  <Form.Control
+                    type="text"
+                    id="pagamento"
+                    value={pagamentoAtual}
+                    onChange={handleChange}
+                    placeholder="Insira aqui os dados"
+                    required
+                  />
+                </Form.Group>
+                <div className="d-flex justify-content-end">
+                  <Button variant="secondary" type="button" onClick={limparFormulario} className="me-2">
+                    Cancelar
+                  </Button>
+                  <Button variant="primary" type="submit">
+                    {modoEdicao ? 'Atualizar' : 'Salvar'}
+                  </Button>
                 </div>
-                <Button type="submit" variant="primary" className="me-2">Salvar</Button>
-                <Button onClick={() => setExibirTabela(true)} variant="secondary">Cancelar</Button>
-            </form>
-        </CardModerno>
-    );
-};
-
-// Componente de Tabela Mock para Pagamento (simples)
-const TabelaPagamentosMock = ({ listaDePagamentos, setExibirTabela, setModoEdicao, setPagamentoSelecionado }) => {
-    return (
-        <table className="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Forma de Pagamento</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {listaDePagamentos.length === 0 ? (
-                    <tr><td colSpan="3">Nenhuma forma de pagamento cadastrada.</td></tr>
-                ) : (
-                    listaDePagamentos.map(pagamento => (
-                        <tr key={pagamento.id}>
-                            <td>{pagamento.id}</td>
-                            <td>{pagamento.pagamento}</td>
-                            <td>
-                                <Button variant="warning" size="sm" className="me-2" onClick={() => {
-                                    setPagamentoSelecionado(pagamento);
-                                    setModoEdicao(true);
-                                    setExibirTabela(false);
-                                }}>Editar</Button>
-                                <Button variant="danger" size="sm" onClick={() => {
-                                    alert(`Excluir forma de pagamento ${pagamento.id} (Mock)`);
-                                    // Aqui viria a lógica de exclusão e atualização da lista
-                                    }} >Excluir</Button>
-                            </td>
-                        </tr>
-                    ))
-                )}
-            </tbody>
-        </table>
-    );
-};
-
-export default function TelaCadPagamento(props) {
-    const contextoUsuario = useContext(ContextoUsuarioLogado);
-
-    const [exibirTabela, setExibirTabela] = useState(true);
-    const [atualizarTela, setAtualizarTela] = useState(false);
-    const [listaDePagamentos, setListaDePagamentos] = useState([]);
-
-    const [modoEdicao, setModoEdicao] = useState(false);
-    const [pagamentoSelecionado, setPagamentoSelecionado] = useState({
-        id: null,
-        pagamento: "",
-        criado_em: "",
-        atualizado_em: ""
-    });
-
-    useEffect(() => {
-        if (!contextoUsuario || !contextoUsuario.usuarioLogado) return;
-        const token = contextoUsuario.usuarioLogado.token;
-        buscarTodosPagamentosMock(token)
-            .then((resposta) => {
-                if (resposta.status) {
-                    setListaDePagamentos(resposta.listaPagamentos);
-                }
-            })
-            .catch((erro) => {
-                alert("Erro ao buscar Formas de Pagamento (Mock): " + erro.message);
-            })
-            .finally(() => {
-                setAtualizarTela(false); // Garante que para de atualizar após a busca
-            });
-    }, [exibirTabela, atualizarTela, contextoUsuario]);
-
-    return (
-        // Removido o <Pagina>, o LayoutModerno já está no App.js envolvendo as rotas
-        <Container fluid className="pt-3 pb-3">
-            <CardModerno titulo="Gestão de Formas de Pagamento">
-                {exibirTabela ? (
-                    <>
-                        <div className="d-flex justify-content-end mb-3">
-                            <Button
-                                variant="primary"
-                                onClick={() => {
-                                    setExibirTabela(false);
-                                    setModoEdicao(false);
-                                    setPagamentoSelecionado({ id: null, pagamento: "", criado_em: "", atualizado_em: "" });
-                                }}
-                            >
-                                <FaPlus className="me-2" />
-                                Adicionar Nova Forma
-                            </Button>
-                        </div>
-                        <TabelaPagamentosMock
-                            listaDePagamentos={listaDePagamentos}
-                            setExibirTabela={setExibirTabela}
-                            setModoEdicao={setModoEdicao}
-                            setPagamentoSelecionado={setPagamentoSelecionado}
-                        />
-                    </>
-                ) : (
-                    <FormCadPagamentoMock
-                        setExibirTabela={setExibirTabela}
-                        modoEdicao={modoEdicao}
-                        pagamentoSelecionado={pagamentoSelecionado}
-                        setAtualizarTela={setAtualizarTela} // Passa setAtualizarTela
-                    />
-                )}
+              </Form>
             </CardModerno>
-        </Container>
-    );
-}
+          </Col>
+        </Row>
+
+        <Row className="mt-4 justify-content-center">
+          <Col md={10} lg={8}>
+            <CardModerno titulo="Formas de Pagamento Cadastradas">
+              <Form onSubmit={handleBuscar} className="mb-3">
+                <Row>
+                  <Col md={8}>
+                    <Form.Control
+                      type="text"
+                      value={termoBusca}
+                      onChange={handleBuscaChange}
+                      placeholder="Buscar por formas de pagamento..."
+                    />
+                  </Col>
+                  <Col md={4} className="d-flex align-items-end">
+                    <Button variant="info" type="submit" className="w-100">
+                      Buscar
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
+              {pagamento.length > 0 ? (
+                <Table striped bordered hover responsive size="sm">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Forma de Pagamento</th>
+                      <th style={{ width: '120px' }}>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagamento.map((pagamento) => (
+                      <tr key={pagamento.id}>
+                        <td>{pagamento.id}</td>
+                        <td>{pagamento.pagamento}</td>
+                        <td>
+                          <Button variant="warning" size="sm" onClick={() => handleEditar(pagamento)} className="me-1">
+                            Editar
+                          </Button>
+                          <Button variant="danger" size="sm" onClick={() => handleExcluir(pagamento.id)}>
+                            Excluir
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <Alert variant="info">Nenhuma forma de pagamento encontrada.</Alert>
+              )}
+            </CardModerno>
+          </Col>
+        </Row>
+      </Container>
+    </LayoutModerno>
+  );
+};
+
+export default TelaCadPagamento;
 

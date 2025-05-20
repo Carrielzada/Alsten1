@@ -12,13 +12,17 @@ table th, table td {
     white-space: nowrap; /* Impede quebra de linha */
     overflow: hidden; /* Esconde conteúdo que ultrapassar os limites */
     text-overflow: ellipsis; /* Adiciona "..." caso o texto seja muito longo */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  background-color: #ffffff; /* Branco realça mais a sombra */
 }
 
 /* Mantém o cabeçalho consistente */
 table th {
-    background-color: #f8f9fa; /* Fundo claro para o cabeçalho */
+    background-color: #e6f1fc; /* Fundo claro para o cabeçalho */
     font-weight: bold;
-    border-bottom: 2px solid #dee2e6; /* Adiciona uma borda inferior mais forte no cabeçalho */
+    border-bottom: 2px solid #b3c8dd; /* Adiciona uma borda inferior mais forte no cabeçalho */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  background-color: #ffffff; /* Branco realça mais a sombra */
 }
 
 

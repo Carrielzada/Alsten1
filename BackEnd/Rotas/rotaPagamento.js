@@ -1,15 +1,14 @@
-import express from 'express';
-import PagamentoController from '../Controle/pagamentoCtrl.js'; // Alterado para import ES Module
+import { Router } from "express";
+import { verificarAutenticacao } from "../Seguranca/autenticar.js";
+import PagamentoCtrl from "../Controle/pagamentoCtrl.js";
 
-const router = express.Router();
-const pagamentoController = new PagamentoController();
+const rotaPagamento = new Router();
+const pagamentoCtrl = new PagamentoCtrl();
 
-router.get('/', pagamentoController.obterTodos.bind(pagamentoController));
-router.post('/', pagamentoController.adicionar.bind(pagamentoController));
-router.get('/:id', pagamentoController.obterPorId.bind(pagamentoController));
-router.put('/:id', pagamentoController.atualizar.bind(pagamentoController));
-router.delete('/:id', pagamentoController.delete.bind(pagamentoController)); // 'delete' é método do controller
-router.get('/filtrar/:termobusca', pagamentoController.filtrar.bind(pagamentoController));
+rotaPagamento.post("/", verificarAutenticacao, pagamentoCtrl.gravar)
+               .put("/", verificarAutenticacao, pagamentoCtrl.atualizar)
+               .delete("/", verificarAutenticacao, pagamentoCtrl.excluir)
+               .get("/", verificarAutenticacao, pagamentoCtrl.consultar)
+               .get("/:termo", verificarAutenticacao, pagamentoCtrl.consultar);
 
-export default router;
-
+export default rotaPagamento;

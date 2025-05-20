@@ -1,38 +1,39 @@
-const Database = require("../database")
-const database = new Database()
-
 class PagamentoModel {
     constructor(id, pagamento) {
         this.id = id;
-        this.pagamento = pagamento;
+        this.pagamento = pagamento; 
     }
-    async obterTodos() {
-        const listaPagamentos = await database.ExecutaComando('select * from pagamento order by pagamento asc');
-        return listaPagamentos;
+
+    static validar(pagamento) {
+        if (!pagamento.pagamento || pagamento.pagamento.trim() === "") {
+            throw new Error("O tipo de análise é obrigatório.");
+        }
+
+        return true;
     }
-    async obterPorId(id){
-        const result =await database.ExecutaComando('select * from pagamento where id=? ', [id])
-        return result[0]
+    async gravar() {
+        const PagamentoDAO = (await import("../Persistencia/PagamentoDAO.js")).default;
+        const pagamentoDAO = new PagamentoDAO();
+        await pagamentoDAO.gravar(this);
     }
-    async adicionar(dadosPagamento) {
-        await database.ExecutaComandoNonQuery('insert into pagamento set ?', dadosPagamento)
+
+    async atualizar() {
+        const PagamentoDAO = (await import("../Persistencia/PagamentoDAO.js")).default;
+        const pagamentoDAO = new PagamentoDAO();
+        await pagamentoDAO.atualizar(this);
     }
-    async atualizar (id,dadosPagamento){
-        await database.ExecutaComandoNonQuery('update pagamento set ? where id = ?', [
-            dadosPagamento,
-            id
-        ])
+
+    async excluir() {
+        const PagamentoDAO = (await import("../Persistencia/PagamentoDAO.js")).default;
+        const pagamentoDAO = new PagamentoDAO();
+        await pagamentoDAO.excluir(this);
     }
-    async delete (id){
-        await database.ExecutaComandoNonQuery('delete from pagamento where id=?',[id])
-    }
-    async filtrar(termobusca) {
-        const pagamentos = await database.ExecutaComando(
-            "select * from pagamento where pagamento like ?",
-            [`%${termobusca}%`]
-        );
-        return pagamentos;
+
+    async consultar(termo) {
+        const PagamentoDAO = (await import("../Persistencia/PagamentoDAO.js")).default;
+        const pagamentoDAO = new PagamentoDAO();
+        return await pagamentoDAO.consultar(termo);
     }
 }
 
-module.exports = PagamentoModel;
+export default PagamentoModel;
