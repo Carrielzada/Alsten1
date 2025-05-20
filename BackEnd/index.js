@@ -5,22 +5,22 @@ import dotenv from 'dotenv';
 import path from 'path'; // Importar o módulo path
 import { fileURLToPath } from 'url'; // Para __dirname em ES modules
 
-// Rotas do novo sistema Alsten (MVP)
-import rotaAutenticacao from './Rotas/rotaAutenticacao.js';
-import rotaUpload from './Rotas/rotaUpload.js';
-import rotaModelo from './Rotas/rotaModelo.js';
-import rotaPagamento from './Rotas/rotaPagamento.js';
-import rotaUrgencia from './Rotas/rotaUrgencia.js';
-import rotaOrdemServico from './Rotas/rotaOrdemServico.js'; // Importar a nova rota
-import rotaTipoLacre from './Rotas/rotaTipoLacre.js'; // Importar rota para Tipo de Lacre
-import rotaTipoAnalise from './Rotas/rotaTipoAnalise.js'; // Importar rota para Tipo de Análise
-import rotaFabricante from './Rotas/rotaFabricante.js'; // Importar rota para Fabricante
-import rotaDefeitoAlegado from './Rotas/rotaDefeitoAlegado.js'; // Importar rota para Defeito Alegado
-import rotaUsers from './Rotas/rotaUsers.js'; 
+// Routes do novo sistema Alsten (MVP)
+import rotaAutenticacao from './Routes/rotaAutenticacao.js';
+import rotaUpload from './Routes/rotaUpload.js';
+import rotaModelo from './Routes/rotaModelo.js';
+import rotaPagamento from './Routes/rotaPagamento.js';
+import rotaUrgencia from './Routes/rotaUrgencia.js';
+import rotaOrdemServico from './Routes/rotaOrdemServico.js'; // Importar a nova rota
+import rotaTipoLacre from './Routes/rotaTipoLacre.js'; // Importar rota para Tipo de Lacre
+import rotaTipoAnalise from './Routes/rotaTipoAnalise.js'; // Importar rota para Tipo de Análise
+import rotaFabricante from './Routes/rotaFabricante.js'; // Importar rota para Fabricante
+import rotaDefeitoAlegado from './Routes/rotaDefeitoAlegado.js'; // Importar rota para Defeito Alegado
+import rotaUsers from './Routes/rotaUsers.js'; 
 
 
 // Middleware de autenticação
-import { verificarAutenticacao } from './Seguranca/autenticar.js';
+import { verificarAutenticacao } from './Security/autenticar.js';
 
 dotenv.config();
 
@@ -63,7 +63,7 @@ app.use(express.json());
 // Isso permite que o frontend acesse os arquivos via http://localhost:4000/uploads/nome-do-arquivo.ext
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'))); 
 
-// Rotas do MVP Alsten
+// Routes do MVP Alsten
 app.use('/users', rotaUsers);
 app.use('/autenticacao', rotaAutenticacao);
 app.use('/upload', verificarAutenticacao, rotaUpload);

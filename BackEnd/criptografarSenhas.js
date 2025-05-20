@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import conectar from './Persistencia/conexao.js';
+import conectar from './Service/conexao.js';
 
 (async () => {
     const conexao = await conectar();

@@ -1,4 +1,4 @@
-import conectar from './Persistencia/conexao.js';
+import conectar from './Service/conexao.js';
 
 class Database {
     constructor() {

@@ -1,23 +1,23 @@
 import { useState, useEffect, createContext } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import Tela404 from "./componentes/Telas/Tela404";
-import TelaLogin from "./componentes/Telas/TelaLogin";
-import TelaHomeCliente from "./componentes/Telas/TelaHomeCliente";
+import Tela404 from "./Components/Telas/Tela404";
+import TelaLogin from "./Components/Telas/TelaLogin";
+import TelaHomeCliente from "./Components/Telas/TelaHomeCliente";
 import ProtectedComponent from "./ProtectedComponent";
-import TelaListagemOS from "./componentes/Telas/TelaListagemOS";
-import FormUploadArquivo from "./componentes/Telas/Formularios/FormUploadArquivo";
+import TelaListagemOS from "./Components/Telas/TelaListagemOS";
+import FormUploadArquivo from "./Components/Telas/Formularios/FormUploadArquivo";
 
 // Cadastros do MVP (serão adaptados ao novo layout)
-import TelaCadModeloEquipamento from "./componentes/Telas/TelaCadModeloEquipamento";
-import TelaCadPagamento from "./componentes/Telas/TelaCadPagamento";
-import TelaCadUrgencia from "./componentes/Telas/TelaCadUrgencia";
-import TelaCadTipoLacre from "./componentes/Telas/TelaCadTipoLacre"; 
-import TelaCadTipoAnalise from "./componentes/Telas/TelaCadTipoAnalise";
-import TelaCadFabricante from "./componentes/Telas/TelaCadFabricante"; 
-import TelaCadDefeitoAlegado from "./componentes/Telas/TelaCadDefeitoAlegado"; 
+import TelaCadModeloEquipamento from "./Components/Telas/TelaCadModeloEquipamento";
+import TelaCadPagamento from "./Components/Telas/TelaCadPagamento";
+import TelaCadUrgencia from "./Components/Telas/TelaCadUrgencia";
+import TelaCadTipoLacre from "./Components/Telas/TelaCadTipoLacre"; 
+import TelaCadTipoAnalise from "./Components/Telas/TelaCadTipoAnalise";
+import TelaCadFabricante from "./Components/Telas/TelaCadFabricante"; 
+import TelaCadDefeitoAlegado from "./Components/Telas/TelaCadDefeitoAlegado"; 
 
 // Novo Layout
-import LayoutModerno from "./componentes/LayoutModerno/LayoutModerno";
+import LayoutModerno from "./Components/LayoutModerno/LayoutModerno";
 
 export const ContextoUsuarioLogado = createContext(null);
 
