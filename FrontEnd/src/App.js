@@ -13,6 +13,8 @@ import TelaCadPagamento from "./Components/Telas/TelaCadPagamento";
 import TelaCadUrgencia from "./Components/Telas/TelaCadUrgencia";
 import TelaCadTipoLacre from "./Components/Telas/TelaCadTipoLacre"; 
 import TelaCadTipoAnalise from "./Components/Telas/TelaCadTipoAnalise";
+import TelaCadTipoLimpeza from "./Components/Telas/TelaCadTipoLimpeza";
+import TelaCadTipoTransporte from "./Components/Telas/TelaCadTipoTransporte";
 import TelaCadFabricante from "./Components/Telas/TelaCadFabricante"; 
 import TelaCadDefeitoAlegado from "./Components/Telas/TelaCadDefeitoAlegado"; 
 
@@ -51,6 +53,8 @@ function App() {
         {/* Novas rotas de cadastro (a serem criadas as telas) */}
         <Route path="/cadastros/tipo-lacre" element={<TelaCadTipoLacre />} />
         <Route path="/cadastros/tipo-analise" element={<TelaCadTipoAnalise />} />
+        <Route path="/cadastros/tipo-limpeza" element={<TelaCadTipoLimpeza />} />
+        <Route path="/cadastros/tipo-transporte" element={<TelaCadTipoTransporte />} />
         <Route path="/cadastros/fabricante" element={<TelaCadFabricante />} />
         <Route path="/cadastros/defeito-alegado" element={<TelaCadDefeitoAlegado />} />
         <Route path="/sua-conta" element={<div>Tela Sua Conta (Em construção)</div>} />

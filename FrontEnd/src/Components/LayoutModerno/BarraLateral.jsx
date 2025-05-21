@@ -13,12 +13,14 @@ const BarraLateral = () => {
       label: 'Cadastros',
       icon: 'FaCog',
       subItems: [
-        { path: '/cadastros/modelo-equipamento', label: 'Modelos de Equip.' },
-        { path: '/cadastros/pagamento', label: 'Formas de Pag.' },
+        { path: '/cadastros/clientes', label: 'Clientes' },
+        { path: '/cadastros/modelo-equipamento', label: 'Modelos de Equipamento' },
+        { path: '/cadastros/pagamento', label: 'Formas de Pagamentos' },
         { path: '/cadastros/urgencia', label: 'Níveis de Urgência' },
         { path: '/cadastros/tipo-lacre', label: 'Tipos de Lacre' },
         { path: '/cadastros/tipo-analise', label: 'Tipos de Análise' },
-        // Adicionar outros submenus de cadastro aqui
+        { path: '/cadastros/tipo-limpeza', label: 'Tipos de Limpeza' },
+        { path: '/cadastros/tipo-transporte', label: 'Tipos de Transporte' },
       ],
     },
     // Adicionar mais itens de menu conforme necessário

@@ -6,17 +6,19 @@ import path from 'path'; // Importar o módulo path
 import { fileURLToPath } from 'url'; // Para __dirname em ES modules
 
 // Routes do novo sistema Alsten (MVP)
-import rotaAutenticacao from './Routes/rotaAutenticacao.js';
-import rotaUpload from './Routes/rotaUpload.js';
-import rotaModelo from './Routes/rotaModelo.js';
-import rotaPagamento from './Routes/rotaPagamento.js';
-import rotaUrgencia from './Routes/rotaUrgencia.js';
-import rotaOrdemServico from './Routes/rotaOrdemServico.js'; // Importar a nova rota
-import rotaTipoLacre from './Routes/rotaTipoLacre.js'; // Importar rota para Tipo de Lacre
-import rotaTipoAnalise from './Routes/rotaTipoAnalise.js'; // Importar rota para Tipo de Análise
-import rotaFabricante from './Routes/rotaFabricante.js'; // Importar rota para Fabricante
-import rotaDefeitoAlegado from './Routes/rotaDefeitoAlegado.js'; // Importar rota para Defeito Alegado
-import rotaUsers from './Routes/rotaUsers.js'; 
+import rotaAutenticacao from './Routers/rotaAutenticacao.js';
+import rotaUpload from './Routers/rotaUpload.js';
+import rotaModelo from './Routers/rotaModelo.js';
+import rotaPagamento from './Routers/rotaPagamento.js';
+import rotaUrgencia from './Routers/rotaUrgencia.js';
+import rotaOrdemServico from './Routers/rotaOrdemServico.js'; // Importar a nova rota
+import rotaTipoLacre from './Routers/rotaTipoLacre.js'; // Importar rota para Tipo de Lacre
+import rotaTipoAnalise from './Routers/rotaTipoAnalise.js'; // Importar rota para Tipo de Análise
+import rotaTipoLimpeza from './Routers/rotaTipoLimpeza.js'; // Importar rota para Tipo de Limpeza
+import rotaTipoTransporte from './Routers/rotaTransporte.js';
+import rotaFabricante from './Routers/rotaFabricante.js'; // Importar rota para Fabricante
+import rotaDefeitoAlegado from './Routers/rotaDefeitoAlegado.js'; // Importar rota para Defeito Alegado
+import rotaUsers from './Routers/rotaUsers.js'; 
 
 
 // Middleware de autenticação
@@ -73,6 +75,8 @@ app.use("/urgencia", verificarAutenticacao, rotaUrgencia);
 app.use("/ordem-servico", verificarAutenticacao, rotaOrdemServico); // Ativar a rota OS
 app.use("/tipo-lacre", verificarAutenticacao, rotaTipoLacre); // Ativar a rota Tipo Lacre
 app.use("/tipo-analise", verificarAutenticacao, rotaTipoAnalise); // Ativar a rota Tipo Análise
+app.use("/tipo-limpeza", verificarAutenticacao, rotaTipoLimpeza); // Ativar a rota Tipo Limpeza
+app.use("/tipo-transporte", verificarAutenticacao, rotaTipoTransporte); // Ativar a rota Tipo Transporte
 app.use("/fabricante", verificarAutenticacao, rotaFabricante); // Ativar a rota Fabricante
 app.use("/defeito-alegado", verificarAutenticacao, rotaDefeitoAlegado); // Ativar a rota Defeito Alegado
 

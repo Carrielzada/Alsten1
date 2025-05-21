@@ -1,40 +1,40 @@
-import Pagamento from "../Model/pagamento.js";
+import TipoLimpeza from "../Model/TipoLimpeza.js";
 
-export default class PagamentoCtrl {
+export default class TipoLimpezaCtrl {
     async gravar(requisicao, resposta) {
         resposta.type("application/json");
         if (requisicao.method === "POST" && requisicao.is("application/json")) {
             const dados = requisicao.body;
-            const pagamento= dados.pagamento;
+            const tipo_limpeza = dados.tipo_limpeza;
 
-            if (pagamento) {
-                const novoPagamento = new Pagamento(0, pagamento);
+            if (tipo_limpeza) {
+                const novoTipoLimpeza = new TipoLimpeza(0, tipo_limpeza);
                 try {
-                    await novoPagamento.gravar();
+                    await novoTipoLimpeza.gravar();
                     resposta.status(201).json({
                         status: true,
-                        mensagem: "Forma de pagamento cadastrado com sucesso!",
-                        id_pagamento: novoPagamento.id
+                        mensagem: "Tipo de análise cadastrado com sucesso!",
+                        id_tipo_limpeza: novoTipoLimpeza.id
                     });
                 }
                 catch (erro) {
                     resposta.status(500).json({
                         status: false,
-                        mensagem: "Erro ao registrar a forma de pagamento: " + erro.message
+                        mensagem: "Erro ao registrar o tipo de análise: " + erro.message
                     });
                 }
             }
             else {
                 resposta.status(400).json({
                     status: false,
-                    mensagem: "Informe a forma de pagamento!"
+                    mensagem: "Informe o tipo de análise!"
                 });
             }
         }
         else {
             resposta.status(400).json({
                 status: false,
-                mensagem: "Método não permitido ou forma de pagamento no formato JSON não fornecido!"
+                mensagem: "Método não permitido ou tipo de análise no formato JSON não fornecido!"
             });
         }
     }
@@ -44,28 +44,28 @@ export default class PagamentoCtrl {
         if ((requisicao.method === "PUT" || requisicao.method === "PATCH") && requisicao.is("application/json")) {
             const dados = requisicao.body;
             const id = dados.id;
-            const pagamento = dados.pagamento;
+            const tipo_limpeza = dados.tipo_limpeza;
 
-            if (id && pagamento) {
-                const pagamentoParaAtualizar = new Pagamento(id, pagamento);
+            if (id && tipo_limpeza) {
+                const tipoLimpezaParaAtualizar = new TipoLimpeza(id, tipo_limpeza);
                 try {
-                    await pagamentoParaAtualizar.atualizar();
+                    await tipoLimpezaParaAtualizar.atualizar();
                     resposta.status(200).json({
                         status: true,
-                        mensagem: "forma de pagamento atualizada com sucesso!"
+                        mensagem: "Tipo de análise atualizado com sucesso!"
                     });
                 }
                 catch (erro) {
                     resposta.status(500).json({
                         status: false,
-                        mensagem: "Erro ao atualizar a forma de pagamento: " + erro.message
+                        mensagem: "Erro ao atualizar o tipo de análise: " + erro.message
                     });
                 }
             }
             else {
                 resposta.status(400).json({
                     status: false,
-                    mensagem: "Informe o ID e a forma de pagamento!"
+                    mensagem: "Informe o ID e o tipo de análise!"
                 });
             }
         }
@@ -84,25 +84,25 @@ export default class PagamentoCtrl {
             const id = dados.id;
 
             if (id) {
-                const pagamentoParaExcluir = new Pagamento(id, "");
+                const tipoLimpezaParaExcluir = new TipoLimpeza(id, "");
                 try {
-                    await pagamentoParaExcluir.excluir();
+                    await tipoLimpezaParaExcluir.excluir();
                     resposta.status(200).json({
                         status: true,
-                        mensagem: "forma de pagamento excluída com sucesso!"
+                        mensagem: "Tipo de análise excluído com sucesso!"
                     });
                 }
                 catch (erro) {
                     resposta.status(500).json({
                         status: false,
-                        mensagem: "Erro ao excluir a forma de pagamento: " + erro.message
+                        mensagem: "Erro ao excluir o tipo de análise: " + erro.message
                     });
                 }
             }
             else {
                 resposta.status(400).json({
                     status: false,
-                    mensagem: "Informe o ID da forma de pagamento a ser excluído!"
+                    mensagem: "Informe o ID do tipo de análise a ser excluído!"
                 });
             }
         }
@@ -121,12 +121,12 @@ export default class PagamentoCtrl {
             termo = "";
         }
         if (requisicao.method === "GET") {
-            const pagamentoDAO = new Pagamento(0, ""); 
+            const tipoLimpezaDAO = new TipoLimpeza(0, ""); 
             try {
-                const listaPagamentos = await pagamentoDAO.consultar(termo);
+                const listaTiposLimpeza = await tipoLimpezaDAO.consultar(termo);
                 resposta.json({
                     status: true,
-                    listaPagamentos: listaPagamentos
+                    listaTiposLimpeza: listaTiposLimpeza
                 });
             }
             catch (erro) {
