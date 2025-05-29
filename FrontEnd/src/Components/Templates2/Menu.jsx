@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -6,42 +6,9 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import { Link, useNavigate } from "react-router-dom";
-import { FaSignOutAlt, FaBell, FaRegEnvelope, FaHome } from "react-icons/fa";
-import { ContextoUsuarioLogado } from "../../App";  
-// import { alterarSenha } from "../../Services/usersService"; // Removido - Legado
-// import { buscarMensagens } from "../../Services/mensagemService"; // Removido - Legado
-
-// Mock da função buscarMensagens para MVP (retorna array vazio)
-const buscarMensagensMock = async (token) => {
-    console.log("buscarMensagensMock chamado com token:", token);
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({ 
-                status: true, 
-                listaMensagem: [] 
-            });
-        }, 300);
-    });
-};
-
-// Mock da função alterarSenha para MVP (apenas exibe alerta)
-const alterarSenhaMock = async (token, email, senhaAtual, novaSenha, confirmarSenha) => {
-    console.log("alterarSenhaMock chamado com:", { token, email, senhaAtual, novaSenha, confirmarSenha });
-    return new Promise(resolve => {
-        setTimeout(() => {
-            if (novaSenha !== confirmarSenha) {
-                resolve({ status: false, mensagem: "A nova senha e a confirmação não conferem (Mock)." });
-                return;
-            }
-            // Simula sucesso ou falha simples
-            if (senhaAtual === "123") { // Simula senha atual correta
-                 resolve({ status: true, mensagem: "Senha alterada com sucesso (Mock)!" });
-            } else {
-                 resolve({ status: false, mensagem: "Senha atual incorreta (Mock)." });
-            }
-        }, 500);
-    });
-};
+import { FaSignOutAlt, FaHome, FaBell } from "react-icons/fa";
+import { ContextoUsuarioLogado } from "../../App";
+import { alterarSenha } from "../../Services/usersService"; //alterar aqui
 
 export default function Menu() {
   const navigate = useNavigate();
@@ -51,6 +18,8 @@ export default function Menu() {
   const [showNotificacoes, setShowNotificacoes] = useState(false);
   const [temNovasMensagens, setTemNovasMensagens] = useState(false);
   const [quantidadeMensagensPendentes, setQuantidadeMensagensPendentes] = useState(0);
+  const [carregandoMensagens, setCarregandoMensagens] = useState(false);
+  const [carregandoSenha, setCarregandoSenha] = useState(false);
 
   const [senha, setSenha] = useState({
     senhaAtual: "",
@@ -58,85 +27,118 @@ export default function Menu() {
     confirmarSenha: "",
   });
 
+
+  // Carregar mensagens quando abrir notificações
   useEffect(() => {
-    if (showNotificacoes && usuarioLogado && usuarioLogado.token) { // Adicionado guarda para usuarioLogado
-        const carregarMensagens = async () => {
-            try {
-                const resultado = await buscarMensagensMock(usuarioLogado.token); // Usando mock
-                const lista = resultado?.listaMensagem || [];
-                setMensagens(lista);
-                setQuantidadeMensagensPendentes(lista.length);
-                setTemNovasMensagens(lista.length > 0);
-            } catch (error) {
-                console.error("Erro ao buscar mensagens (Mock):", error);
-            }
-        };
-        carregarMensagens();
+    if (showNotificacoes && usuarioLogado?.token) {
     }
-}, [showNotificacoes, usuarioLogado]); // Removido usuarioLogado.token, adicionado usuarioLogado
+  }, [showNotificacoes, usuarioLogado?.token]);
 
+  // Verificar mensagens periodicamente
+  useEffect(() => {
+    if (usuarioLogado?.token) {
+    
+      
+      // Verificar mensagens a cada 30 segundos
+      const interval = setInterval(() => {
+      
+      }, 30000);
 
-useEffect(() => {
-  if (usuarioLogado && usuarioLogado.token) { // Adicionado guarda para usuarioLogado
-    const verificarMensagens = async () => {
-        try {
-            const resultado = await buscarMensagensMock(usuarioLogado.token); // Usando mock
-            const lista = resultado?.listaMensagem || [];
-            setQuantidadeMensagensPendentes(lista.length);
-            setTemNovasMensagens(lista.length > 0);
-        } catch (error) {
-            console.error("Erro ao verificar mensagens (Mock):", error);
-        }
-    };
-    verificarMensagens();
+      return () => clearInterval(interval);
+    }
+  }, [usuarioLogado?.token]);
+
+  // Função de logout
+  function handleLogout() {
+    setUsuarioLogado({ nome: "", logado: false, token: "", role: null, email: "" });
+    localStorage.removeItem("usuarioLogado");
+    navigate("/");
   }
-}, [usuarioLogado]); // Removido usuarioLogado.token, adicionado usuarioLogado
 
-
-function handleLogout() {
-  setUsuarioLogado({ nome: "", logado: false, token: "", role: null }); 
-  localStorage.removeItem("usuarioLogado");
-  navigate("/");
-}
-
-
+  // Manipular mudanças nos campos de senha
   const handleChangeSenha = (e) => {
     const { name, value } = e.target;
     setSenha({ ...senha, [name]: value });
   };
 
+  // Salvar nova senha
   const handleSaveSenha = async () => {
+    if (!senha.senhaAtual || !senha.novaSenha || !senha.confirmarSenha) {
+      alert("Todos os campos são obrigatórios.");
+      return;
+    }
+
     if (senha.novaSenha !== senha.confirmarSenha) {
       alert("A nova senha e a confirmação não conferem.");
       return;
     }
 
+    if (senha.novaSenha.length < 6) {
+      alert("A nova senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    setCarregandoSenha(true);
     try {
-      const resultado = await alterarSenhaMock( // Usando mock
-        usuarioLogado?.token,
-        usuarioLogado?.email,
+      const resultado = await alterarSenha(
+        usuarioLogado.token,
+        usuarioLogado.email,
         senha.senhaAtual,
         senha.novaSenha,
         senha.confirmarSenha
       );
 
-      alert(resultado.mensagem); // Exibe a mensagem do mock
+      alert(resultado.mensagem || "Senha alterada com sucesso!");
+      
       if (resultado.status) {
         setShowModal(false);
+        setSenha({
+          senhaAtual: "",
+          novaSenha: "",
+          confirmarSenha: "",
+        });
       }
     } catch (error) {
-      console.error("Erro ao alterar senha (Mock):", error);
-      alert("Erro ao alterar senha (Mock). Tente novamente.");
+      console.error("Erro ao alterar senha:", error);
+      alert("Erro ao alterar senha. Tente novamente.");
+    } finally {
+      setCarregandoSenha(false);
     }
   };
 
-  // Lógica de exibição de cadastros simplificada para o MVP
+  // Fechar modal e limpar campos
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSenha({
+      senhaAtual: "",
+      novaSenha: "",
+      confirmarSenha: "",
+    });
+  };
+
+  // Marcar mensagem como lida
+  const marcarComoLida = async (mensagemId) => {
+    // Implementar função para marcar mensagem como lida
+    // await marcarMensagemComoLida(usuarioLogado.token, mensagemId);
+    // carregarMensagens();
+  };
+
+  // Menu de cadastros
   const cadastrosMVP = (
-    <NavDropdown title="Cadastros (MVP)" id="cadastros-mvp-nav-dropdown">
-        <NavDropdown.Item as={Link} to="/cadastros/modelo-equipamento">Modelos de Equipamentos</NavDropdown.Item>
-        <NavDropdown.Item as={Link} to="/cadastros/pagamento">Tipos de Pagamento</NavDropdown.Item>
-        <NavDropdown.Item as={Link} to="/cadastros/urgencia">Níveis de Urgência</NavDropdown.Item>
-        {/* Adicionar outros cadastros do MVP aqui conforme necessário */}
+    <NavDropdown title="Cadastros" id="cadastros-mvp-nav-dropdown">
+      <NavDropdown.Item as={Link} to="/cadastros/modelo-equipamento">
+        Modelos de Equipamentos
+      </NavDropdown.Item>
+      <NavDropdown.Item as={Link} to="/cadastros/pagamento">
+        Tipos de Pagamento
+      </NavDropdown.Item>
+      <NavDropdown.Item as={Link} to="/cadastros/urgencia">
+        Níveis de Urgência
+      </NavDropdown.Item>
+      <NavDropdown.Divider />
+      <NavDropdown.Item as={Link} to="/cadastros/usuarios">
+        Usuários
+      </NavDropdown.Item>
     </NavDropdown>
   );
 
@@ -144,85 +146,168 @@ function handleLogout() {
     <>
       <Navbar expand="lg" className="bg-light shadow-sm" sticky="top">
         <Container fluid className="w-100 mx-2">
-          <Navbar.Brand as={Link} to={usuarioLogado.logado ? "/ordens-servico" : "/"} className="d-flex align-items-center ms-2">
+          <Navbar.Brand 
+            as={Link} 
+            to={usuarioLogado.logado ? "/ordens-servico" : "/"} 
+            className="d-flex align-items-center ms-2"
+          >
             <FaHome className="me-1" /> Home OS
           </Navbar.Brand>
         
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              {usuarioLogado.logado && cadastrosMVP} {/* Exibe cadastros MVP se logado */}
-              {/* Outros links de navegação específicos do MVP podem ser adicionados aqui */}
+              {usuarioLogado.logado && cadastrosMVP}
+              {usuarioLogado.logado && (
+                <Nav.Link as={Link} to="/ordens-servico">
+                  Ordens de Serviço
+                </Nav.Link>
+              )}
             </Nav>
 
             <Nav className="ms-auto">
-            {/* Seção de notificações e mensagens removida/simplificada para o MVP */}
-            {/* {usuarioLogado.logado && usuarioLogado.role === 2 && ( ... ) } */}
-
-            {usuarioLogado.logado && (
+              {/* Notificações - apenas para administradores */}
+              {usuarioLogado.logado && usuarioLogado.role === 2 && (
                 <NavDropdown
-                title={usuarioLogado?.nome || "Usuário"}
-                id="usuario-nav-dropdown"
-                align="end"
+                  title={
+                    <span className="position-relative">
+                      <FaBell />
+                      {quantidadeMensagensPendentes > 0 && (
+                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                          {quantidadeMensagensPendentes}
+                        </span>
+                      )}
+                    </span>
+                  }
+                  id="notificacoes-nav-dropdown"
+                  align="end"
+                  show={showNotificacoes}
+                  onToggle={(isOpen) => setShowNotificacoes(isOpen)}
                 >
-                <NavDropdown.Item onClick={() => setShowModal(true)}>
-                    Alterar Senha (Mock)
-                </NavDropdown.Item>
-                <NavDropdown.Item onClick={handleLogout}>
-                    <FaSignOutAlt /> Sair
-                </NavDropdown.Item>
+                  <NavDropdown.Header>
+                    Notificações ({quantidadeMensagensPendentes})
+                  </NavDropdown.Header>
+                  
+                  {carregandoMensagens ? (
+                    <NavDropdown.Item disabled>
+                      Carregando...
+                    </NavDropdown.Item>
+                  ) : mensagens.length > 0 ? (
+                    mensagens.slice(0, 5).map((mensagem, index) => (
+                      <NavDropdown.Item 
+                        key={mensagem.id || index}
+                        onClick={() => marcarComoLida(mensagem.id)}
+                        className="text-wrap"
+                        style={{ maxWidth: '300px' }}
+                      >
+                        <small className="text-muted">
+                          {mensagem.data || 'Data não informada'}
+                        </small>
+                        <br />
+                        {mensagem.texto || mensagem.mensagem || 'Mensagem sem conteúdo'}
+                      </NavDropdown.Item>
+                    ))
+                  ) : (
+                    <NavDropdown.Item disabled>
+                      Nenhuma notificação
+                    </NavDropdown.Item>
+                  )}
+                  
+                  {mensagens.length > 5 && (
+                    <>
+                      <NavDropdown.Divider />
+                      <NavDropdown.Item as={Link} to="/notificacoes">
+                        Ver todas as notificações
+                      </NavDropdown.Item>
+                    </>
+                  )}
                 </NavDropdown>
-            )}
-          </Nav>
+              )}
 
+              {/* Menu do usuário */}
+              {usuarioLogado.logado && (
+                <NavDropdown
+                  title={usuarioLogado.nome || "Usuário"}
+                  id="usuario-nav-dropdown"
+                  align="end"
+                >
+                  <NavDropdown.Item onClick={() => setShowModal(true)}>
+                    Alterar Senha
+                  </NavDropdown.Item>
+                  <NavDropdown.Divider />
+                  <NavDropdown.Item onClick={handleLogout}>
+                    <FaSignOutAlt className="me-1" /> Sair
+                  </NavDropdown.Item>
+                </NavDropdown>
+              )}
+            </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+      {/* Modal de alteração de senha */}
+      <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Alteração de Senha (Mock)</Modal.Title>
+          <Modal.Title>Alteração de Senha</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form>
             <div className="mb-3">
-              <label>Senha Atual</label>
+              <label className="form-label">Senha Atual *</label>
               <input
                 type="password"
                 className="form-control"
                 name="senhaAtual"
                 value={senha.senhaAtual}
                 onChange={handleChangeSenha}
+                required
               />
             </div>
             <div className="mb-3">
-              <label>Nova Senha</label>
+              <label className="form-label">Nova Senha *</label>
               <input
                 type="password"
                 className="form-control"
                 name="novaSenha"
                 value={senha.novaSenha}
                 onChange={handleChangeSenha}
+                minLength={6}
+                required
               />
+              <small className="form-text text-muted">
+                Mínimo de 6 caracteres
+              </small>
             </div>
             <div className="mb-3">
-              <label>Confirmar Nova Senha</label>
+              <label className="form-label">Confirmar Nova Senha *</label>
               <input
                 type="password"
                 className="form-control"
                 name="confirmarSenha"
                 value={senha.confirmarSenha}
                 onChange={handleChangeSenha}
+                required
               />
             </div>
           </form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={handleSaveSenha}>Alterar Senha</Button>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
+          <Button 
+            variant="primary" 
+            onClick={handleSaveSenha}
+            disabled={carregandoSenha}
+          >
+            {carregandoSenha ? "Alterando..." : "Alterar Senha"}
+          </Button>
+          <Button 
+            variant="secondary" 
+            onClick={handleCloseModal}
+            disabled={carregandoSenha}
+          >
+            Cancelar
+          </Button>
         </Modal.Footer>
       </Modal>
     </>
   );
 }
-

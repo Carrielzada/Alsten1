@@ -17,6 +17,8 @@ import TelaCadTipoLimpeza from "./Components/Telas/TelaCadTipoLimpeza";
 import TelaCadTipoTransporte from "./Components/Telas/TelaCadTipoTransporte";
 import TelaCadFabricante from "./Components/Telas/TelaCadFabricante"; 
 import TelaCadDefeitoAlegado from "./Components/Telas/TelaCadDefeitoAlegado"; 
+import TelaCadClientePJ from "./Components/Telas/TelaCadClientePJ";
+// import TelaCadServicoRealizado from "./Components/Telas/TelaCadServicoRealizado";
 
 // Novo Layout
 import LayoutModerno from "./Components/LayoutModerno/LayoutModerno";
@@ -57,6 +59,7 @@ function App() {
         <Route path="/cadastros/tipo-transporte" element={<TelaCadTipoTransporte />} />
         <Route path="/cadastros/fabricante" element={<TelaCadFabricante />} />
         <Route path="/cadastros/defeito-alegado" element={<TelaCadDefeitoAlegado />} />
+        <Route path="/cadastros/clientes" element={<TelaCadClientePJ />} />
         <Route path="/sua-conta" element={<div>Tela Sua Conta (Em construção)</div>} />
         {/* Adicionar outras rotas protegidas aqui */}
         <Route path="*" element={<Tela404 />} /> {/* Fallback para rotas não encontradas dentro do layout */}

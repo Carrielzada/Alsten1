@@ -5,8 +5,8 @@ export default class DefeitoAlegadoDAO {
     async gravar(defeitoAlegado) {
         if (defeitoAlegado instanceof DefeitoAlegado) {
             const conexao = await conectar();
-            const sql = "INSERT INTO defeito_alegado (defeito_alegado_padrao) VALUES (?)";
-            const parametros = [defeitoAlegado.defeito_alegado_padrao];
+            const sql = "INSERT INTO defeito_alegado (defeito) VALUES (?)";
+            const parametros = [defeitoAlegado.defeito];
             const resultado = await conexao.query(sql, parametros);
             defeitoAlegado.id = resultado[0].insertId;
             global.poolConexoes.releaseConnection(conexao);
@@ -17,8 +17,8 @@ export default class DefeitoAlegadoDAO {
     async atualizar(defeitoAlegado) {
         if (defeitoAlegado instanceof DefeitoAlegado) {
             const conexao = await conectar();
-            const sql = "UPDATE defeito_alegado SET defeito_alegado_padrao = ? WHERE id = ?";
-            const parametros = [defeitoAlegado.defeito_alegado_padrao, defeitoAlegado.id];
+            const sql = "UPDATE defeito_alegado SET defeito = ? WHERE id = ?";
+            const parametros = [defeitoAlegado.defeito, defeitoAlegado.id];
             await conexao.query(sql, parametros);
             global.poolConexoes.releaseConnection(conexao);
         }
@@ -48,14 +48,14 @@ export default class DefeitoAlegadoDAO {
             parametros = [parseInt(termoBusca)];
         }
         else { 
-            sql = `SELECT * FROM defeito_alegado WHERE defeito_alegado_padrao LIKE ?`;
+            sql = `SELECT * FROM defeito_alegado WHERE defeito LIKE ?`;
             parametros = ["%" + termoBusca + "%"];
         }
         
         const [registros] = await conexao.query(sql, parametros);
         let listaDefeitosAlegados = [];
         for (const registro of registros) {
-            const defeitoAlegado = new DefeitoAlegado(registro.id, registro.defeito_alegado_padrao);
+            const defeitoAlegado = new DefeitoAlegado(registro.id, registro.defeito);
             listaDefeitosAlegados.push(defeitoAlegado);
         }
         global.poolConexoes.releaseConnection(conexao);

@@ -5,10 +5,10 @@ export default class DefeitoAlegadoCtrl {
         resposta.type("application/json");
         if (requisicao.method === "POST" && requisicao.is("application/json")) {
             const dados = requisicao.body;
-            const defeito_alegado_padrao = dados.defeito_alegado_padrao;
+            const defeito = dados.defeito;
 
-            if (defeito_alegado_padrao) {
-                const novoDefeitoAlegado = new DefeitoAlegado(0, defeito_alegado_padrao);
+            if (defeito) {
+                const novoDefeitoAlegado = new DefeitoAlegado(0, defeito);
                 try {
                     await novoDefeitoAlegado.gravar();
                     resposta.status(201).json({
@@ -44,10 +44,10 @@ export default class DefeitoAlegadoCtrl {
         if ((requisicao.method === "PUT" || requisicao.method === "PATCH") && requisicao.is("application/json")) {
             const dados = requisicao.body;
             const id = dados.id;
-            const defeito_alegado_padrao = dados.defeito_alegado_padrao;
+            const defeito = dados.defeito;
 
-            if (id && defeito_alegado_padrao) {
-                const defeitoAlegadoParaAtualizar = new DefeitoAlegado(id, defeito_alegado_padrao);
+            if (id && defeito) {
+                const defeitoAlegadoParaAtualizar = new DefeitoAlegado(id, defeito);
                 try {
                     await defeitoAlegadoParaAtualizar.atualizar();
                     resposta.status(200).json({

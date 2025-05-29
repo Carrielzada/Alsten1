@@ -18,6 +18,7 @@ import rotaTipoLimpeza from './Routers/rotaTipoLimpeza.js'; // Importar rota par
 import rotaTipoTransporte from './Routers/rotaTransporte.js';
 import rotaFabricante from './Routers/rotaFabricante.js'; // Importar rota para Fabricante
 import rotaDefeitoAlegado from './Routers/rotaDefeitoAlegado.js'; // Importar rota para Defeito Alegado
+import rotaClientePJ from './Routers/rotaClientePJ.js';
 import rotaUsers from './Routers/rotaUsers.js'; 
 
 
@@ -79,6 +80,7 @@ app.use("/tipo-limpeza", verificarAutenticacao, rotaTipoLimpeza); // Ativar a ro
 app.use("/tipo-transporte", verificarAutenticacao, rotaTipoTransporte); // Ativar a rota Tipo Transporte
 app.use("/fabricante", verificarAutenticacao, rotaFabricante); // Ativar a rota Fabricante
 app.use("/defeito-alegado", verificarAutenticacao, rotaDefeitoAlegado); // Ativar a rota Defeito Alegado
+app.use("/clientepj", verificarAutenticacao, rotaClientePJ); // Ativar a rota ClientePJ
 
 
 app.get('/', (_req, res) => {

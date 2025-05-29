@@ -184,7 +184,7 @@ export default class UsersCtrl {
         }
     }
     
-   async atualizarDadosUsuario(req, res) {
+    async atualizarDadosUsuario(req, res) {
     res.type("application/json");
 
     const { id } = req.params; // ID do usuário

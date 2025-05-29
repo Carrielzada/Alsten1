@@ -21,6 +21,7 @@ const BarraLateral = () => {
         { path: '/cadastros/tipo-analise', label: 'Tipos de Análise' },
         { path: '/cadastros/tipo-limpeza', label: 'Tipos de Limpeza' },
         { path: '/cadastros/tipo-transporte', label: 'Tipos de Transporte' },
+        { path: '/cadastros/defeito-alegado', label: 'Defeito Alegado' },
       ],
     },
     // Adicionar mais itens de menu conforme necessário

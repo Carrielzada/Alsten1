@@ -1,11 +1,11 @@
 class DefeitoAlegado {
-    constructor(id, defeito_alegado_padrao) {
+    constructor(id, defeito) {
         this.id = id;
-        this.defeito_alegado_padrao = defeito_alegado_padrao;
+        this.defeito = defeito;
     }
 
     static validar(defeitoAlegado) {
-        if (!defeitoAlegado.defeito_alegado_padrao || defeitoAlegado.defeito_alegado_padrao.trim() === "") {
+        if (!defeitoAlegado.defeito || defeitoAlegado.defeito.trim() === "") {
             throw new Error("A descrição do defeito alegado é obrigatória.");
         }
         return true;

@@ -48,7 +48,7 @@ const TelaCadDefeitoAlegado = () => {
       return;
     }
 
-    const dadosDefeito = { defeito_alegado_padrao: defeitoAtual };
+    const dadosDefeito = { defeito: defeitoAtual };
     if (modoEdicao && idAtual) {
       dadosDefeito.id = idAtual;
     }
@@ -71,7 +71,7 @@ const TelaCadDefeitoAlegado = () => {
   const handleEditar = (defeito) => {
     setModoEdicao(true);
     setIdAtual(defeito.id);
-    setDefeitoAtual(defeito.defeito_alegado_padrao);
+    setDefeitoAtual(defeito.defeito);
     setFeedback({ tipo: '', mensagem: '' });
   };
 
@@ -153,14 +153,14 @@ const TelaCadDefeitoAlegado = () => {
                     <tr>
                       <th>ID</th>
                       <th>Descrição do Defeito</th>
-                      <th style={{ width: '120px' }}>Ações</th>
+                      <th style={{ width: '20px' }}>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                     {defeitosAlegados.map((defeito) => (
                       <tr key={defeito.id}>
                         <td>{defeito.id}</td>
-                        <td>{defeito.defeito_alegado_padrao}</td>
+                        <td>{defeito.defeito}</td>
                         <td>
                           <Button variant="warning" size="sm" onClick={() => handleEditar(defeito)} className="me-1">
                             Editar

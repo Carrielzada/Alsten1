@@ -1,11 +1,11 @@
-const urlBase = "https://publicidadepropaganda.thiagocamponez.site/clientes/pj"; 
+const urlBase = "http://localhost:4000/clientepj"; 
 // Função para gravar um novo ClientePJ
 export async function gravarClientePJ(clientePJ, token) {
     const resposta = await fetch(urlBase, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": token
+            "Authorization": `Bearer ${token}`
         },
         credentials: 'include',
         body: JSON.stringify(clientePJ)
@@ -18,7 +18,7 @@ export async function buscarTodosClientePJ(token) {
     const resposta = await fetch(urlBase, {
         method: "GET",
         headers: {
-            "Authorization": token
+            "Authorization": `Bearer ${token}`
         },
         credentials: 'include'
     });
@@ -30,7 +30,7 @@ export async function excluirClientePJ(cnpj, token) {
     const resposta = await fetch(`${urlBase}/${cnpj}`, {
         method: "DELETE",
         headers: {
-            "Authorization": token
+            "Authorization": `Bearer ${token}`
         },
         credentials: 'include'
     });
@@ -43,7 +43,7 @@ export async function alterarClientePJ(clientePJ, token) {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": token
+            "Authorization": `Bearer ${token}` 
         },
         credentials: 'include',
         body: JSON.stringify(clientePJ)
