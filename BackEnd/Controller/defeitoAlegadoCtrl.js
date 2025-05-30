@@ -5,10 +5,11 @@ export default class DefeitoAlegadoCtrl {
         resposta.type("application/json");
         if (requisicao.method === "POST" && requisicao.is("application/json")) {
             const dados = requisicao.body;
+            const titulo = dados.titulo; // Adicionado
             const defeito = dados.defeito;
 
-            if (defeito) {
-                const novoDefeitoAlegado = new DefeitoAlegado(0, defeito);
+            if (titulo && defeito) { // Adicionada verificação de título
+                const novoDefeitoAlegado = new DefeitoAlegado(0, titulo, defeito); // Adicionado título
                 try {
                     await novoDefeitoAlegado.gravar();
                     resposta.status(201).json({
@@ -27,7 +28,7 @@ export default class DefeitoAlegadoCtrl {
             else {
                 resposta.status(400).json({
                     status: false,
-                    mensagem: "Informe a descrição do defeito alegado!"
+                    mensagem: "Informe o título e a descrição do defeito alegado!" // Mensagem atualizada
                 });
             }
         }
@@ -44,10 +45,11 @@ export default class DefeitoAlegadoCtrl {
         if ((requisicao.method === "PUT" || requisicao.method === "PATCH") && requisicao.is("application/json")) {
             const dados = requisicao.body;
             const id = dados.id;
+            const titulo = dados.titulo; // Adicionado
             const defeito = dados.defeito;
 
-            if (id && defeito) {
-                const defeitoAlegadoParaAtualizar = new DefeitoAlegado(id, defeito);
+            if (id && titulo && defeito) { // Adicionada verificação de título
+                const defeitoAlegadoParaAtualizar = new DefeitoAlegado(id, titulo, defeito); // Adicionado título
                 try {
                     await defeitoAlegadoParaAtualizar.atualizar();
                     resposta.status(200).json({
@@ -65,7 +67,7 @@ export default class DefeitoAlegadoCtrl {
             else {
                 resposta.status(400).json({
                     status: false,
-                    mensagem: "Informe o ID e a descrição do defeito alegado!"
+                    mensagem: "Informe o ID, o título e a descrição do defeito alegado!" // Mensagem atualizada
                 });
             }
         }

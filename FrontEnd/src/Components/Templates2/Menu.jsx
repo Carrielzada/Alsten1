@@ -91,16 +91,15 @@ export default function Menu() {
       alert(resultado.mensagem || "Senha alterada com sucesso!");
       
       if (resultado.status) {
-        setShowModal(false);
-        setSenha({
-          senhaAtual: "",
-          novaSenha: "",
-          confirmarSenha: "",
-        });
+        // Limpa a sessão local e redireciona para login
+        handleLogout(); 
+        // Opcional: Adicionar um alerta aqui se desejar, mas o logout já redireciona.
+        // alert("Senha alterada com sucesso! Por favor, faça login novamente.");
       }
     } catch (error) {
       console.error("Erro ao alterar senha:", error);
-      alert("Erro ao alterar senha. Tente novamente.");
+      // Usar a mensagem de erro do backend se disponível, senão uma genérica
+      alert(error.response?.data?.mensagem || error.message || "Erro ao alterar senha. Verifique a senha atual e tente novamente.");
     } finally {
       setCarregandoSenha(false);
     }

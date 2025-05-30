@@ -8,6 +8,7 @@ import { buscarDefeitosAlegados, adicionarDefeitoAlegado, atualizarDefeitoAlegad
 
 const TelaCadDefeitoAlegado = () => {
   const [defeitosAlegados, setDefeitosAlegados] = useState([]);
+  const [tituloAtual, setTituloAtual] = useState('');
   const [defeitoAtual, setDefeitoAtual] = useState('');
   const [idAtual, setIdAtual] = useState(null);
   const [modoEdicao, setModoEdicao] = useState(false);
@@ -43,12 +44,16 @@ const TelaCadDefeitoAlegado = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!tituloAtual.trim()) { // Adicionada validação para título
+      setFeedback({ tipo: 'warning', mensagem: 'Por favor, informe o título do defeito.' });
+      return;
+    }
     if (!defeitoAtual.trim()) {
       setFeedback({ tipo: 'warning', mensagem: 'Por favor, informe a descrição do defeito.' });
       return;
     }
 
-    const dadosDefeito = { defeito: defeitoAtual };
+    const dadosDefeito = { titulo: tituloAtual,  defeito: defeitoAtual };
     if (modoEdicao && idAtual) {
       dadosDefeito.id = idAtual;
     }
@@ -71,6 +76,7 @@ const TelaCadDefeitoAlegado = () => {
   const handleEditar = (defeito) => {
     setModoEdicao(true);
     setIdAtual(defeito.id);
+    setTituloAtual(defeito.titulo);
     setDefeitoAtual(defeito.defeito);
     setFeedback({ tipo: '', mensagem: '' });
   };
@@ -101,6 +107,18 @@ const TelaCadDefeitoAlegado = () => {
         <Row className="justify-content-center">
           <Col md={8} lg={6}>
             <CardModerno titulo="Cadastro de Defeitos Alegados (Padrão)">
+              <Form.Group className="mb-3">
+                {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
+                <Form.Label htmlFor="tituloDefeito">Título</Form.Label>
+              <Form.Control
+                type="text"
+                id="tituloDefeito"
+                value={tituloAtual}
+                onChange={(e) => setTituloAtual(e.target.value)}
+                placeholder="Ex: ENCODER, SENSOR, MOTOR"
+                required
+              />
+              </Form.Group>
               {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
@@ -152,14 +170,16 @@ const TelaCadDefeitoAlegado = () => {
                   <thead>
                     <tr>
                       <th>ID</th>
+                      <th>Título</th>
                       <th>Descrição do Defeito</th>
-                      <th style={{ width: '20px' }}>Ações</th>
+                      <th style={{ width: '150px' }}>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                     {defeitosAlegados.map((defeito) => (
                       <tr key={defeito.id}>
                         <td>{defeito.id}</td>
+                        <td>{defeito.titulo}</td>
                         <td>{defeito.defeito}</td>
                         <td>
                           <Button variant="warning" size="sm" onClick={() => handleEditar(defeito)} className="me-1">

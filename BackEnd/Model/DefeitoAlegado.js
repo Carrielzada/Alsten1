@@ -1,6 +1,7 @@
 class DefeitoAlegado {
-    constructor(id, defeito) {
+    constructor(id, titulo, defeito) {
         this.id = id;
+        this.titulo = titulo; // Adicionado
         this.defeito = defeito;
     }
 
