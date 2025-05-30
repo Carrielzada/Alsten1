@@ -1,11 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './BarraLateral.css';
-// Importar ícones (exemplo com react-icons, precisaria instalar: npm install react-icons)
-// import { FaTachometerAlt, FaBoxOpen, FaUsers, FaCog } from 'react-icons/fa';
+import './BarraLateral.css'; // Pode ser mesclado com LayoutModerno.css ou mantido separado
 
-const BarraLateral = () => {
-  // Mock de itens do menu, idealmente viria de uma configuração ou do estado da aplicação
+// Adicione className às props
+const BarraLateral = ({ className }) => {
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: 'FaTachometerAlt' }, // Substituir string por componente de ícone
     { path: '/ordens-servico', label: 'Ordens de Serviço', icon: 'FaBoxOpen' },
@@ -27,10 +25,11 @@ const BarraLateral = () => {
     // Adicionar mais itens de menu conforme necessário
   ];
 
+  const navClass = `barra-lateral ${className || ''}`;
+
   return (
-    <nav className="barra-lateral">
+    <nav className={navClass}>
       <div className="logo-container">
-        {/* Idealmente, um componente <img src="logo_alsten.png" alt="Alsten" /> */}
         <h1 className="logo-texto">Alsten</h1>
       </div>
       <ul className="menu-lista">
@@ -38,8 +37,7 @@ const BarraLateral = () => {
           <li key={index} className="menu-item">
             {item.subItems ? (
               <>
-                {/* Implementar lógica de dropdown/accordion para submenus */}
-                <span className="menu-link-header">{item.icon && <span className="menu-icon">{/* <item.icon /> */}</span>}{item.label}</span>
+                <span className="menu-link-header">{/* {item.icon && <span className="menu-icon"><item.icon /></span>} */} {item.label}</span>
                 <ul className="submenu-lista">
                   {item.subItems.map((subItem, subIndex) => (
                     <li key={subIndex} className="submenu-item">
@@ -52,7 +50,7 @@ const BarraLateral = () => {
               </>
             ) : (
               <Link to={item.path} className="menu-link">
-                {item.icon && <span className="menu-icon">{/* <item.icon /> */}</span>}
+                {/* {item.icon && <span className="menu-icon"><item.icon /></span>} */}
                 {item.label}
               </Link>
             )}

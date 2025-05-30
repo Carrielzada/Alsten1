@@ -98,7 +98,7 @@ const TelaCadFabricante = () => {
   return (
       <Container fluid>
         <Row className="justify-content-center">
-          <Col md={8} lg={6}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Cadastro de Fabricantes">
               {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
               <Form onSubmit={handleSubmit}>
@@ -127,7 +127,7 @@ const TelaCadFabricante = () => {
         </Row>
 
         <Row className="mt-4 justify-content-center">
-          <Col md={10} lg={8}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Fabricantes Cadastrados">
               <Form onSubmit={handleBuscar} className="mb-3">
                 <Row>

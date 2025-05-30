@@ -97,7 +97,7 @@ const TelaCadUrgencia = () => {
   return (
       <Container fluid>
         <Row className="justify-content-center">
-          <Col md={8} lg={6}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Cadastro de Níveis de Urgência">
               {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
               <Form onSubmit={handleSubmit}>
@@ -126,7 +126,7 @@ const TelaCadUrgencia = () => {
         </Row>
 
         <Row className="mt-4 justify-content-center">
-          <Col md={10} lg={8}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Níveis de Urgência Cadastrados">
               <Form onSubmit={handleBuscar} className="mb-3">
                 <Row>

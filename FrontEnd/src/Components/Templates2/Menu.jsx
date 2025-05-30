@@ -6,17 +6,19 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import { Link, useNavigate } from "react-router-dom";
-import { FaSignOutAlt, FaHome, FaBell } from "react-icons/fa";
-import { ContextoUsuarioLogado } from "../../App";
-import { alterarSenha } from "../../Services/usersService"; //alterar aqui
+// Certifique-se de ter 'react-icons' instalado: npm install react-icons
+import { FaSignOutAlt, FaBell, FaBars } from "react-icons/fa";
+import { ContextoUsuarioLogado } from "../../App"; // Ajuste o caminho se necessário
+import { alterarSenha } from "../../Services/usersService"; // Ajuste o caminho se necessário
+import logoImage from "../../assets/imagens/logoalsten.jpg"; // << AJUSTE O CAMINHO PARA SUA LOGO
 
-export default function Menu() {
+// Adicionamos 'toggleBarra' como propriedade (props)
+export default function Menu({ toggleBarra }) {
   const navigate = useNavigate();
   const { usuarioLogado, setUsuarioLogado } = useContext(ContextoUsuarioLogado);
   const [showModal, setShowModal] = useState(false);
   const [mensagens, setMensagens] = useState([]);
   const [showNotificacoes, setShowNotificacoes] = useState(false);
-  const [temNovasMensagens, setTemNovasMensagens] = useState(false);
   const [quantidadeMensagensPendentes, setQuantidadeMensagensPendentes] = useState(0);
   const [carregandoMensagens, setCarregandoMensagens] = useState(false);
   const [carregandoSenha, setCarregandoSenha] = useState(false);
@@ -27,23 +29,20 @@ export default function Menu() {
     confirmarSenha: "",
   });
 
-
   // Carregar mensagens quando abrir notificações
   useEffect(() => {
     if (showNotificacoes && usuarioLogado?.token) {
+      // Sua lógica para carregar mensagens aqui
     }
   }, [showNotificacoes, usuarioLogado?.token]);
 
   // Verificar mensagens periodicamente
   useEffect(() => {
     if (usuarioLogado?.token) {
-    
-      
-      // Verificar mensagens a cada 30 segundos
+      // Sua lógica para verificar mensagens aqui
       const interval = setInterval(() => {
-      
+        // Sua lógica de verificação periódica
       }, 30000);
-
       return () => clearInterval(interval);
     }
   }, [usuarioLogado?.token]);
@@ -67,17 +66,14 @@ export default function Menu() {
       alert("Todos os campos são obrigatórios.");
       return;
     }
-
     if (senha.novaSenha !== senha.confirmarSenha) {
       alert("A nova senha e a confirmação não conferem.");
       return;
     }
-
     if (senha.novaSenha.length < 6) {
       alert("A nova senha deve ter pelo menos 6 caracteres.");
       return;
     }
-
     setCarregandoSenha(true);
     try {
       const resultado = await alterarSenha(
@@ -87,18 +83,12 @@ export default function Menu() {
         senha.novaSenha,
         senha.confirmarSenha
       );
-
       alert(resultado.mensagem || "Senha alterada com sucesso!");
-      
       if (resultado.status) {
-        // Limpa a sessão local e redireciona para login
-        handleLogout(); 
-        // Opcional: Adicionar um alerta aqui se desejar, mas o logout já redireciona.
-        // alert("Senha alterada com sucesso! Por favor, faça login novamente.");
+        handleLogout();
       }
     } catch (error) {
       console.error("Erro ao alterar senha:", error);
-      // Usar a mensagem de erro do backend se disponível, senão uma genérica
       alert(error.response?.data?.mensagem || error.message || "Erro ao alterar senha. Verifique a senha atual e tente novamente.");
     } finally {
       setCarregandoSenha(false);
@@ -143,16 +133,31 @@ export default function Menu() {
 
   return (
     <>
-      <Navbar expand="lg" className="bg-light shadow-sm" sticky="top">
+      <Navbar expand="lg" className="bg-light shadow-sm" fixed="top" style={{ zIndex: 1030 }}>
         <Container fluid className="w-100 mx-2">
-          <Navbar.Brand 
-            as={Link} 
-            to={usuarioLogado.logado ? "/ordens-servico" : "/"} 
-            className="d-flex align-items-center ms-2"
+            <img
+              src={logoImage}
+              alt="Logo Alsten"
+              className="img-fluid"
+              style={{ maxHeight: "80px" }}
+            />
+          <Button
+            variant="outline-secondary"
+            onClick={toggleBarra}
+            className="me-2 border-0"
+            aria-label="Toggle Sidebar"
           >
-            <FaHome className="me-1" /> Home OS
+            <FaBars />
+          </Button>
+
+          <Navbar.Brand
+            as={Link}
+            to={usuarioLogado.logado ? "/ordens-servico" : "/"}
+            className="p-0 me-3"
+          >
+
           </Navbar.Brand>
-        
+
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
@@ -165,7 +170,6 @@ export default function Menu() {
             </Nav>
 
             <Nav className="ms-auto">
-              {/* Notificações - apenas para administradores */}
               {usuarioLogado.logado && usuarioLogado.role === 2 && (
                 <NavDropdown
                   title={
@@ -186,14 +190,11 @@ export default function Menu() {
                   <NavDropdown.Header>
                     Notificações ({quantidadeMensagensPendentes})
                   </NavDropdown.Header>
-                  
                   {carregandoMensagens ? (
-                    <NavDropdown.Item disabled>
-                      Carregando...
-                    </NavDropdown.Item>
+                    <NavDropdown.Item disabled>Carregando...</NavDropdown.Item>
                   ) : mensagens.length > 0 ? (
                     mensagens.slice(0, 5).map((mensagem, index) => (
-                      <NavDropdown.Item 
+                      <NavDropdown.Item
                         key={mensagem.id || index}
                         onClick={() => marcarComoLida(mensagem.id)}
                         className="text-wrap"
@@ -207,11 +208,8 @@ export default function Menu() {
                       </NavDropdown.Item>
                     ))
                   ) : (
-                    <NavDropdown.Item disabled>
-                      Nenhuma notificação
-                    </NavDropdown.Item>
+                    <NavDropdown.Item disabled>Nenhuma notificação</NavDropdown.Item>
                   )}
-                  
                   {mensagens.length > 5 && (
                     <>
                       <NavDropdown.Divider />
@@ -223,7 +221,6 @@ export default function Menu() {
                 </NavDropdown>
               )}
 
-              {/* Menu do usuário */}
               {usuarioLogado.logado && (
                 <NavDropdown
                   title={usuarioLogado.nome || "Usuário"}
@@ -244,7 +241,6 @@ export default function Menu() {
         </Container>
       </Navbar>
 
-      {/* Modal de alteração de senha */}
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>Alteração de Senha</Modal.Title>
@@ -291,15 +287,15 @@ export default function Menu() {
           </form>
         </Modal.Body>
         <Modal.Footer>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleSaveSenha}
             disabled={carregandoSenha}
           >
             {carregandoSenha ? "Alterando..." : "Alterar Senha"}
           </Button>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={handleCloseModal}
             disabled={carregandoSenha}
           >

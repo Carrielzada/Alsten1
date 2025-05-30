@@ -7,9 +7,7 @@ import './Layout.css'; // Criaremos este arquivo para estilos básicos do layout
 const Layout = ({ children }) => {
     return (
         <div className="app-container">
-            <Cabecalho />
             <div className="main-content-area">
-                <Menu />
                 <main className="content">
                     {children}
                 </main>

@@ -104,7 +104,7 @@ const TelaCadDefeitoAlegado = () => {
   return (
       <Container fluid>
         <Row className="justify-content-center">
-          <Col md={8} lg={6}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Cadastro de Defeitos Alegados (Padrão)">
               <Form.Group className="mb-3">
                 {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
@@ -145,7 +145,7 @@ const TelaCadDefeitoAlegado = () => {
         </Row>
 
         <Row className="mt-4 justify-content-center">
-          <Col md={10} lg={8}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Defeitos Alegados Cadastrados">
               <Form onSubmit={handleBuscar} className="mb-3">
                 <Row>

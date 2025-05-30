@@ -99,7 +99,7 @@ const TelaCadPagamento = () => {
   return (
       <Container fluid>
         <Row className="justify-content-center">
-          <Col md={8} lg={6}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Cadastro de Formas de Pagamento">
               {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
               <Form onSubmit={handleSubmit}>
@@ -128,7 +128,7 @@ const TelaCadPagamento = () => {
         </Row>
 
         <Row className="mt-4 justify-content-center">
-          <Col md={10} lg={8}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Formas de Pagamento Cadastradas">
               <Form onSubmit={handleBuscar} className="mb-3">
                 <Row>

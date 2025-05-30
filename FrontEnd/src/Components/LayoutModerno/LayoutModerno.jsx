@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import './LayoutModerno.css';
+import './LayoutModerno.css'; // << CRIE ESTE ARQUIVO CSS (código abaixo)
 import BarraLateral from './BarraLateral';
-import ConteudoPrincipal from './ConteudoPrincipal';
+import ConteudoPrincipal from './ConteudoPrincipal'; // << CRIE ESTE ARQUIVO (código abaixo)
+import Menu from '../Templates2/Menu'; // Ajuste o caminho se necessário
 
 const LayoutModerno = ({ children }) => {
   const [mostrarBarra, setMostrarBarra] = useState(true);
@@ -12,11 +13,9 @@ const LayoutModerno = ({ children }) => {
 
   return (
     <div className="layout-moderno">
-      {mostrarBarra && <BarraLateral />}
+      <Menu toggleBarra={toggleBarra} />
+      <BarraLateral className={!mostrarBarra ? 'hidden' : ''} />
       <ConteudoPrincipal mostrarBarra={mostrarBarra}>
-        <button onClick={toggleBarra} className="toggle-barra-btn">
-          {mostrarBarra ? 'Esconder Menu' : 'Mostrar Menu'}
-        </button>
         {children}
       </ConteudoPrincipal>
     </div>
