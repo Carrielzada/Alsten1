@@ -96,7 +96,6 @@ const TelaCadFabricante = () => {
   };
 
   return (
-    <LayoutModerno>
       <Container fluid>
         <Row className="justify-content-center">
           <Col md={8} lg={6}>
@@ -180,7 +179,6 @@ const TelaCadFabricante = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutModerno>
   );
 };
 

@@ -94,7 +94,6 @@ const TelaCadTipoTransporte = () => {
   };
 
   return (
-    <LayoutModerno>
       <Container fluid>
         <Row className="justify-content-center">
           <Col md={8} lg={6}>
@@ -178,7 +177,6 @@ const TelaCadTipoTransporte = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutModerno>
   );
 };
 

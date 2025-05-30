@@ -95,7 +95,6 @@ const TelaCadUrgencia = () => {
   };
 
   return (
-    <LayoutModerno>
       <Container fluid>
         <Row className="justify-content-center">
           <Col md={8} lg={6}>
@@ -179,7 +178,6 @@ const TelaCadUrgencia = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutModerno>
   );
 };
 

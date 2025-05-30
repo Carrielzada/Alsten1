@@ -102,7 +102,6 @@ const TelaCadDefeitoAlegado = () => {
   };
 
   return (
-    <LayoutModerno>
       <Container fluid>
         <Row className="justify-content-center">
           <Col md={8} lg={6}>
@@ -200,7 +199,6 @@ const TelaCadDefeitoAlegado = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutModerno>
   );
 };
 

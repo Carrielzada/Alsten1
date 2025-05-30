@@ -97,7 +97,6 @@ const TelaCadPagamento = () => {
   };
 
   return (
-    <LayoutModerno>
       <Container fluid>
         <Row className="justify-content-center">
           <Col md={8} lg={6}>
@@ -181,7 +180,6 @@ const TelaCadPagamento = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutModerno>
   );
 };
 

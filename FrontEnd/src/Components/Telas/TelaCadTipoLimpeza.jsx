@@ -96,7 +96,6 @@
 
           return (
           <Pagina>
-            <LayoutModerno>
               <Container fluid>
                 <Row className="justify-content-center">
                   <Col md={8} lg={6}>
@@ -180,7 +179,6 @@
                   </Col>
                 </Row>
               </Container>
-            </LayoutModerno>
             </Pagina>
           );
         };

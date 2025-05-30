@@ -87,7 +87,7 @@ const TelaCadTipoLacre = () => {
         setFeedback({ tipo: 'danger', mensagem: `Erro ao excluir tipo de lacre: ${error.message}` });
       }
     }
-  };
+  }; 
 
   const limparFormulario = () => {
     setTipoLacreAtual('');
@@ -97,7 +97,6 @@ const TelaCadTipoLacre = () => {
   };
 
   return (
-    <LayoutModerno>
       <Container fluid>
         <Row className="justify-content-center">
           <Col md={8} lg={6}>
@@ -181,7 +180,6 @@ const TelaCadTipoLacre = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutModerno>
   );
 };
 
