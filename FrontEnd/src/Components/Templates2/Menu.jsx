@@ -17,10 +17,10 @@ export default function Menu({ toggleBarra }) {
   const navigate = useNavigate();
   const { usuarioLogado, setUsuarioLogado } = useContext(ContextoUsuarioLogado);
   const [showModal, setShowModal] = useState(false);
-  const [mensagens, setMensagens] = useState([]);
+  const [mensagens, /*setMensagens*/] = useState([]);
   const [showNotificacoes, setShowNotificacoes] = useState(false);
-  const [quantidadeMensagensPendentes, setQuantidadeMensagensPendentes] = useState(0);
-  const [carregandoMensagens, setCarregandoMensagens] = useState(false);
+  const [quantidadeMensagensPendentes, /*setQuantidadeMensagensPendentes*/] = useState(0);
+  const [carregandoMensagens, /*setCarregandoMensagens*/] = useState(false);
   const [carregandoSenha, setCarregandoSenha] = useState(false);
 
   const [senha, setSenha] = useState({

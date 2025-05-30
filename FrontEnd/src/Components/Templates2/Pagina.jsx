@@ -1,5 +1,3 @@
-import Menu from "./Menu";
-import Cabecalho from "./Cabecalho";
 import { Container } from "react-bootstrap";
 import Rodape from "./Rodape";
 

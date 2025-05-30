@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import LayoutModerno from '../LayoutModerno/LayoutModerno.jsx';
 import CardModerno from '../LayoutModerno/CardModerno.jsx';
 import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
 import { buscarTiposTransporte, adicionarTipoTransporte, atualizarTipoTransporte, excluirTipoTransporte } from '../../Services/tipoTransporteService.js';

@@ -1,5 +1,4 @@
 import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
-import LayoutModerno from '../LayoutModerno/LayoutModerno';
 import CardModerno from '../LayoutModerno/CardModerno';
 import { useState, useEffect} from "react";
 import { buscarUrgencia, adicionarUrgencia, atualizarUrgencia, excluirUrgencia } from '../../Services/urgenciaService.js'; // Caminho corrigido e real

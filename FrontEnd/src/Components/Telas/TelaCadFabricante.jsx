@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import LayoutModerno from '../LayoutModerno/LayoutModerno';
 import CardModerno from '../LayoutModerno/CardModerno';
 import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
 import { buscarFabricantes, adicionarFabricante, atualizarFabricante, excluirFabricante } from '../../Services/fabricanteService.js'; // Caminho corrigido e real

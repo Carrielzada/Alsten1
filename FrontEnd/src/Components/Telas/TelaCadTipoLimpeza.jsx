@@ -1,6 +1,5 @@
         import { useState, useEffect } from 'react';
         import Pagina from "../Templates2/Pagina.jsx";
-        import LayoutModerno from '../LayoutModerno/LayoutModerno.jsx';
         import CardModerno from '../LayoutModerno/CardModerno.jsx';
         import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
         import { buscarTiposLimpeza, adicionarTipoLimpeza, atualizarTipoLimpeza, excluirTipoLimpeza } from '../../Services/tipoLimpezaService.js';
