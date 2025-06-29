@@ -1,5 +1,4 @@
 import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
-import LayoutModerno from '../LayoutModerno/LayoutModerno';
 import CardModerno from '../LayoutModerno/CardModerno';
 import { useState, useEffect} from "react";
 import { buscarUrgencia, adicionarUrgencia, atualizarUrgencia, excluirUrgencia } from '../../Services/urgenciaService.js'; // Caminho corrigido e real
@@ -95,10 +94,9 @@ const TelaCadUrgencia = () => {
   };
 
   return (
-    <LayoutModerno>
       <Container fluid>
         <Row className="justify-content-center">
-          <Col md={8} lg={6}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Cadastro de Níveis de Urgência">
               {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
               <Form onSubmit={handleSubmit}>
@@ -127,7 +125,7 @@ const TelaCadUrgencia = () => {
         </Row>
 
         <Row className="mt-4 justify-content-center">
-          <Col md={10} lg={8}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Níveis de Urgência Cadastrados">
               <Form onSubmit={handleBuscar} className="mb-3">
                 <Row>
@@ -179,7 +177,6 @@ const TelaCadUrgencia = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutModerno>
   );
 };
 

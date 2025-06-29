@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import LayoutModerno from '../LayoutModerno/LayoutModerno';
 import CardModerno from '../LayoutModerno/CardModerno';
 import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
 import { buscarTiposLacre, adicionarTipoLacre, atualizarTipoLacre, excluirTipoLacre } from '../../Services/tipoLacreService.js'; // Caminho corrigido e real
@@ -87,7 +86,7 @@ const TelaCadTipoLacre = () => {
         setFeedback({ tipo: 'danger', mensagem: `Erro ao excluir tipo de lacre: ${error.message}` });
       }
     }
-  };
+  }; 
 
   const limparFormulario = () => {
     setTipoLacreAtual('');
@@ -97,10 +96,9 @@ const TelaCadTipoLacre = () => {
   };
 
   return (
-    <LayoutModerno>
       <Container fluid>
         <Row className="justify-content-center">
-          <Col md={8} lg={6}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Cadastro de Tipos de Lacre">
               {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
               <Form onSubmit={handleSubmit}>
@@ -129,7 +127,7 @@ const TelaCadTipoLacre = () => {
         </Row>
 
         <Row className="mt-4 justify-content-center">
-          <Col md={10} lg={8}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Tipos de Lacre Cadastrados">
               <Form onSubmit={handleBuscar} className="mb-3">
                 <Row>
@@ -181,7 +179,6 @@ const TelaCadTipoLacre = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutModerno>
   );
 };
 

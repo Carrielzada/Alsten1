@@ -2,7 +2,8 @@
 .conteudo-principal {
   flex-grow: 1; /* Ocupa o espaço restante */
   padding: 30px;
-  margin-left: 260px; /* Mesma largura da barra lateral para não sobrepor */
+  padding-top: 115px;
+  /* margin-left: 260px; Mesma largura da barra lateral para não sobrepor */
   background-color: #ecf0f1; /* Um cinza bem claro para a área de conteúdo */
   /* Para o gradiente azul solicitado nas referências, poderia ser algo como:
   background-image: linear-gradient(to bottom right, #e0f2f7, #d1e0e8);

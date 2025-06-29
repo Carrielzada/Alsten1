@@ -1,6 +1,5 @@
         import { useState, useEffect } from 'react';
         import Pagina from "../Templates2/Pagina.jsx";
-        import LayoutModerno from '../LayoutModerno/LayoutModerno.jsx';
         import CardModerno from '../LayoutModerno/CardModerno.jsx';
         import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
         import { buscarTiposLimpeza, adicionarTipoLimpeza, atualizarTipoLimpeza, excluirTipoLimpeza } from '../../Services/tipoLimpezaService.js';
@@ -96,10 +95,9 @@
 
           return (
           <Pagina>
-            <LayoutModerno>
               <Container fluid>
                 <Row className="justify-content-center">
-                  <Col md={8} lg={6}>
+                  <Col md={12} lg={11}>
                     <CardModerno titulo="Cadastro de Tipos de Limpeza">
                       {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
                       <Form onSubmit={handleSubmit}>
@@ -128,7 +126,7 @@
                 </Row>
 
                 <Row className="mt-4 justify-content-center">
-                  <Col md={10} lg={8}>
+                  <Col md={12} lg={11}>
                     <CardModerno titulo="Tipos de Limpeza Cadastrados">
                       <Form onSubmit={handleBuscar} className="mb-3">
                         <Row>
@@ -180,11 +178,8 @@
                   </Col>
                 </Row>
               </Container>
-            </LayoutModerno>
             </Pagina>
           );
         };
 
         export default TelaCadTipoLimpeza;
-
-                                                                    

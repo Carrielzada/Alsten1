@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import LayoutModerno from '../LayoutModerno/LayoutModerno';
 import CardModerno from '../LayoutModerno/CardModerno';
 import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
 import { buscarModelo, atualizarModelo, excluirModelo, adicionarModelo } from "../../Services/modeloService.js";
@@ -97,10 +96,9 @@ const TelaCadModeloEquipamento = () => {
   };
 
   return (
-    <LayoutModerno>
       <Container fluid>
         <Row className="justify-content-center">
-          <Col md={8} lg={6}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Cadastro de Modelos de Equipamento">
               {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
               <Form onSubmit={handleSubmit}>
@@ -129,7 +127,7 @@ const TelaCadModeloEquipamento = () => {
         </Row>
 
         <Row className="mt-4 justify-content-center">
-          <Col md={10} lg={8}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Formas de Modelo Cadastradas">
               <Form onSubmit={handleBuscar} className="mb-3">
                 <Row>
@@ -181,7 +179,6 @@ const TelaCadModeloEquipamento = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutModerno>
   );
 };
 

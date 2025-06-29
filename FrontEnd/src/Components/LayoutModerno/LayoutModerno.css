@@ -1,7 +1,45 @@
-/* LayoutModerno.css */
+/* Estilo base para o container do layout */
 .layout-moderno {
   display: flex;
   min-height: 100vh;
-  background-color: #f4f7f6; /* Um cinza claro para o fundo geral, pode ser ajustado */
 }
 
+/* Estilo para a Barra Lateral */
+.barra-lateral {
+  width: 250px; /* Largura da barra lateral */
+  background-color: #f8f9fa; /* Cor de fundo (similar ao bg-light) */
+  height: 100vh; /* Altura total da tela */
+  position: fixed; /* Posição fixa */
+  top: 0;
+  left: 0;
+  z-index: 1020; /* Abaixo do Menu (que tem z-index 1030) */
+  border-right: 1px solid #dee2e6; /* Borda direita */
+  overflow-y: auto; /* Scroll se o conteúdo for grande */
+  transition: transform 0.3s ease-in-out; /* Animação suave */
+  transform: translateX(0); /* Posição inicial (visível) */
+  padding: 20px;
+  /* Garante que o conteúdo da barra comece abaixo do Menu */
+  padding-top: 70px; /* Ajuste este valor se a altura do seu Menu for diferente (ex: 56px de Navbar + 14px de espaço) */
+}
+
+/* Estilo para a Barra Lateral quando estiver oculta */
+.barra-lateral.hidden {
+  transform: translateX(-100%); /* Desliza para a esquerda para fora da tela */
+}
+
+/* Estilo para o Conteúdo Principal */
+.conteudo-principal {
+  flex-grow: 1; /* Ocupa o espaço restante */
+  padding: 20px;
+  transition: margin-left 0.3s ease-in-out; /* Animação suave da margem */
+  margin-left: 250px; /* Margem inicial igual à largura da barra */
+  /* Garante que o conteúdo comece abaixo do Menu */
+  padding-top: 80px; /* Ajuste este valor se a altura do seu Menu for diferente (um pouco mais que o padding-top da barra lateral para compensar o Menu) */
+  width: 100%; /* Garante que ocupe a largura */
+  box-sizing: border-box; /* Inclui padding na largura total */
+}
+
+/* Estilo para o Conteudo Principal quando a barra está oculta */
+.conteudo-principal.sem-barra {
+  margin-left: 0; /* Remove a margem esquerda */
+}

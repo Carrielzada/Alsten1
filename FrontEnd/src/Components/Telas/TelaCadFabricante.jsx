@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import LayoutModerno from '../LayoutModerno/LayoutModerno';
 import CardModerno from '../LayoutModerno/CardModerno';
 import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
 import { buscarFabricantes, adicionarFabricante, atualizarFabricante, excluirFabricante } from '../../Services/fabricanteService.js'; // Caminho corrigido e real
@@ -96,10 +95,9 @@ const TelaCadFabricante = () => {
   };
 
   return (
-    <LayoutModerno>
       <Container fluid>
         <Row className="justify-content-center">
-          <Col md={8} lg={6}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Cadastro de Fabricantes">
               {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
               <Form onSubmit={handleSubmit}>
@@ -128,7 +126,7 @@ const TelaCadFabricante = () => {
         </Row>
 
         <Row className="mt-4 justify-content-center">
-          <Col md={10} lg={8}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Fabricantes Cadastrados">
               <Form onSubmit={handleBuscar} className="mb-3">
                 <Row>
@@ -180,7 +178,6 @@ const TelaCadFabricante = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutModerno>
   );
 };
 

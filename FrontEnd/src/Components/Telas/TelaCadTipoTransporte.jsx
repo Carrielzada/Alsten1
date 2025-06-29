@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import LayoutModerno from '../LayoutModerno/LayoutModerno.jsx';
 import CardModerno from '../LayoutModerno/CardModerno.jsx';
 import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
 import { buscarTiposTransporte, adicionarTipoTransporte, atualizarTipoTransporte, excluirTipoTransporte } from '../../Services/tipoTransporteService.js';
@@ -94,10 +93,9 @@ const TelaCadTipoTransporte = () => {
   };
 
   return (
-    <LayoutModerno>
       <Container fluid>
         <Row className="justify-content-center">
-          <Col md={8} lg={6}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Cadastro de Tipos de Transporte">
               {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
               <Form onSubmit={handleSubmit}>
@@ -126,7 +124,7 @@ const TelaCadTipoTransporte = () => {
         </Row>
 
         <Row className="mt-4 justify-content-center">
-          <Col md={10} lg={8}>
+          <Col md={12} lg={11}>
             <CardModerno titulo="Tipos de Transporte Cadastrados">
               <Form onSubmit={handleBuscar} className="mb-3">
                 <Row>
@@ -178,7 +176,6 @@ const TelaCadTipoTransporte = () => {
           </Col>
         </Row>
       </Container>
-    </LayoutModerno>
   );
 };
 

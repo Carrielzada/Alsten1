@@ -16,7 +16,7 @@ async function testar() {
 
         await conexao.end();
     } catch (erro) {
-        console.error('❌ Erro ao conectar:', erro.message);
+        console.error('❌ Erro ao conectar:', erro);
     }
 }
 
