@@ -1,34 +1,58 @@
-// Arquivo: /home/ubuntu/project_Alsten/BackEnd/Modelo/OrdemServico.js
+// BackEnd/Model/OrdemServico.js
 
 class OrdemServico {
-    constructor(id, cliente, modeloEquipamento, defeitoAlegado, numeroSerie, fabricante, arquivosAnexados = [], etapa = 'Previsto') {
-        this.id = id; // ID da OS (pode ser gerado automaticamente)
-        this.cliente = cliente; // Nome ou ID do cliente
-        this.modeloEquipamento = modeloEquipamento; // ID ou nome do modelo
+    constructor(id, cliente, modeloEquipamento, defeitoAlegado, numeroSerie, fabricante, urgencia, tipoAnalise, tipoLacre, tipoLimpeza, tipoTransporte, formaPagamento, arquivosAnexados = [], etapa = 'Previsto', dataCriacao = new Date()) {
+        this.id = id;
+        this.cliente = cliente;
+        this.modeloEquipamento = modeloEquipamento;
         this.defeitoAlegado = defeitoAlegado;
         this.numeroSerie = numeroSerie;
         this.fabricante = fabricante;
-        this.arquivosAnexados = arquivosAnexados; // Array para caminhos dos arquivos
-        this.etapa = etapa; // Etapa inicial do fluxo da OS
-        this.dataCriacao = new Date();
-        // Outros campos conforme necessidade do MVP e evolução
+        this.urgencia = urgencia;
+        this.tipoAnalise = tipoAnalise;
+        this.tipoLacre = tipoLacre;
+        this.tipoLimpeza = tipoLimpeza;
+        this.tipoTransporte = tipoTransporte;
+        this.formaPagamento = formaPagamento;
+        this.arquivosAnexados = arquivosAnexados; // Esta propriedade será um array de strings
+        this.etapa = etapa;
+        this.dataCriacao = dataCriacao;
     }
 
-    // Método para adicionar um arquivo à OS
-    adicionarArquivo(filePath) {
-        if (filePath) {
-            this.arquivosAnexados.push(filePath);
-            console.log(`Arquivo ${filePath} associado à OS ${this.id}`);
-        }
+    // Método para adicionar um arquivo à lista
+    adicionarArquivo(caminhoArquivo) {
+        this.arquivosAnexados.push(caminhoArquivo);
+    }
+
+    // Método para remover um arquivo da lista
+    removerArquivo(caminhoArquivo) {
+        this.arquivosAnexados = this.arquivosAnexados.filter(caminho => caminho !== caminhoArquivo);
     }
 
     // Método para mudar a etapa da OS
     mudarEtapa(novaEtapa) {
         this.etapa = novaEtapa;
-        console.log(`OS ${this.id} movida para a etapa: ${novaEtapa}`);
-        // Adicionar lógica de log de alteração de etapa aqui no futuro
+    }
+
+    toJSON() {
+        return {
+            id: this.id,
+            cliente: this.cliente,
+            modeloEquipamento: this.modeloEquipamento,
+            defeitoAlegado: this.defeitoAlegado,
+            numeroSerie: this.numeroSerie,
+            fabricante: this.fabricante,
+            urgencia: this.urgencia,
+            tipoAnalise: this.tipoAnalise,
+            tipoLacre: this.tipoLacre,
+            tipoLimpeza: this.tipoLimpeza,
+            tipoTransporte: this.tipoTransporte,
+            formaPagamento: this.formaPagamento,
+            arquivosAnexados: this.arquivosAnexados,
+            etapa: this.etapa,
+            dataCriacao: this.dataCriacao
+        };
     }
 }
 
-export default OrdemServico; // Alterado para export default
-
+export default OrdemServico;

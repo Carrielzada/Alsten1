@@ -1,21 +1,29 @@
-// Arquivo: /home/ubuntu/project_Alsten/BackEnd/Routes/rotaOrdemServico.js
-import express from "express";
-import OrdemServicoCtrl from "../Controller/ordemServicoCtrl.js"; // Alterado para import ES Module
+import { Router } from "express";
+import OrdemServicoCtrl from "../Controller/ordemServicoCtrl.js";
 
-const router = express.Router();
-const osCtrl = new OrdemServicoCtrl();
+const rotaOrdemServico = new Router();
+const ordemServicoCtrl = new OrdemServicoCtrl();
 
-// Rota para gravar (criar/atualizar) uma Ordem de Serviço
-router.post("/", osCtrl.gravar.bind(osCtrl)); 
+// Rota de cadastro/atualização de OS
+rotaOrdemServico.post('/', ordemServicoCtrl.gravar);
 
-// Rota para consultar todas as Ordens de Serviço (com filtro opcional)
-router.get("/", osCtrl.consultar.bind(osCtrl)); 
+// Rota de consulta de todas as OS
+rotaOrdemServico.get('/', ordemServicoCtrl.consultar);
 
-// Rota para consultar uma Ordem de Serviço específica pelo ID
-router.get("/:id", osCtrl.consultarPorId.bind(osCtrl)); 
+// Rota de consulta de OS por ID
+rotaOrdemServico.get('/:id', ordemServicoCtrl.consultarPorId);
 
-// Rota para mudar a etapa de uma Ordem de Serviço
-router.put("/:id/mudar-etapa", osCtrl.mudarEtapa.bind(osCtrl)); 
+// Rota para anexar um arquivo a uma OS
+// Use um middleware de upload antes do controlador para processar o arquivo
+// A rota precisa ter o ID da OS na URL
+rotaOrdemServico.post('/anexar-arquivo/:id', ordemServicoCtrl.anexarArquivo);
 
-export default router; 
+// Rota para remover um arquivo de uma OS
+// Use DELETE e passe o nome do arquivo na URL
+rotaOrdemServico.delete('/:id/arquivo/:nomeArquivo', ordemServicoCtrl.removerArquivo);
 
+// Rota de exclusão de OS
+rotaOrdemServico.delete('/:id', ordemServicoCtrl.excluir);
+
+
+export default rotaOrdemServico;

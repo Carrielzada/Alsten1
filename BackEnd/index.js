@@ -64,7 +64,7 @@ app.use(express.json());
 
 // Servir arquivos estáticos da pasta 'uploads'
 // Isso permite que o frontend acesse os arquivos via http://localhost:4000/uploads/nome-do-arquivo.ext
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'))); 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes do MVP Alsten
 app.use('/users', rotaUsers);
