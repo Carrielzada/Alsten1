@@ -19,7 +19,7 @@ class OrdemServicoDAO {
                 if (!ordemServico.id) {
                     // Lógica para INCLUIR uma nova OS
                     const sql = `
-                        INSERT INTO ordens_servico 
+                        INSERT INTO ordem_servico 
                         (cliente, modeloEquipamento, defeitoAlegado, numeroSerie, fabricante, 
                         urgencia_id, tipo_analise_id, tipo_lacre_id, tipo_limpeza_id, tipo_transporte_id, pagamento_id,
                         etapa, dataCriacao, arquivosAnexados)
@@ -46,7 +46,7 @@ class OrdemServicoDAO {
                 } else {
                     // Lógica para ALTERAR uma OS existente
                     const sql = `
-                        UPDATE ordens_servico 
+                        UPDATE ordem_servico 
                         SET cliente = ?, modeloEquipamento = ?, defeitoAlegado = ?, 
                         numeroSerie = ?, fabricante = ?, urgencia_id = ?, tipo_analise_id = ?, 
                         tipo_lacre_id = ?, tipo_limpeza_id = ?, tipo_transporte_id = ?, pagamento_id = ?,
@@ -93,7 +93,7 @@ class OrdemServicoDAO {
                     tLimp.tipo_limpeza,
                     tt.tipo_transporte,
                     p.pagamento
-                FROM ordens_servico os
+                FROM ordem_servico os
                 LEFT JOIN urgencia urg ON os.urgencia_id = urg.id
                 LEFT JOIN tipo_analise ta ON os.tipo_analise_id = ta.id
                 LEFT JOIN tipo_lacre tl ON os.tipo_lacre_id = tl.id
@@ -149,7 +149,7 @@ class OrdemServicoDAO {
                     tLimp.tipo_limpeza,
                     tt.tipo_transporte,
                     p.pagamento
-                FROM ordens_servico os
+                FROM ordem_servico os
                 LEFT JOIN urgencia urg ON os.urgencia_id = urg.id
                 LEFT JOIN tipo_analise ta ON os.tipo_analise_id = ta.id
                 LEFT JOIN tipo_lacre tl ON os.tipo_lacre_id = tl.id
@@ -210,7 +210,7 @@ class OrdemServicoDAO {
             }
             
             // Depois, exclua o registro da OS do banco de dados
-            const sql = "DELETE FROM ordens_servico WHERE id = ?";
+            const sql = "DELETE FROM ordem_servico WHERE id = ?";
             const resultado = await conexao.query(sql, [osId]);
             return resultado[0].affectedRows > 0; // Retorna true se a exclusão foi bem-sucedida
         } catch (error) {
@@ -231,7 +231,7 @@ class OrdemServicoDAO {
                 os.arquivosAnexados.push(path.basename(caminhoArquivo));
                 
                 // Atualize a OS no banco de dados com a nova lista de arquivos
-                const sql = "UPDATE ordens_servico SET arquivosAnexados = ? WHERE id = ?";
+                const sql = "UPDATE ordem_servico SET arquivosAnexados = ? WHERE id = ?";
                 const valores = [JSON.stringify(os.arquivosAnexados), osId];
                 await conexao.query(sql, valores);
                 return true;
@@ -265,7 +265,7 @@ class OrdemServicoDAO {
                 }
 
                 // Atualize a lista de arquivos no banco de dados
-                const sql = "UPDATE ordens_servico SET arquivosAnexados = ? WHERE id = ?";
+                const sql = "UPDATE ordem_servico SET arquivosAnexados = ? WHERE id = ?";
                 const valores = [JSON.stringify(novaListaArquivos), osId];
                 await conexao.query(sql, valores);
                 

@@ -5,9 +5,10 @@ import TelaLogin from "./Components/Telas/TelaLogin";
 import TelaHomeCliente from "./Components/Telas/TelaHomeCliente";
 import ProtectedComponent from "./ProtectedComponent";
 import TelaListagemOS from "./Components/Telas/TelaListagemOS";
-import FormUploadArquivo from "./Components/Telas/Formularios/FormUploadArquivo";
+import TelaCadOrdemServico from "./Components/Telas/TelaCadOrdemServico";
+// Porque tem um espaço aqui?
 
-// Cadastros do MVP (serão adaptados ao novo layout)
+import FormUploadArquivo from "./Components/Telas/Formularios/FormUploadArquivo";
 import TelaCadModeloEquipamento from "./Components/Telas/TelaCadModeloEquipamento";
 import TelaCadPagamento from "./Components/Telas/TelaCadPagamento";
 import TelaCadUrgencia from "./Components/Telas/TelaCadUrgencia";
@@ -18,7 +19,6 @@ import TelaCadTipoTransporte from "./Components/Telas/TelaCadTipoTransporte";
 import TelaCadFabricante from "./Components/Telas/TelaCadFabricante"; 
 import TelaCadDefeitoAlegado from "./Components/Telas/TelaCadDefeitoAlegado"; 
 import TelaCadClientePJ from "./Components/Telas/TelaCadClientePJ";
-// import TelaCadServicoRealizado from "./Components/Telas/TelaCadServicoRealizado";
 
 // Novo Layout
 import LayoutModerno from "./Components/LayoutModerno/LayoutModerno";
@@ -61,6 +61,7 @@ function App() {
         <Route path="/cadastros/defeito-alegado" element={<TelaCadDefeitoAlegado />} />
         <Route path="/cadastros/clientes" element={<TelaCadClientePJ />} />
         <Route path="/sua-conta" element={<div>Tela Sua Conta (Em construção)</div>} />
+        <Route path="/cadastrar-os" element={<TelaCadOrdemServico />} />
         {/* Adicionar outras rotas protegidas aqui */}
         <Route path="*" element={<Tela404 />} /> {/* Fallback para rotas não encontradas dentro do layout */}
       </Routes>

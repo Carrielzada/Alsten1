@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import './BarraLateral.css'; // Pode ser mesclado com LayoutModerno.css ou mantido separado
 
@@ -6,7 +5,7 @@ import './BarraLateral.css'; // Pode ser mesclado com LayoutModerno.css ou manti
 const BarraLateral = ({ className }) => {
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: 'FaTachometerAlt' }, // Substituir string por componente de ícone
-    { path: '/ordens-servico', label: 'Ordens de Serviço', icon: 'FaBoxOpen' },
+    { path: '/cadastrar-os', label: 'Ordens de Serviço', icon: 'FaBoxOpen' },
     {
       label: 'Cadastros',
       icon: 'FaCog',
