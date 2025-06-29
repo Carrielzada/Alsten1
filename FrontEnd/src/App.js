@@ -61,7 +61,7 @@ function App() {
         <Route path="/cadastros/defeito-alegado" element={<TelaCadDefeitoAlegado />} />
         <Route path="/cadastros/clientes" element={<TelaCadClientePJ />} />
         <Route path="/sua-conta" element={<div>Tela Sua Conta (Em construção)</div>} />
-        <Route path="/cadastrar-os" element={<TelaCadOrdemServico />} />
+        <Route path="/ordem-servico" element={<TelaCadOrdemServico />} />
         {/* Adicionar outras rotas protegidas aqui */}
         <Route path="*" element={<Tela404 />} /> {/* Fallback para rotas não encontradas dentro do layout */}
       </Routes>

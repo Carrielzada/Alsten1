@@ -5,7 +5,7 @@ import './BarraLateral.css'; // Pode ser mesclado com LayoutModerno.css ou manti
 const BarraLateral = ({ className }) => {
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: 'FaTachometerAlt' }, // Substituir string por componente de ícone
-    { path: '/cadastrar-os', label: 'Ordens de Serviço', icon: 'FaBoxOpen' },
+    { path: '/ordem-servico', label: 'Ordens de Serviço', icon: 'FaBoxOpen' },
     {
       label: 'Cadastros',
       icon: 'FaCog',

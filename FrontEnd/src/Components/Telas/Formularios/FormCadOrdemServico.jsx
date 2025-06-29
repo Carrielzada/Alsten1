@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import CaixaSelecao from '../../busca/CaixaSelecao';
+import CaixaSelecaoSimples from '../../busca/CaixaSelecaoSimples';
 import { buscarTodosClientePJ } from '../../../Services/clientePJService';
 import { buscarFabricantes } from '../../../Services/fabricanteService';
 import { buscarModelo } from '../../../Services/modeloService';
@@ -13,6 +13,7 @@ import { buscarTiposTransporte } from '../../../Services/tipoTransporteService';
 import { buscarPagamento } from '../../../Services/pagamentoService';
 import { gravarOrdemServico, anexarArquivo, removerArquivo } from '../../../Services/ordemServicoService';
 import ListaArquivosAnexados from '../../Visualizacao/ListaArquivosAnexados';
+import { getToken } from '../../../Services/authService';
 
 const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao }) => {
     const [ordemServico, setOrdemServico] = useState({
@@ -46,14 +47,14 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
 
     useEffect(() => {
         const carregarDadosCadastrais = async () => {
+            const token = getToken();
             try {
                 // Buscando dados de clientes PF e PJ e combinando-os
-                const [clientesPFData, clientesPJData] = await Promise.all([
-                    buscarTodosClientePJ()
+                const [clientesPJData] = await Promise.all([
+                    buscarTodosClientePJ(token)
                 ]);
                 const todosClientes = [
-                    ...clientesPFData.listaClientesPF,
-                    ...clientesPJData.listaClientesPJ
+                    clientesPJData.listaClientesPJ
                 ];
                 setClientes(todosClientes);
 
@@ -111,45 +112,46 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
     };
 
     const handleSelectChange = (e) => {
-        const { name, value } = e.target;
-        let selectedObject = null;
-        switch (name) {
-            case 'cliente':
-                selectedObject = clientes.find(item => item.id === value);
-                break;
-            case 'fabricante':
-                selectedObject = fabricantes.find(item => item.id === value);
-                break;
-            case 'modeloEquipamento':
-                selectedObject = modelos.find(item => item.id === value);
-                break;
-            case 'urgencia':
-                selectedObject = urgencias.find(item => item.id === value);
-                break;
-            case 'tipoAnalise':
-                selectedObject = tiposAnalise.find(item => item.id === value);
-                break;
-            case 'tipoLacre':
-                selectedObject = tiposLacre.find(item => item.id === value);
-                break;
-            case 'tipoLimpeza':
-                selectedObject = tiposLimpeza.find(item => item.id === value);
-                break;
-            case 'tipoTransporte':
-                selectedObject = tiposTransporte.find(item => item.id === value);
-                break;
-            case 'formaPagamento':
-                selectedObject = formasPagamento.find(item => item.id === value);
-                break;
-            default:
-                break;
-        }
+    const { name, value } = e.target;
+    let selectedObject = null;
 
-        setOrdemServico(prevState => ({
-            ...prevState,
-            [name]: selectedObject
-        }));
-    };
+    switch (name) {
+        case 'cliente':
+            selectedObject = clientes.find(item => item.id === parseInt(value));
+            break;
+        case 'fabricante':
+            selectedObject = fabricantes.find(item => item.id === parseInt(value));
+            break;
+        case 'modeloEquipamento':
+            selectedObject = modelos.find(item => item.id === parseInt(value));
+            break;
+        case 'urgencia':
+            selectedObject = urgencias.find(item => item.id === parseInt(value));
+            break;
+        case 'tipoAnalise':
+            selectedObject = tiposAnalise.find(item => item.id === parseInt(value));
+            break;
+        case 'tipoLacre':
+            selectedObject = tiposLacre.find(item => item.id === parseInt(value));
+            break;
+        case 'tipoLimpeza':
+            selectedObject = tiposLimpeza.find(item => item.id === parseInt(value));
+            break;
+        case 'tipoTransporte':
+            selectedObject = tiposTransporte.find(item => item.id === parseInt(value));
+            break;
+        case 'formaPagamento':
+            selectedObject = formasPagamento.find(item => item.id === parseInt(value));
+            break;
+        default:
+            break;
+    }
+
+    setOrdemServico(prevState => ({
+        ...prevState,
+        [name]: selectedObject
+    }));
+};
 
     const handleFileChange = (e) => {
         setArquivoParaUpload(e.target.files[0]);
@@ -228,7 +230,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             <div className="input-group">
                 <div className="input-field">
                     <label htmlFor="cliente">Cliente:</label>
-                    <CaixaSelecao 
+                    <CaixaSelecaoSimples 
                         dados={clientes} 
                         campoChave="id" 
                         campoExibir="nome"
@@ -239,7 +241,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                 </div>
                 <div className="input-field">
                     <label htmlFor="modeloEquipamento">Modelo do Equipamento:</label>
-                    <CaixaSelecao 
+                    <CaixaSelecaoSimples 
                         dados={modelos} 
                         campoChave="id" 
                         campoExibir="modelo" 
@@ -253,7 +255,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             <div className="input-group">
                 <div className="input-field">
                     <label htmlFor="fabricante">Fabricante:</label>
-                    <CaixaSelecao 
+                    <CaixaSelecaoSimples 
                         dados={fabricantes} 
                         campoChave="id" 
                         campoExibir="fabricante" 
@@ -294,7 +296,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             <div className="input-group">
                 <div className="input-field">
                     <label htmlFor="urgencia">Nível de Urgência:</label>
-                    <CaixaSelecao 
+                    <CaixaSelecaoSimples 
                         dados={urgencias} 
                         campoChave="id" 
                         campoExibir="urgencia" 
@@ -305,7 +307,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                 </div>
                 <div className="input-field">
                     <label htmlFor="tipoAnalise">Tipo de Análise:</label>
-                    <CaixaSelecao 
+                    <CaixaSelecaoSimples 
                         dados={tiposAnalise} 
                         campoChave="id" 
                         campoExibir="tipoAnalise" 
@@ -319,7 +321,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             <div className="input-group">
                 <div className="input-field">
                     <label htmlFor="tipoLacre">Tipo de Lacre:</label>
-                    <CaixaSelecao 
+                    <CaixaSelecaoSimples 
                         dados={tiposLacre} 
                         campoChave="id" 
                         campoExibir="tipoLacre" 
@@ -330,7 +332,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                 </div>
                 <div className="input-field">
                     <label htmlFor="tipoLimpeza">Tipo de Limpeza:</label>
-                    <CaixaSelecao 
+                    <CaixaSelecaoSimples 
                         dados={tiposLimpeza} 
                         campoChave="id" 
                         campoExibir="tipoLimpeza" 
@@ -344,7 +346,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             <div className="input-group">
                 <div className="input-field">
                     <label htmlFor="tipoTransporte">Tipo de Transporte:</label>
-                    <CaixaSelecao 
+                    <CaixaSelecaoSimples 
                         dados={tiposTransporte} 
                         campoChave="id" 
                         campoExibir="tipoTransporte" 
@@ -355,7 +357,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                 </div>
                 <div className="input-field">
                     <label htmlFor="formaPagamento">Forma de Pagamento:</label>
-                    <CaixaSelecao 
+                    <CaixaSelecaoSimples 
                         dados={formasPagamento} 
                         campoChave="id" 
                         campoExibir="pagamento" 

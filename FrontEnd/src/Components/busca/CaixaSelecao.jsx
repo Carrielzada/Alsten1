@@ -77,7 +77,7 @@ export default function CaixaSelecao({ enderecoFonteDados,
     }, []);  //willMount
 
     return (
-        <Container border>
+        <Container>
             <Row>
                 <Col md={11}>
                     <Form.Select

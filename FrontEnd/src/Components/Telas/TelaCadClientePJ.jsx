@@ -2,48 +2,33 @@ import { Button, Container, Row, Col } from "react-bootstrap";
 import Pagina from "../Templates2/Pagina.jsx";
 import FormCadClientePJ from "./Formularios/FormCadClientePJ.jsx";
 import TabelaClientePJ from "./Tabelas/TabelaClientePJ.jsx";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { buscarTodosClientePJ } from "../../Services/clientePJService.js";
-import { ContextoUsuarioLogado } from "../../App.js";
 import { FaPlus } from "react-icons/fa";
 
 export default function TelaCadClientePJ(props) {
-    const contextoUsuario = useContext(ContextoUsuarioLogado);
-
     const [exibirTabela, setExibirTabela] = useState(true);
     const [atualizarTela, setAtualizarTela] = useState(false);
     const [listaDeClientePJ, setListaDeClientePJ] = useState([]);
-
-    // Estados adicionais
     const [modoEdicao, setModoEdicao] = useState(false);
-    const [clientePJSelecionado, setClientePJSelecionado] = useState({
-        cnpj: "",
-        nome: "",
-        nome_fantasia: "",
-        contato: "",
-        endereco: "",
-        cidade: "",
-        bairro: "",
-        estado: "",
-        cep: "",
-        criado_em: "",
-        atualizado_em: ""
-    });
+    const [clientePJSelecionado, setClientePJSelecionado] = useState({});
 
-    // Buscar todos os clientes PJ no backend
+    // CORREÇÃO: Chamando a função de serviço sem o token
     useEffect(() => {
-        const token = contextoUsuario.usuarioLogado.token;
-        buscarTodosClientePJ(token)
+        buscarTodosClientePJ()
             .then((resposta) => {
                 if (resposta.status) {
-                    setListaDeClientePJ(resposta.listaClientes);
+                    setListaDeClientePJ(resposta.listaClientesPJ); // Corrigindo para listaClientesPJ
                 }
-                setAtualizarTela(false);
             })
             .catch((erro) => {
                 alert("Erro ao buscar Clientes PJ: " + erro.message);
+            })
+            .finally(() => {
+                // Garante que o estado de atualização seja resetado
+                setAtualizarTela(false);
             });
-    }, [exibirTabela, atualizarTela]);
+    }, [exibirTabela, atualizarTela]); // A tela será recarregada quando voltar para a tabela ou quando forçar a atualização
 
     return (
         <Pagina>
@@ -56,24 +41,11 @@ export default function TelaCadClientePJ(props) {
                         <Col md={2} className="text-end">
                             {exibirTabela && (
                                 <Button
-                                    className="w-90"
                                     variant="primary"
                                     onClick={() => {
+                                        setModoEdicao(false);
+                                        setClientePJSelecionado({}); // Limpa o cliente selecionado
                                         setExibirTabela(false);
-                                        setModoEdicao(false); // Modo de edição desligado ao adicionar novo registro
-                                        setClientePJSelecionado({
-                                            cnpj: "",
-                                            nome: "",
-                                            nome_fantasia: "",
-                                            contato: "",
-                                            endereco: "",
-                                            cidade: "",
-                                            bairro: "",
-                                            estado: "",
-                                            cep: "",
-                                            criado_em: "",
-                                            atualizado_em: ""
-                                        });
                                     }}
                                     style={{ backgroundColor: "#191970", borderColor: "#191970" }}
                                 >
@@ -86,23 +58,20 @@ export default function TelaCadClientePJ(props) {
                 </Container>
             </div>
 
-            {/* Alterna entre Tabela e Formulário */}
             {exibirTabela ? (
                 <TabelaClientePJ
                     listaDeClientePJ={listaDeClientePJ}
                     setExibirTabela={setExibirTabela}
-                    setAtualizarTela={setAtualizarTela}
+                    setAtualizarTela={setAtualizarTela} // Prop necessária para forçar a atualização
                     setModoEdicao={setModoEdicao}
                     setClientePJSelecionado={setClientePJSelecionado}
                 />
             ) : (
                 <FormCadClientePJ
                     setExibirTabela={setExibirTabela}
-                    setModoEdicao={setModoEdicao}
                     modoEdicao={modoEdicao}
                     clientePJSelecionado={clientePJSelecionado}
-                    setClientePJSelecionado={setClientePJSelecionado}
-                    setAtualizarTela={setAtualizarTela}
+                    setAtualizarTela={setAtualizarTela} // Prop necessária para forçar a atualização
                 />
             )}
         </Pagina>

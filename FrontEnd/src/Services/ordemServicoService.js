@@ -1,102 +1,63 @@
-const API_URL = "http://localhost:4000";
+import fetchAutenticado from './apiService';
 
-export const gravarOrdemServico = async (osData) => {
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(osData),
-        });
-
-        if (!response.ok) {
-            throw new Error(`Erro ao salvar a Ordem de Serviço: ${response.statusText}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error('Erro na requisição:', error);
-        throw error;
-    }
+/**
+ * Adiciona um novo defeito alegado.
+ * @param {object} ordemServico - O objeto do defeito a ser adicionado.
+ */
+export const gravarOrdemServico = (ordemServico) => {
+    return fetchAutenticado('/ordem-servico', {
+        method: 'POST',
+        body: ordemServico, // Não precisa do JSON.stringify, o serviço já faz isso.
+    });
 };
 
-export const consultarTodasOrdensServico = async (termo = '') => {
-    try {
-        const response = await fetch(`${API_URL}?termo=${termo}`);
-        if (!response.ok) {
-            throw new Error('Erro ao consultar as Ordens de Serviço.');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('Erro na requisição:', error);
-        throw error;
-    }
+export const buscarTodasOrdensServico = () => {
+    return fetchAutenticado('/ordem-servico');
 };
 
-export const consultarOrdemServicoPorId = async (id) => {
-    try {
-        const response = await fetch(`${API_URL}/${id}`);
-        if (!response.ok) {
-            throw new Error('Erro ao consultar a Ordem de Serviço.');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('Erro na requisição:', error);
-        throw error;
-    }
+/**
+ * Consulta uma Ordem de Serviço específica pelo seu ID.
+ * @param {string} id - O ID da Ordem de Serviço a ser consultada.
+ */
+export const consultarOrdemServicoPorId = (id) => {
+    // Para um GET, basta passar o endpoint. A autenticação é adicionada automaticamente.
+    return fetchAutenticado(`/ordem-servico/${id}`);
 };
 
-export const anexarArquivo = async (osId, arquivo) => {
-    try {
-        const formData = new FormData();
-        formData.append('arquivo', arquivo);
+/**
+ * Anexa um arquivo a uma Ordem de Serviço existente.
+ * @param {string} osId - O ID da Ordem de Serviço.
+ * @param {File} arquivo - O arquivo a ser anexado.
+ */
+export const anexarArquivo = (osId, arquivo) => {
+    const formData = new FormData();
+    formData.append('arquivo', arquivo);
 
-        const response = await fetch(`${API_URL}/anexar-arquivo/${osId}`, {
-            method: 'POST',
-            body: formData,
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.mensagem || 'Erro ao anexar o arquivo.');
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error('Erro na requisição:', error);
-        throw error;
-    }
+    return fetchAutenticado(`/ordem-servico/${osId}/anexar`, {
+        method: 'POST',
+        body: formData, // O apiService não usa JSON.stringify em FormData
+    });
 };
 
-export const removerArquivo = async (osId, nomeArquivo) => {
-    try {
-        const response = await fetch(`${API_URL}/${osId}/arquivo/${nomeArquivo}`, {
-            method: 'DELETE',
-        });
-
-        if (!response.ok) {
-            throw new Error(`Erro ao remover o arquivo: ${response.statusText}`);
-        }
-        
-        return response.ok; // Retorna true se a remoção foi bem-sucedida
-    } catch (error) {
-        console.error('Erro na requisição:', error);
-        throw error;
-    }
+/**
+ * Remove um arquivo de uma Ordem de Serviço.
+ * @param {string} osId - O ID da Ordem de Serviço.
+ * @param {string} nomeArquivo - O nome do arquivo a ser removido.
+ */
+export const removerArquivo = (osId, nomeArquivo) => {
+    return fetchAutenticado(`/ordem-servico/${osId}/remover-arquivo`, {
+        method: 'DELETE',
+        body: { nomeArquivo },
+    });
 };
 
-export const excluirOrdemServico = async (id) => {
-    try {
-        const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE',
-        });
-        if (!response.ok) {
-            throw new Error('Erro ao excluir a Ordem de Serviço.');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('Erro na requisição:', error);
-        throw error;
-    }
+/**
+ * Exclui um defeito alegado pelo ID.
+ * @param {string} id - O ID do defeito a ser excluído.
+ */
+export const excluirOrdemServico = (id) => {
+    return fetchAutenticado('/ordem-servico', {
+        method: 'DELETE',
+        body: { id },
+    });
 };

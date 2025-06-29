@@ -1,72 +1,41 @@
-import { getToken } from "./authService";
+import fetchAutenticado from './apiService';
 
-const API_URL = "http://localhost:4000";
-
-async function handleResponse(response) {
-    const contentType = response.headers.get("content-type");
-    let data;
-    if (contentType && contentType.indexOf("application/json") !== -1) {
-        data = await response.json();
-    } else {
-        data = await response.text(); 
-    }
-
-    if (!response.ok) {
-        const error = (data && data.mensagem) || data || response.statusText;
-        console.error("Erro na API:", error, "Status:", response.status, "Data:", data);
-        throw new Error(error);
-    }
-    return data;
-}
-
-export const buscarDefeitosAlegados = async (termo = "") => {
-    const token = getToken();
-    const response = await fetch(`${API_URL}/defeito-alegado/${termo}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-        },
-    });
-    return handleResponse(response);
+/**
+ * Busca todos os defeitos alegados.
+ */
+export const buscarDefeitosAlegados = () => {
+    return fetchAutenticado('/defeito-alegado');
 };
 
-export const adicionarDefeitoAlegado = async (defeitoAlegado) => {
-    const token = getToken();
-    const response = await fetch(`${API_URL}/defeito-alegado`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(defeitoAlegado),
+/**
+ * Adiciona um novo defeito alegado.
+ * @param {object} defeitoAlegado - O objeto do defeito a ser adicionado.
+ */
+export const adicionarDefeitoAlegado = (defeitoAlegado) => {
+    return fetchAutenticado('/defeito-alegado', {
+        method: 'POST',
+        body: defeitoAlegado, // Não precisa do JSON.stringify, o serviço já faz isso.
     });
-    return handleResponse(response);
 };
 
-export const atualizarDefeitoAlegado = async (defeitoAlegado) => {
-    const token = getToken();
-    const response = await fetch(`${API_URL}/defeito-alegado`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(defeitoAlegado),
+/**
+ * Atualiza um defeito alegado existente.
+ * @param {object} defeitoAlegado - O objeto do defeito com o ID para atualizar.
+ */
+export const atualizarDefeitoAlegado = (defeitoAlegado) => {
+    return fetchAutenticado('/defeito-alegado', { // Supondo que o ID está no corpo
+        method: 'PUT',
+        body: defeitoAlegado,
     });
-    return handleResponse(response);
 };
 
-export const excluirDefeitoAlegado = async (id) => {
-    const token = getToken();
-    const response = await fetch(`${API_URL}/defeito-alegado`, {
-        method: "DELETE",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({ id }),
+/**
+ * Exclui um defeito alegado pelo ID.
+ * @param {string} id - O ID do defeito a ser excluído.
+ */
+export const excluirDefeitoAlegado = (id) => {
+    return fetchAutenticado('/defeito-alegado', {
+        method: 'DELETE',
+        body: { id },
     });
-    return handleResponse(response);
 };
-

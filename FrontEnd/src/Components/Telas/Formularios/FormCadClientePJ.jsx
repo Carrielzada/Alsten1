@@ -1,14 +1,13 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import { Form, Row, Col, Button, Container, FloatingLabel } from "react-bootstrap";
-import { ContextoUsuarioLogado } from "../../../App";
 import { gravarClientePJ, alterarClientePJ } from "../../../Services/clientePJService";
 import { FaSave, FaTimes } from "react-icons/fa";
 
 export default function FormCadClientePJ(props) {
-    const contextoUsuario = useContext(ContextoUsuarioLogado);
     const [validado, setValidado] = useState(false);
-
     const [clientePJ, setClientePJ] = useState({
+        // Incluindo o 'id' no estado inicial para garantir que ele exista
+        id: null, 
         cnpj: "",
         nome: "",
         nome_fantasia: "",
@@ -20,84 +19,57 @@ export default function FormCadClientePJ(props) {
         estado: ""
     });
 
-    const formatarCNPJ = (valor) => {
-        return valor
-            .replace(/\D/g, "")
-            .replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
-    };
-
-    const formatarCEP = (valor) => {
-        return valor.replace(/\D/g, "").replace(/^(\d{5})(\d{3})$/, "$1-$2");
-    };
-    
-    const formatarContato = (valor) => {
-        return valor.replace(/\D/g, "").replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
-    };
+    // Funções de formatação (mantidas como estavam)
+    const formatarCNPJ = (valor) => valor.replace(/\D/g, "").replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+    const formatarCEP = (valor) => valor.replace(/\D/g, "").replace(/^(\d{5})(\d{3})$/, "$1-$2");
+    const formatarContato = (valor) => valor.replace(/\D/g, "").replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
 
     useEffect(() => {
+        // Quando o modo de edição é ativado, o cliente selecionado (com ID) é carregado no estado do formulário
         if (props.modoEdicao && props.clientePJSelecionado) {
-            const clienteEdit = {
-                ...props.clientePJSelecionado
-            };
-            setClientePJ(clienteEdit);
+            setClientePJ(props.clientePJSelecionado);
         }
     }, [props.modoEdicao, props.clientePJSelecionado]);
 
     const manipularMudanca = (e) => {
         const { name, value } = e.target;
-    
-        let valorFormatado = value;
-    
-        if (name === "cnpj") {
-            valorFormatado = value.replace(/\D/g, ""); // Remove a máscara internamente
-        } else if (name === "cep") {
-            valorFormatado = value.replace(/\D/g, "").slice(0, 8); // Limita o CEP a 8 dígitos
-        } else if (name === "contato") {
-            valorFormatado = value.replace(/\D/g, "").slice(0, 11); // Limita o contato a 11 dígitos
-        }
-    
-        setClientePJ({ ...clientePJ, [name]: valorFormatado });
+        setClientePJ({ ...clientePJ, [name]: value });
     };
-    
-    
 
     const manipulaSubmissao = (event) => {
         event.preventDefault();
         const form = event.currentTarget;
-        const token = contextoUsuario.usuarioLogado.token;
-    
-        const clienteSemMascara = {
-            ...clientePJ,
-            cnpj: clientePJ.cnpj.replace(/\D/g, ""), // Remove máscara do CNPJ
-            cep: clientePJ.cep.replace(/\D/g, ""), // Remove máscara do CEP
-            contato: clientePJ.contato.replace(/\D/g, ""), // Remove máscara do contato
-        };
-    
+
+        // O objeto já contém o ID quando em modo de edição
+        const clienteParaSalvar = { ...clientePJ };
+
         if (form.checkValidity()) {
             if (props.modoEdicao) {
-                alterarClientePJ(clienteSemMascara, token)
-                    .then((resposta) => {
+                // CORREÇÃO: Chamando a função de serviço sem o token
+                alterarClientePJ(clienteParaSalvar)
+                    .then(() => {
                         alert("Cliente atualizado com sucesso!");
+                        props.setAtualizarTela(true); // Garante que a lista será recarregada
                         props.setExibirTabela(true);
                     })
                     .catch((erro) => alert("Erro ao atualizar: " + erro.message));
             } else {
-                gravarClientePJ(clienteSemMascara, token)
-                    .then((resposta) => {
+                // CORREÇÃO: Chamando a função de serviço sem o token
+                gravarClientePJ(clienteParaSalvar)
+                    .then(() => {
                         alert("Cliente cadastrado com sucesso!");
+                        props.setAtualizarTela(true); // Garante que a lista será recarregada
                         props.setExibirTabela(true);
                     })
                     .catch((erro) => alert("Erro ao cadastrar: " + erro.message));
             }
         }
     };
-    
-    
-    
 
+    // O restante do seu JSX do formulário continua aqui, sem alterações...
     return (
         <Container className="p-3 border rounded shadow-sm mx-auto" style={{ maxWidth: "800px" }}>
-            <Form noValidate validated={validado} onSubmit={manipulaSubmissao} className="small">
+             <Form noValidate validated={validado} onSubmit={manipulaSubmissao} className="small">
                 <h5 className="mb-3 text-center fw-bold">
                     {props.modoEdicao ? "Editar Cliente PJ" : "Cadastro de Cliente PJ"}
                 </h5>
@@ -112,7 +84,7 @@ export default function FormCadClientePJ(props) {
                                 type="text"
                                 name="cnpj"
                                 required
-                                value={formatarCNPJ(clientePJ.cnpj)}
+                                value={formatarCNPJ(clientePJ.cnpj || '')}
                                 onChange={manipularMudanca}
                                 readOnly={props.modoEdicao}
                                 style={{
@@ -157,9 +129,9 @@ export default function FormCadClientePJ(props) {
                                 size="sm"
                                 type="text"
                                 name="contato"
-                                maxLength="11"
+                                maxLength="15"
                                 required
-                                value={formatarContato(clientePJ.contato)}
+                                value={formatarContato(clientePJ.contato || '')}
                                 onChange={manipularMudanca}
                             />
                         </FloatingLabel>
@@ -170,8 +142,8 @@ export default function FormCadClientePJ(props) {
                                 size="sm"
                                 type="text"
                                 name="cep"
-                                maxLength="8"
-                                value={formatarCEP(clientePJ.cep)}
+                                maxLength="9"
+                                value={formatarCEP(clientePJ.cep || '')}
                                 onChange={manipularMudanca}
                             />
                         </FloatingLabel>
