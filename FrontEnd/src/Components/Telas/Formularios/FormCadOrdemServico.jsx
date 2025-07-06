@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import CaixaSelecaoSimples from '../../busca/CaixaSelecaoSimples';
+import CaixaSelecaoAsyncBling from '../../busca/CaixaSelecaoAsyncBling';
+import CaixaSelecaoPesquisavel from '../../busca/CaixaSelecaoPesquisavel';
 import { buscarTodosClientePJ } from '../../../Services/clientePJService';
 import { buscarFabricantes } from '../../../Services/fabricanteService';
 import { buscarModelo } from '../../../Services/modeloService';
@@ -230,18 +231,17 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             <div className="input-group">
                 <div className="input-field">
                     <label htmlFor="cliente">Cliente:</label>
-                    <CaixaSelecaoSimples 
-                        dados={clientes} 
-                        campoChave="id" 
-                        campoExibir="nome"
-                        valorSelecionado={ordemServico.cliente?.id || ''} 
-                        onChange={handleSelectChange} 
+                    <CaixaSelecaoAsyncBling
+                        valorSelecionado={ordemServico.cliente || ''}
+                        onChange={handleSelectChange}
                         name="cliente"
+                        token="5e47567333305fc7ce8e3794a5e01e6b06039442
+"
                     />
                 </div>
                 <div className="input-field">
                     <label htmlFor="modeloEquipamento">Modelo do Equipamento:</label>
-                    <CaixaSelecaoSimples 
+                    <CaixaSelecaoPesquisavel 
                         dados={modelos} 
                         campoChave="id" 
                         campoExibir="modelo" 
@@ -255,10 +255,10 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             <div className="input-group">
                 <div className="input-field">
                     <label htmlFor="fabricante">Fabricante:</label>
-                    <CaixaSelecaoSimples 
+                    <CaixaSelecaoPesquisavel 
                         dados={fabricantes} 
                         campoChave="id" 
-                        campoExibir="fabricante" 
+                        campoExibir="nome_fabricante" 
                         valorSelecionado={ordemServico.fabricante?.id || ''} 
                         onChange={handleSelectChange} 
                         name="fabricante"
@@ -296,7 +296,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             <div className="input-group">
                 <div className="input-field">
                     <label htmlFor="urgencia">Nível de Urgência:</label>
-                    <CaixaSelecaoSimples 
+                    <CaixaSelecaoPesquisavel 
                         dados={urgencias} 
                         campoChave="id" 
                         campoExibir="urgencia" 
@@ -307,10 +307,10 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                 </div>
                 <div className="input-field">
                     <label htmlFor="tipoAnalise">Tipo de Análise:</label>
-                    <CaixaSelecaoSimples 
+                    <CaixaSelecaoPesquisavel 
                         dados={tiposAnalise} 
                         campoChave="id" 
-                        campoExibir="tipoAnalise" 
+                        campoExibir="tipo_analise" 
                         valorSelecionado={ordemServico.tipoAnalise?.id || ''} 
                         onChange={handleSelectChange} 
                         name="tipoAnalise"
@@ -321,10 +321,10 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             <div className="input-group">
                 <div className="input-field">
                     <label htmlFor="tipoLacre">Tipo de Lacre:</label>
-                    <CaixaSelecaoSimples 
+                    <CaixaSelecaoPesquisavel 
                         dados={tiposLacre} 
                         campoChave="id" 
-                        campoExibir="tipoLacre" 
+                        campoExibir="tipo_lacre" 
                         valorSelecionado={ordemServico.tipoLacre?.id || ''} 
                         onChange={handleSelectChange} 
                         name="tipoLacre"
@@ -332,10 +332,10 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                 </div>
                 <div className="input-field">
                     <label htmlFor="tipoLimpeza">Tipo de Limpeza:</label>
-                    <CaixaSelecaoSimples 
+                    <CaixaSelecaoPesquisavel 
                         dados={tiposLimpeza} 
                         campoChave="id" 
-                        campoExibir="tipoLimpeza" 
+                        campoExibir="tipo_limpeza" 
                         valorSelecionado={ordemServico.tipoLimpeza?.id || ''} 
                         onChange={handleSelectChange} 
                         name="tipoLimpeza"
@@ -346,10 +346,10 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             <div className="input-group">
                 <div className="input-field">
                     <label htmlFor="tipoTransporte">Tipo de Transporte:</label>
-                    <CaixaSelecaoSimples 
+                    <CaixaSelecaoPesquisavel 
                         dados={tiposTransporte} 
                         campoChave="id" 
-                        campoExibir="tipoTransporte" 
+                        campoExibir="tipo_transporte" 
                         valorSelecionado={ordemServico.tipoTransporte?.id || ''} 
                         onChange={handleSelectChange} 
                         name="tipoTransporte"
@@ -357,7 +357,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                 </div>
                 <div className="input-field">
                     <label htmlFor="formaPagamento">Forma de Pagamento:</label>
-                    <CaixaSelecaoSimples 
+                    <CaixaSelecaoPesquisavel 
                         dados={formasPagamento} 
                         campoChave="id" 
                         campoExibir="pagamento" 
