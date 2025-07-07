@@ -1,0 +1,104 @@
+.os-form-container {
+    max-width: 950px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.os-form-title {
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.os-form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.os-form-field {
+    flex: 1 1 280px;
+    display: flex;
+    flex-direction: column;
+}
+
+.os-form-label {
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.os-form-input,
+.os-form-select,
+.os-form-textarea,
+.os-form-file {
+    padding: 8px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.os-form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.os-form-note {
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.os-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.os-form-button {
+    padding: 10px 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.os-form-button:hover {
+    background: #218838;
+}
+
+.os-form-button.secondary {
+    background: #dc3545;
+}
+
+.os-form-button.secondary:hover {
+    background: #c82333;
+}
+
+/* Responsividade adicional para telas pequenas */
+@media (max-width: 600px) {
+    .os-form-row {
+        flex-direction: column;
+    }
+
+    .os-form-field {
+        flex: 1 1 100%;
+    }
+
+    .os-form-actions {
+        flex-direction: column;
+    }
+}

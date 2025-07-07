@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-// Removendo importação antiga do Bling
-// import CaixaSelecaoAsyncBling from '../../busca/CaixaSelecaoAsyncBling';
 import CaixaSelecaoPesquisavel from '../../busca/CaixaSelecaoPesquisavel';
-// Removendo importação de serviço de cliente PJ
-// import { buscarTodosClientePJ } from '../../../Services/clientePJService';
 import { buscarFabricantes } from '../../../Services/fabricanteService';
 import { buscarModelo } from '../../../Services/modeloService';
 import { buscarUrgencia } from '../../../Services/urgenciaService';
@@ -16,17 +12,14 @@ import { buscarTiposTransporte } from '../../../Services/tipoTransporteService';
 import { buscarPagamento } from '../../../Services/pagamentoService';
 import { gravarOrdemServico, anexarArquivo, removerArquivo } from '../../../Services/ordemServicoService';
 import ListaArquivosAnexados from '../../Visualizacao/ListaArquivosAnexados';
-// Removendo importação de getToken, pois não é mais utilizada aqui
-// import { getToken } from '../../../Services/authService';
-
-// Importando o novo ClienteSelector com o caminho corrigido
-import ClienteSelector from '../../busca/ClienteSelector'; // Caminho corrigido
-import '../../busca/ClienteSelector.css'; // Caminho corrigido
+import ClienteSelector from '../../busca/ClienteSelector';
+import '../../busca/ClienteSelector.css';
+import './FormCadOrdemServico.css'; // Novo CSS
 
 const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao }) => {
     const [ordemServico, setOrdemServico] = useState({
         id: '',
-        cliente: null, // Agora armazena o objeto completo do cliente do Bling
+        cliente: null,
         modeloEquipamento: '',
         defeitoAlegado: '',
         numeroSerie: '',
@@ -41,8 +34,6 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
         etapa: 'Previsto'
     });
 
-    // Removendo estado de clientes, pois será gerenciado pelo ClienteSelector
-    // const [clientes, setClientes] = useState([]);
     const [fabricantes, setFabricantes] = useState([]);
     const [modelos, setModelos] = useState([]);
     const [urgencias, setUrgencias] = useState([]);
@@ -51,23 +42,11 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
     const [tiposLimpeza, setTiposLimpeza] = useState([]);
     const [tiposTransporte, setTiposTransporte] = useState([]);
     const [formasPagamento, setFormasPagamento] = useState([]);
-
     const [arquivoParaUpload, setArquivoParaUpload] = useState(null);
 
     useEffect(() => {
         const carregarDadosCadastrais = async () => {
-            // const token = getToken(); // Não é mais necessário para buscar clientes
             try {
-                // Removendo a busca de clientes PJ, agora o ClienteSelector fará isso
-                // const [clientesPJData] = await Promise.all([
-                //     buscarTodosClientePJ(token)
-                // ]);
-                // const todosClientes = [
-                //     clientesPJData.listaClientesPJ
-                // ];
-                // setClientes(todosClientes);
-
-                // Buscando dados dos outros cadastros
                 const [
                     fabricantesData,
                     modelosData,
@@ -87,7 +66,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                     buscarTiposTransporte(),
                     buscarPagamento()
                 ]);
-                
+
                 setFabricantes(fabricantesData.listaFabricantes);
                 setModelos(modelosData.listaModelos);
                 setUrgencias(urgenciasData.listaUrgencias);
@@ -96,7 +75,6 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                 setTiposLimpeza(tiposLimpezaData.listaTiposLimpeza);
                 setTiposTransporte(tiposTransporteData.listaTiposTransporte);
                 setFormasPagamento(pagamentosData.listaPagamentos);
-
             } catch (error) {
                 console.error("Erro ao carregar dados dos cadastros:", error);
                 toast.error("Erro ao carregar dados dos cadastros.");
@@ -120,56 +98,51 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
         }));
     };
 
-    // Nova função para lidar com a seleção do cliente do Bling
     const handleClienteSelect = (clienteBling) => {
         setOrdemServico(prevState => ({
             ...prevState,
-            cliente: clienteBling // Armazena o objeto completo do cliente do Bling
+            cliente: clienteBling
         }));
     };
 
     const handleSelectChange = (e) => {
-    const { name, value } = e.target;
-    let selectedObject = null;
+        const { name, value } = e.target;
+        let selectedObject = null;
 
-    switch (name) {
-        // Removendo o case 'cliente' daqui, pois será tratado por handleClienteSelect
-        // case 'cliente':
-        //     selectedObject = clientes.find(item => item.id === parseInt(value));
-        //     break;
-        case 'fabricante':
-            selectedObject = fabricantes.find(item => item.id === parseInt(value));
-            break;
-        case 'modeloEquipamento':
-            selectedObject = modelos.find(item => item.id === parseInt(value));
-            break;
-        case 'urgencia':
-            selectedObject = urgencias.find(item => item.id === parseInt(value));
-            break;
-        case 'tipoAnalise':
-            selectedObject = tiposAnalise.find(item => item.id === parseInt(value));
-            break;
-        case 'tipoLacre':
-            selectedObject = tiposLacre.find(item => item.id === parseInt(value));
-            break;
-        case 'tipoLimpeza':
-            selectedObject = tiposLimpeza.find(item => item.id === parseInt(value));
-            break;
-        case 'tipoTransporte':
-            selectedObject = tiposTransporte.find(item => item.id === parseInt(value));
-            break;
-        case 'formaPagamento':
-            selectedObject = formasPagamento.find(item => item.id === parseInt(value));
-            break;
-        default:
-            break;
-    }
+        switch (name) {
+            case 'fabricante':
+                selectedObject = fabricantes.find(item => item.id === parseInt(value));
+                break;
+            case 'modeloEquipamento':
+                selectedObject = modelos.find(item => item.id === parseInt(value));
+                break;
+            case 'urgencia':
+                selectedObject = urgencias.find(item => item.id === parseInt(value));
+                break;
+            case 'tipoAnalise':
+                selectedObject = tiposAnalise.find(item => item.id === parseInt(value));
+                break;
+            case 'tipoLacre':
+                selectedObject = tiposLacre.find(item => item.id === parseInt(value));
+                break;
+            case 'tipoLimpeza':
+                selectedObject = tiposLimpeza.find(item => item.id === parseInt(value));
+                break;
+            case 'tipoTransporte':
+                selectedObject = tiposTransporte.find(item => item.id === parseInt(value));
+                break;
+            case 'formaPagamento':
+                selectedObject = formasPagamento.find(item => item.id === parseInt(value));
+                break;
+            default:
+                break;
+        }
 
-    setOrdemServico(prevState => ({
-        ...prevState,
-        [name]: selectedObject
-    }));
-};
+        setOrdemServico(prevState => ({
+            ...prevState,
+            [name]: selectedObject
+        }));
+    };
 
     const handleFileChange = (e) => {
         setArquivoParaUpload(e.target.files[0]);
@@ -194,7 +167,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                     arquivosAnexados: [...prevState.arquivosAnexados, response.caminho]
                 }));
                 setArquivoParaUpload(null);
-                document.getElementById('arquivoInput').value = ''; // Limpa o input file
+                document.getElementById('arquivoInput').value = '';
             } else {
                 toast.error(response.mensagem);
             }
@@ -224,23 +197,17 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Adicione validação para o cliente do Bling
         if (!ordemServico.cliente || !ordemServico.cliente.id) {
             toast.error("Por favor, selecione um cliente do Bling.");
             return;
         }
 
         try {
-            // Adapte o objeto ordemServico para enviar o ID do cliente do Bling
             const ordemServicoToSend = {
                 ...ordemServico,
-                clienteIdBling: ordemServico.cliente.id, // Envia o ID do cliente do Bling
-                // Se precisar enviar outros dados do cliente para o backend, adicione aqui
-                // Ex: clienteNomeBling: ordemServico.cliente.nome,
-                // clienteDocumentoBling: ordemServico.cliente.documento,
+                clienteIdBling: ordemServico.cliente.id,
             };
-            
-            // Remova o objeto cliente completo se seu backend espera apenas o ID
+
             delete ordemServicoToSend.cliente;
 
             const response = await gravarOrdemServico(ordemServicoToSend);
@@ -259,50 +226,69 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
         }
     };
 
+    const resetForm = () => {
+        setOrdemServico({
+            id: '',
+            cliente: null,
+            modeloEquipamento: '',
+            defeitoAlegado: '',
+            numeroSerie: '',
+            fabricante: '',
+            urgencia: '',
+            tipoAnalise: '',
+            tipoLacre: '',
+            tipoLimpeza: '',
+            tipoTransporte: '',
+            formaPagamento: '',
+            arquivosAnexados: [],
+            etapa: 'Previsto'
+        });
+    };
+
     return (
-        <form className="form" onSubmit={handleSubmit}>
-            <h3>{modoEdicao ? 'Editar Ordem de Serviço' : 'Cadastro de Ordem de Serviço'}</h3>
-            
-            <div className="input-group">
-                <div className="input-field">
-                    <label htmlFor="cliente">Cliente:</label>
-                    {/* Substituindo CaixaSelecaoAsyncBling pelo ClienteSelector */}
+        <form className="os-form-container" onSubmit={handleSubmit}>
+            <h3 className="os-form-title">{modoEdicao ? 'Editar Ordem de Serviço' : 'Cadastro de Ordem de Serviço'}</h3>
+
+            <div className="os-form-row">
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="cliente">Cliente:</label>
                     <ClienteSelector
                         onClienteSelect={handleClienteSelect}
-                        selectedClienteId={ordemServico.cliente?.id} // Passa o ID do cliente selecionado
+                        selectedClienteId={ordemServico.cliente?.id}
                     />
                 </div>
-                <div className="input-field">
-                    <label htmlFor="modeloEquipamento">Modelo do Equipamento:</label>
-                    <CaixaSelecaoPesquisavel 
-                        dados={modelos} 
-                        campoChave="id" 
-                        campoExibir="modelo" 
-                        valorSelecionado={ordemServico.modeloEquipamento?.id || ''} 
-                        onChange={handleSelectChange} 
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="modeloEquipamento">Modelo do Equipamento:</label>
+                    <CaixaSelecaoPesquisavel
+                        dados={modelos}
+                        campoChave="id"
+                        campoExibir="modelo"
+                        valorSelecionado={ordemServico.modeloEquipamento?.id || ''}
+                        onChange={handleSelectChange}
                         name="modeloEquipamento"
                     />
                 </div>
             </div>
 
-            <div className="input-group">
-                <div className="input-field">
-                    <label htmlFor="fabricante">Fabricante:</label>
-                    <CaixaSelecaoPesquisavel 
-                        dados={fabricantes} 
-                        campoChave="id" 
-                        campoExibir="nome_fabricante" 
-                        valorSelecionado={ordemServico.fabricante?.id || ''} 
-                        onChange={handleSelectChange} 
+            <div className="os-form-row">
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="fabricante">Fabricante:</label>
+                    <CaixaSelecaoPesquisavel
+                        dados={fabricantes}
+                        campoChave="id"
+                        campoExibir="nome_fabricante"
+                        valorSelecionado={ordemServico.fabricante?.id || ''}
+                        onChange={handleSelectChange}
                         name="fabricante"
                     />
                 </div>
-                <div className="input-field">
-                    <label htmlFor="numeroSerie">Número de Série:</label>
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="numeroSerie">Número de Série:</label>
                     <input
                         type="text"
                         id="numeroSerie"
                         name="numeroSerie"
+                        className="os-form-input"
                         value={ordemServico.numeroSerie}
                         onChange={handleInputChange}
                         placeholder="Número de Série"
@@ -310,13 +296,14 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                     />
                 </div>
             </div>
-            
-            <div className="input-group">
-                <div className="input-field">
-                    <label htmlFor="defeitoAlegado">Defeito Alegado:</label>
+
+            <div className="os-form-row">
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="defeitoAlegado">Defeito Alegado:</label>
                     <textarea
                         id="defeitoAlegado"
                         name="defeitoAlegado"
+                        className="os-form-textarea"
                         value={ordemServico.defeitoAlegado}
                         onChange={handleInputChange}
                         placeholder="Descreva o defeito alegado pelo cliente"
@@ -326,119 +313,117 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                 </div>
             </div>
 
-            <div className="input-group">
-                <div className="input-field">
-                    <label htmlFor="urgencia">Nível de Urgência:</label>
-                    <CaixaSelecaoPesquisavel 
-                        dados={urgencias} 
-                        campoChave="id" 
-                        campoExibir="urgencia" 
-                        valorSelecionado={ordemServico.urgencia?.id || ''} 
-                        onChange={handleSelectChange} 
+            <div className="os-form-row">
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="urgencia">Nível de Urgência:</label>
+                    <CaixaSelecaoPesquisavel
+                        dados={urgencias}
+                        campoChave="id"
+                        campoExibir="urgencia"
+                        valorSelecionado={ordemServico.urgencia?.id || ''}
+                        onChange={handleSelectChange}
                         name="urgencia"
                     />
                 </div>
-                <div className="input-field">
-                    <label htmlFor="tipoAnalise">Tipo de Análise:</label>
-                    <CaixaSelecaoPesquisavel 
-                        dados={tiposAnalise} 
-                        campoChave="id" 
-                        campoExibir="tipo_analise" 
-                        valorSelecionado={ordemServico.tipoAnalise?.id || ''} 
-                        onChange={handleSelectChange} 
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="tipoAnalise">Tipo de Análise:</label>
+                    <CaixaSelecaoPesquisavel
+                        dados={tiposAnalise}
+                        campoChave="id"
+                        campoExibir="tipo_analise"
+                        valorSelecionado={ordemServico.tipoAnalise?.id || ''}
+                        onChange={handleSelectChange}
                         name="tipoAnalise"
                     />
                 </div>
             </div>
-            
-            <div className="input-group">
-                <div className="input-field">
-                    <label htmlFor="tipoLacre">Tipo de Lacre:</label>
-                    <CaixaSelecaoPesquisavel 
-                        dados={tiposLacre} 
-                        campoChave="id" 
-                        campoExibir="tipo_lacre" 
-                        valorSelecionado={ordemServico.tipoLacre?.id || ''} 
-                        onChange={handleSelectChange} 
+
+            <div className="os-form-row">
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="tipoLacre">Tipo de Lacre:</label>
+                    <CaixaSelecaoPesquisavel
+                        dados={tiposLacre}
+                        campoChave="id"
+                        campoExibir="tipo_lacre"
+                        valorSelecionado={ordemServico.tipoLacre?.id || ''}
+                        onChange={handleSelectChange}
                         name="tipoLacre"
                     />
                 </div>
-                <div className="input-field">
-                    <label htmlFor="tipoLimpeza">Tipo de Limpeza:</label>
-                    <CaixaSelecaoPesquisavel 
-                        dados={tiposLimpeza} 
-                        campoChave="id" 
-                        campoExibir="tipo_limpeza" 
-                        valorSelecionado={ordemServico.tipoLimpeza?.id || ''} 
-                        onChange={handleSelectChange} 
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="tipoLimpeza">Tipo de Limpeza:</label>
+                    <CaixaSelecaoPesquisavel
+                        dados={tiposLimpeza}
+                        campoChave="id"
+                        campoExibir="tipo_limpeza"
+                        valorSelecionado={ordemServico.tipoLimpeza?.id || ''}
+                        onChange={handleSelectChange}
                         name="tipoLimpeza"
                     />
                 </div>
             </div>
-            
-            <div className="input-group">
-                <div className="input-field">
-                    <label htmlFor="tipoTransporte">Tipo de Transporte:</label>
-                    <CaixaSelecaoPesquisavel 
-                        dados={tiposTransporte} 
-                        campoChave="id" 
-                        campoExibir="tipo_transporte" 
-                        valorSelecionado={ordemServico.tipoTransporte?.id || ''} 
-                        onChange={handleSelectChange} 
+
+            <div className="os-form-row">
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="tipoTransporte">Tipo de Transporte:</label>
+                    <CaixaSelecaoPesquisavel
+                        dados={tiposTransporte}
+                        campoChave="id"
+                        campoExibir="tipo_transporte"
+                        valorSelecionado={ordemServico.tipoTransporte?.id || ''}
+                        onChange={handleSelectChange}
                         name="tipoTransporte"
                     />
                 </div>
-                <div className="input-field">
-                    <label htmlFor="formaPagamento">Forma de Pagamento:</label>
-                    <CaixaSelecaoPesquisavel 
-                        dados={formasPagamento} 
-                        campoChave="id" 
-                        campoExibir="pagamento" 
-                        valorSelecionado={ordemServico.formaPagamento?.id || ''} 
-                        onChange={handleSelectChange} 
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="formaPagamento">Forma de Pagamento:</label>
+                    <CaixaSelecaoPesquisavel
+                        dados={formasPagamento}
+                        campoChave="id"
+                        campoExibir="pagamento"
+                        valorSelecionado={ordemServico.formaPagamento?.id || ''}
+                        onChange={handleSelectChange}
                         name="formaPagamento"
                     />
                 </div>
             </div>
 
-            <div className="input-group">
-                <div className="input-field">
-                    <label htmlFor="arquivoInput">Anexar Arquivos:</label>
+            <div className="os-form-row">
+                <div className="os-form-field">
+                    <label className="os-form-label" htmlFor="arquivoInput">Anexar Arquivos:</label>
                     <input
                         type="file"
                         id="arquivoInput"
                         name="arquivo"
+                        className="os-form-file"
                         onChange={handleFileChange}
                     />
-                    <button type="button" onClick={handleAnexarArquivo} disabled={!ordemServico.id}>
+                    <button type="button" onClick={handleAnexarArquivo} disabled={!ordemServico.id} className="os-form-button">
                         Anexar
                     </button>
                     {ordemServico.id ? (
-                        <small>Anexe um arquivo à OS salva.</small>
+                        <small className="os-form-note">Anexe um arquivo à OS salva.</small>
                     ) : (
-                        <small>Salve a OS primeiro para anexar arquivos.</small>
+                        <small className="os-form-note">Salve a OS primeiro para anexar arquivos.</small>
                     )}
                 </div>
             </div>
 
             {ordemServico.arquivosAnexados.length > 0 && (
-                <div className="input-group">
-                    <ListaArquivosAnexados 
+                <div className="os-form-row">
+                    <ListaArquivosAnexados
                         arquivos={ordemServico.arquivosAnexados}
                         onRemoverArquivo={handleRemoverArquivo}
                     />
                 </div>
             )}
 
-            <div className="action-buttons">
-                <button type="submit">{modoEdicao ? 'Atualizar' : 'Cadastrar'}</button>
-                <button type="button" onClick={() => setOrdemServico({ id: '', cliente: null, modeloEquipamento: '', defeitoAlegado: '', numeroSerie: '', fabricante: '', urgencia: '', tipoAnalise: '', tipoLacre: '', tipoLimpeza: '', tipoTransporte: '', formaPagamento: '', arquivosAnexados: [], etapa: 'Previsto' })}> 
-                    Limpar
-                </button>
+            <div className="os-form-actions">
+                <button type="submit" className="os-form-button">{modoEdicao ? 'Atualizar' : 'Cadastrar'}</button>
+                <button type="button" onClick={resetForm} className="os-form-button secondary">Limpar</button>
             </div>
         </form>
     );
 };
 
 export default FormCadOrdemServico;
-
