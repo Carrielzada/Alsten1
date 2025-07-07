@@ -5,7 +5,10 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Suas rotas...
+// Ação mais importante: Carregar as variáveis de ambiente ANTES de tudo.
+dotenv.config();
+
+// Importações de rotas existentes
 import rotaAutenticacao from './Routers/rotaAutenticacao.js';
 import rotaUpload from './Routers/rotaUpload.js';
 import rotaModelo from './Routers/rotaModelo.js';
@@ -21,15 +24,17 @@ import rotaDefeitoAlegado from './Routers/rotaDefeitoAlegado.js';
 import rotaClientePJ from './Routers/rotaClientePJ.js';
 import rotaUsers from './Routers/rotaUsers.js';
 
-import { verificarAutenticacao } from './Security/autenticar.js';
+// Importações das novas rotas do Bling
+import blingRoutes from './Routers/blingRoutes.js';
+import contatosRoutes from './Routers/contatosRoutes.js';
 
-dotenv.config();
+import { verificarAutenticacao } from './Security/autenticar.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const host = '0.0.0.0';
-const porta = 4000; // O backend continua na porta 4000
+const porta = 4000;
 
 const app = express();
 
@@ -47,11 +52,6 @@ app.use(
     })
 );
 
-// ===================================================================
-//               1. CORREÇÃO PRINCIPAL NO CORS
-// ===================================================================
-// Esta configuração é mais flexível para o ambiente de desenvolvimento.
-// Ela aceitará requisições de múltiplas portas comuns (3000, 3001, 5173, etc.)
 const whiteList = ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"];
 const corsOptions = {
     origin: function (origin, callback) {
@@ -63,19 +63,13 @@ const corsOptions = {
     },
     credentials: true,
 };
+
 app.use(cors(corsOptions));
-// ===================================================================
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// ===================================================================
-//           2. CORREÇÃO DEFINITIVA NO CAMINHO DO UPLOAD
-// ===================================================================
-// Adicionando '..' para subir um nível e encontrar a pasta 'uploads' na raiz.
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-// ===================================================================
-
 
 // Suas rotas continuam aqui...
 app.use('/users', rotaUsers);
@@ -92,6 +86,10 @@ app.use("/tipo-transporte", verificarAutenticacao, rotaTipoTransporte);
 app.use("/fabricante", verificarAutenticacao, rotaFabricante);
 app.use("/defeito-alegado", verificarAutenticacao, rotaDefeitoAlegado);
 app.use("/clientepj", verificarAutenticacao, rotaClientePJ);
+
+// Rotas do Bling (já corrigidas no passo anterior)
+app.use("/bling", blingRoutes);
+app.use("/bling/contatos", contatosRoutes);
 
 app.get('/', (_req, res) => {
     res.send('Servidor Alsten MVP rodando!');

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import CaixaSelecaoAsyncBling from '../../busca/CaixaSelecaoAsyncBling';
+// Removendo importação antiga do Bling
+// import CaixaSelecaoAsyncBling from '../../busca/CaixaSelecaoAsyncBling';
 import CaixaSelecaoPesquisavel from '../../busca/CaixaSelecaoPesquisavel';
-import { buscarTodosClientePJ } from '../../../Services/clientePJService';
+// Removendo importação de serviço de cliente PJ
+// import { buscarTodosClientePJ } from '../../../Services/clientePJService';
 import { buscarFabricantes } from '../../../Services/fabricanteService';
 import { buscarModelo } from '../../../Services/modeloService';
 import { buscarUrgencia } from '../../../Services/urgenciaService';
@@ -14,12 +16,17 @@ import { buscarTiposTransporte } from '../../../Services/tipoTransporteService';
 import { buscarPagamento } from '../../../Services/pagamentoService';
 import { gravarOrdemServico, anexarArquivo, removerArquivo } from '../../../Services/ordemServicoService';
 import ListaArquivosAnexados from '../../Visualizacao/ListaArquivosAnexados';
-import { getToken } from '../../../Services/authService';
+// Removendo importação de getToken, pois não é mais utilizada aqui
+// import { getToken } from '../../../Services/authService';
+
+// Importando o novo ClienteSelector com o caminho corrigido
+import ClienteSelector from '../../busca/ClienteSelector'; // Caminho corrigido
+import '../../busca/ClienteSelector.css'; // Caminho corrigido
 
 const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao }) => {
     const [ordemServico, setOrdemServico] = useState({
         id: '',
-        cliente: '',
+        cliente: null, // Agora armazena o objeto completo do cliente do Bling
         modeloEquipamento: '',
         defeitoAlegado: '',
         numeroSerie: '',
@@ -34,7 +41,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
         etapa: 'Previsto'
     });
 
-    const [clientes, setClientes] = useState([]);
+    // Removendo estado de clientes, pois será gerenciado pelo ClienteSelector
+    // const [clientes, setClientes] = useState([]);
     const [fabricantes, setFabricantes] = useState([]);
     const [modelos, setModelos] = useState([]);
     const [urgencias, setUrgencias] = useState([]);
@@ -48,16 +56,16 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
 
     useEffect(() => {
         const carregarDadosCadastrais = async () => {
-            const token = getToken();
+            // const token = getToken(); // Não é mais necessário para buscar clientes
             try {
-                // Buscando dados de clientes PF e PJ e combinando-os
-                const [clientesPJData] = await Promise.all([
-                    buscarTodosClientePJ(token)
-                ]);
-                const todosClientes = [
-                    clientesPJData.listaClientesPJ
-                ];
-                setClientes(todosClientes);
+                // Removendo a busca de clientes PJ, agora o ClienteSelector fará isso
+                // const [clientesPJData] = await Promise.all([
+                //     buscarTodosClientePJ(token)
+                // ]);
+                // const todosClientes = [
+                //     clientesPJData.listaClientesPJ
+                // ];
+                // setClientes(todosClientes);
 
                 // Buscando dados dos outros cadastros
                 const [
@@ -112,14 +120,23 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
         }));
     };
 
+    // Nova função para lidar com a seleção do cliente do Bling
+    const handleClienteSelect = (clienteBling) => {
+        setOrdemServico(prevState => ({
+            ...prevState,
+            cliente: clienteBling // Armazena o objeto completo do cliente do Bling
+        }));
+    };
+
     const handleSelectChange = (e) => {
     const { name, value } = e.target;
     let selectedObject = null;
 
     switch (name) {
-        case 'cliente':
-            selectedObject = clientes.find(item => item.id === parseInt(value));
-            break;
+        // Removendo o case 'cliente' daqui, pois será tratado por handleClienteSelect
+        // case 'cliente':
+        //     selectedObject = clientes.find(item => item.id === parseInt(value));
+        //     break;
         case 'fabricante':
             selectedObject = fabricantes.find(item => item.id === parseInt(value));
             break;
@@ -207,8 +224,26 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Adicione validação para o cliente do Bling
+        if (!ordemServico.cliente || !ordemServico.cliente.id) {
+            toast.error("Por favor, selecione um cliente do Bling.");
+            return;
+        }
+
         try {
-            const response = await gravarOrdemServico(ordemServico);
+            // Adapte o objeto ordemServico para enviar o ID do cliente do Bling
+            const ordemServicoToSend = {
+                ...ordemServico,
+                clienteIdBling: ordemServico.cliente.id, // Envia o ID do cliente do Bling
+                // Se precisar enviar outros dados do cliente para o backend, adicione aqui
+                // Ex: clienteNomeBling: ordemServico.cliente.nome,
+                // clienteDocumentoBling: ordemServico.cliente.documento,
+            };
+            
+            // Remova o objeto cliente completo se seu backend espera apenas o ID
+            delete ordemServicoToSend.cliente;
+
+            const response = await gravarOrdemServico(ordemServicoToSend);
             if (response.status) {
                 toast.success(response.mensagem);
                 setOrdemServico(prev => ({ ...prev, id: response.os_id }));
@@ -231,12 +266,10 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             <div className="input-group">
                 <div className="input-field">
                     <label htmlFor="cliente">Cliente:</label>
-                    <CaixaSelecaoAsyncBling
-                        valorSelecionado={ordemServico.cliente || ''}
-                        onChange={handleSelectChange}
-                        name="cliente"
-                        token="5e47567333305fc7ce8e3794a5e01e6b06039442
-"
+                    {/* Substituindo CaixaSelecaoAsyncBling pelo ClienteSelector */}
+                    <ClienteSelector
+                        onClienteSelect={handleClienteSelect}
+                        selectedClienteId={ordemServico.cliente?.id} // Passa o ID do cliente selecionado
                     />
                 </div>
                 <div className="input-field">
@@ -399,7 +432,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
 
             <div className="action-buttons">
                 <button type="submit">{modoEdicao ? 'Atualizar' : 'Cadastrar'}</button>
-                <button type="button" onClick={() => setOrdemServico({ id: '', cliente: '', modeloEquipamento: '', defeitoAlegado: '', numeroSerie: '', fabricante: '', urgencia: '', tipoAnalise: '', tipoLacre: '', tipoLimpeza: '', tipoTransporte: '', formaPagamento: '', arquivosAnexados: [], etapa: 'Previsto' })}>
+                <button type="button" onClick={() => setOrdemServico({ id: '', cliente: null, modeloEquipamento: '', defeitoAlegado: '', numeroSerie: '', fabricante: '', urgencia: '', tipoAnalise: '', tipoLacre: '', tipoLimpeza: '', tipoTransporte: '', formaPagamento: '', arquivosAnexados: [], etapa: 'Previsto' })}> 
                     Limpar
                 </button>
             </div>
@@ -408,3 +441,4 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
 };
 
 export default FormCadOrdemServico;
+

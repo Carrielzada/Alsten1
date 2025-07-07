@@ -1,0 +1,138 @@
+import express from 'express';
+import BlingAuth from '../middleware/blingAuth.js';
+
+const router = express.Router();
+
+// Instância única do BlingAuth
+const blingAuth = new BlingAuth();
+
+// Rota para iniciar o processo de autenticação
+router.get('/auth', (req, res) => {
+    try {
+        const authUrl = blingAuth.getAuthorizationUrl();
+        
+        // Se for uma requisição AJAX, retorna a URL
+        if (req.headers.accept && req.headers.accept.includes('application/json')) {
+            return res.json({
+                success: true,
+                authUrl: authUrl,
+                message: 'Redirecione o usuário para esta URL para autenticar no Bling'
+            });
+        }
+        
+        // Caso contrário, redireciona diretamente
+        res.redirect(authUrl);
+    } catch (error) {
+        console.error('Erro ao gerar URL de autenticação:', error);
+        res.status(500).json({
+            error: 'Erro interno do servidor',
+            message: 'Não foi possível gerar a URL de autenticação'
+        });
+    }
+});
+
+// Rota de callback do Bling
+router.get('/callback', async (req, res) => {
+    const { code, state, error } = req.query;
+    
+    try {
+        // Verifica se houve erro na autorização
+        if (error) {
+            console.error('Erro na autorização do Bling:', error);
+            return res.status(400).json({
+                error: 'Autorização negada',
+                message: 'O usuário negou a autorização ou ocorreu um erro no Bling'
+            });
+        }
+        
+        // Verifica se o código foi fornecido
+        if (!code) {
+            return res.status(400).json({
+                error: 'Código de autorização não fornecido',
+                message: 'O Bling não retornou um código de autorização válido'
+            });
+        }
+        
+        // Valida o state para prevenir ataques CSRF
+        if (!state || !blingAuth.validateState(state)) {
+            return res.status(400).json({
+                error: 'State inválido',
+                message: 'O parâmetro state é inválido ou expirou'
+            });
+        }
+        
+        // Troca o código pelos tokens
+        const tokens = await blingAuth.exchangeCodeForTokens(code);
+        
+        console.log('Autenticação realizada com sucesso');
+        
+        // Redireciona para o frontend com sucesso
+        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/bling/success`);
+        
+    } catch (error) {
+        console.error('Erro no callback do Bling:', error);
+        res.status(500).json({
+            error: 'Erro na autenticação',
+            message: error.message
+        });
+    }
+});
+
+// Rota para verificar status da autenticação
+router.get('/status', (req, res) => {
+    try {
+        const tokenInfo = blingAuth.getTokenInfo();
+        res.json({
+            success: true,
+            ...tokenInfo,
+            message: tokenInfo.isAuthenticated ? 'Autenticado no Bling' : 'Não autenticado no Bling'
+        });
+    } catch (error) {
+        console.error('Erro ao verificar status:', error);
+        res.status(500).json({
+            error: 'Erro interno do servidor',
+            message: 'Não foi possível verificar o status da autenticação'
+        });
+    }
+});
+
+// Rota para fazer logout (limpar tokens)
+router.post('/logout', (req, res) => {
+    try {
+        blingAuth.clearTokens();
+        res.json({
+            success: true,
+            message: 'Logout realizado com sucesso'
+        });
+    } catch (error) {
+        console.error('Erro ao fazer logout:', error);
+        res.status(500).json({
+            error: 'Erro interno do servidor',
+            message: 'Não foi possível fazer logout'
+        });
+    }
+});
+
+// Rota para renovar token manualmente
+router.post('/refresh', async (req, res) => {
+    try {
+        const tokens = await blingAuth.refreshAccessToken();
+        res.json({
+            success: true,
+            message: 'Token renovado com sucesso',
+            tokenInfo: blingAuth.getTokenInfo()
+        });
+    } catch (error) {
+        console.error('Erro ao renovar token:', error);
+        res.status(401).json({
+            error: 'Erro ao renovar token',
+            message: error.message,
+            needsAuth: true
+        });
+    }
+});
+
+export default router;
+export { blingAuth };
+
+

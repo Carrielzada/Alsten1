@@ -1,0 +1,311 @@
+/* Estilos para o ClienteSelector */
+.cliente-selector {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.dropdown-container {
+    position: relative;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-control:disabled {
+    background-color: #f9fafb;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+
+.loading-indicator {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 0.25rem;
+}
+
+.dropdown-item {
+    padding: 0.75rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.dropdown-item:hover {
+    background-color: #f9fafb;
+}
+
+.dropdown-item.selected {
+    background-color: #eff6ff;
+    border-left: 3px solid #3b82f6;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item.no-results {
+    color: #6b7280;
+    font-style: italic;
+    cursor: default;
+}
+
+.dropdown-item.no-results:hover {
+    background-color: transparent;
+}
+
+.cliente-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.cliente-nome {
+    font-weight: 600;
+    color: #111827;
+}
+
+.cliente-documento {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.cliente-email {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.dropdown-footer {
+    padding: 0.5rem 0.75rem;
+    background-color: #f9fafb;
+    border-top: 1px solid #f3f4f6;
+    color: #6b7280;
+    text-align: center;
+}
+
+.selected-cliente-info {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 0.375rem;
+    color: #0c4a6e;
+}
+
+/* Estilos para autenticação */
+.auth-required {
+    padding: 1rem;
+    background-color: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 0.375rem;
+    text-align: center;
+}
+
+.auth-required p {
+    margin-bottom: 1rem;
+    color: #92400e;
+}
+
+/* Estilos para botões */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #2563eb;
+}
+
+.btn-outline-secondary {
+    background-color: transparent;
+    color: #6b7280;
+    border-color: #d1d5db;
+}
+
+.btn-outline-secondary:hover:not(:disabled) {
+    background-color: #f9fafb;
+    color: #374151;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* Estilos para o formulário de ordem de serviço */
+.ordem-servico-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.ordem-servico-form h3 {
+    margin-bottom: 1.5rem;
+    color: #111827;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Utilitários */
+.mt-2 {
+    margin-top: 0.5rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+    .ordem-servico-form {
+        padding: 1rem;
+        margin: 1rem;
+    }
+    
+    .dropdown-menu {
+        max-height: 200px;
+    }
+    
+    .cliente-info {
+        gap: 0.125rem;
+    }
+    
+    .cliente-nome {
+        font-size: 0.875rem;
+    }
+    
+    .cliente-documento,
+    .cliente-email {
+        font-size: 0.75rem;
+    }
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-menu {
+    animation: fadeIn 0.15s ease-out;
+}
+
+/* Estados de loading */
+.loading-indicator::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    border-top-color: #3b82f6;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 0.5rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Melhorias de acessibilidade */
+.dropdown-item:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
+}
+
+.form-control:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
+}
+
+/* Estados de erro */
+.form-control.error {
+    border-color: #ef4444;
+}
+
+.form-control.error:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #ef4444;
+}
+
