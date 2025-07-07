@@ -134,17 +134,19 @@ export default function Menu({ toggleBarra }) {
   return (
     <>
       <Navbar expand="lg" className="bg-light shadow-sm" fixed="top" style={{ zIndex: 1030 }}>
-        <Container fluid className="w-100 mx-2">
-            <img
-              src={logoImage}
-              alt="Logo Alsten"
-              className="img-fluid"
-              style={{ maxHeight: "80px" }}
-            />
+        <Container fluid className="w-100 mx-3 d-flex align-items-center">
+          <img
+            src={logoImage}
+            alt="Logo Alsten"
+            className="img-fluid"
+            style={{ maxHeight: "80px", marginRight: "30px" }} // espaçamento direto no estilo
+          />
+
           <Button
             variant="outline-secondary"
             onClick={toggleBarra}
             className="me-2 border-0"
+            style={{ width: '3vw' }}
             aria-label="Toggle Sidebar"
           >
             <FaBars />
