@@ -1,5 +1,3 @@
-import React from 'react';
-import CardModerno from '../LayoutModerno/CardModerno';
 import FormCadOrdemServico from './Formularios/FormCadOrdemServico';
 import LayoutModerno from '../LayoutModerno/LayoutModerno';
 import { ToastContainer } from 'react-toastify';
@@ -12,12 +10,9 @@ const TelaCadOrdemServico = () => {
     };
 
     return (
-        <LayoutModerno>
-            <CardModerno titulo="Cadastro de Ordem de Serviço">
-                <FormCadOrdemServico onFormSubmit={handleFormSubmit} />
-            </CardModerno>
-            <ToastContainer />
-        </LayoutModerno>
+
+            <><FormCadOrdemServico onFormSubmit={handleFormSubmit} /><ToastContainer /></>
+
     );
 };
 
