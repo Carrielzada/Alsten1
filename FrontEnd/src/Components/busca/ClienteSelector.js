@@ -1,59 +1,46 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useBlingContatos } from '../../Components/busca/useBling'; // Assuming useBling is not needed directly here
-import Select from 'react-select';
+import { useBling, useBlingContatos } from '../../Components/busca/useBling';
+import AsyncSelect from 'react-select/async';
 
 const ClienteSelector = ({
     onClienteSelect,
-    value: controlledValue, // Renaming prop for clarity
+    value: controlledValue, // This is the full client object from the parent
     disabled = false,
     placeholder = "Selecione ou busque um cliente..."
 }) => {
-    // Note: It's better for the parent to handle auth state and pass down disabled prop
+    // 1. Re-introduce the authentication hooks from your old code
+    const { isAuthenticated, authenticate, isLoading: authLoading } = useBling();
     const {
         fetchContatosForSelect,
         searchContatosByName,
-        fetchContatoById, // Assumes you can add a function to fetch a single contact by ID
+        fetchContatoById,
     } = useBlingContatos();
 
-    const [options, setOptions] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    
-    // This state holds the currently selected option for react-select
     const [selectedValue, setSelectedValue] = useState(null);
 
-    // Fetch the specific client when the component loads with a value
+    // This effect handles setting the initial value when loading an existing record
     useEffect(() => {
         if (controlledValue && controlledValue.id) {
-            // Check if the option for this value already exists
-            const optionExists = options.some(opt => opt.value === controlledValue.id);
-            if (!optionExists && fetchContatoById) {
-                setIsLoading(true);
-                fetchContatoById(controlledValue.id)
-                    .then(clientData => {
-                        if (clientData) {
-                            const newOption = {
-                                value: clientData.id,
-                                label: clientData.nome,
-                                original: clientData // Store the original object
-                            };
-                            setOptions(prev => [newOption, ...prev]);
-                            setSelectedValue(newOption);
-                        }
-                    })
-                    .catch(err => console.error("Failed to fetch initial client", err))
-                    .finally(() => setIsLoading(false));
-            } else if (optionExists) {
-                // If the option exists, find it and set it
-                setSelectedValue(options.find(opt => opt.value === controlledValue.id));
-            }
+            const initialOption = {
+                value: controlledValue.id,
+                label: controlledValue.nome,
+                original: controlledValue
+            };
+            setSelectedValue(initialOption);
         } else {
             setSelectedValue(null);
         }
-    }, [controlledValue, options, fetchContatoById]);
+    }, [controlledValue]);
 
 
-    // Debounced search function
+    // This function loads options as the user types
     const loadOptions = useCallback((inputValue, callback) => {
+        if (!isAuthenticated) {
+            callback([]);
+            return;
+        }
+
         setIsLoading(true);
         const fetchCall = inputValue
             ? searchContatosByName(inputValue)
@@ -69,7 +56,6 @@ const ClienteSelector = ({
                         original: cliente // Store the original full object
                     }));
                 }
-                setOptions(formattedOptions); // Also update the local options state
                 callback(formattedOptions);
             })
             .catch(error => {
@@ -79,24 +65,31 @@ const ClienteSelector = ({
             .finally(() => {
                 setIsLoading(false);
             });
-    }, [fetchContatosForSelect, searchContatosByName]);
+    }, [isAuthenticated, fetchContatosForSelect, searchContatosByName]);
 
-    // The component that makes the async calls is AsyncSelect
-    const { default: AsyncSelect } = require('react-select/async');
-
+    // This function handles the change event
     const handleSelectionChange = (selectedOption) => {
-        setSelectedValue(selectedOption); // Update internal state
-        // Pass the original, full client object up to the parent form
-        if (selectedOption) {
-            onClienteSelect(selectedOption.original);
-        } else {
-            onClienteSelect(null); // Handle clear
-        }
+        setSelectedValue(selectedOption);
+        onClienteSelect(selectedOption ? selectedOption.original : null);
     };
     
+    // 2. Re-introduce the authentication check from your old code
+    if (!isAuthenticated) {
+        return (
+            <div className="cliente-selector">
+                <div className="auth-required p-3 border rounded text-center">
+                    <p>É necessário fazer login no Bling para carregar os clientes.</p>
+                    <button onClick={authenticate} disabled={authLoading} className="btn btn-primary">
+                        {authLoading ? 'Carregando...' : 'Fazer Login no Bling'}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Custom styles can be simplified or kept as they were
     const customStyles = {
         control: (provided) => ({ ...provided, minHeight: '38px' }),
-        // ... other styles can remain ...
     };
 
     return (
@@ -108,7 +101,7 @@ const ClienteSelector = ({
                 value={selectedValue}
                 onChange={handleSelectionChange}
                 placeholder={placeholder}
-                isDisabled={disabled}
+                isDisabled={disabled || authLoading} // Also disable while authenticating
                 isLoading={isLoading}
                 isClearable
                 styles={customStyles}

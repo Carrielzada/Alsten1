@@ -1,13 +1,21 @@
+// Corrected BackEnd/Service/ordemServicoService.js
+
 import fetchAutenticado from './apiService';
 
 /**
- * Adiciona um novo defeito alegado.
- * @param {object} ordemServico - O objeto do defeito a ser adicionado.
+ * Adiciona ou atualiza uma Ordem de Serviço.
+ * @param {object} ordemServico - O objeto da OS a ser salvo.
  */
 export const gravarOrdemServico = (ordemServico) => {
-    return fetchAutenticado('/ordem-servico', {
-        method: 'POST',
-        body: ordemServico, // Não precisa do JSON.stringify, o serviço já faz isso.
+    const isUpdate = !!ordemServico.id;
+    const method = isUpdate ? 'PUT' : 'POST';
+    const endpoint = isUpdate ? `/ordem-servico/${ordemServico.id}` : '/ordem-servico';
+
+    return fetchAutenticado(endpoint, {
+        method: method,
+        // FIX: Pass the raw JavaScript object directly. 
+        // 'fetchAutenticado' will handle JSON.stringify for us.
+        body: ordemServico,
     });
 };
 
@@ -17,47 +25,47 @@ export const buscarTodasOrdensServico = () => {
 
 /**
  * Consulta uma Ordem de Serviço específica pelo seu ID.
- * @param {string} id - O ID da Ordem de Serviço a ser consultada.
+ * @param {string|number} id - O ID da Ordem de Serviço a ser consultada.
  */
 export const consultarOrdemServicoPorId = (id) => {
-    // Para um GET, basta passar o endpoint. A autenticação é adicionada automaticamente.
     return fetchAutenticado(`/ordem-servico/${id}`);
 };
 
 /**
  * Anexa um arquivo a uma Ordem de Serviço existente.
- * @param {string} osId - O ID da Ordem de Serviço.
+ * @param {string|number} osId - O ID da Ordem de Serviço.
  * @param {File} arquivo - O arquivo a ser anexado.
  */
 export const anexarArquivo = (osId, arquivo) => {
     const formData = new FormData();
     formData.append('arquivo', arquivo);
 
+    // This function remains correct, as FormData is handled properly.
     return fetchAutenticado(`/ordem-servico/${osId}/anexar`, {
         method: 'POST',
-        body: formData, // O apiService não usa JSON.stringify em FormData
+        body: formData,
     });
 };
 
 /**
  * Remove um arquivo de uma Ordem de Serviço.
- * @param {string} osId - O ID da Ordem de Serviço.
+ * @param {string|number} osId - O ID da Ordem de Serviço.
  * @param {string} nomeArquivo - O nome do arquivo a ser removido.
  */
 export const removerArquivo = (osId, nomeArquivo) => {
     return fetchAutenticado(`/ordem-servico/${osId}/remover-arquivo`, {
         method: 'DELETE',
+        // FIX: Pass the raw JavaScript object directly.
         body: { nomeArquivo },
     });
 };
 
 /**
- * Exclui um defeito alegado pelo ID.
- * @param {string} id - O ID do defeito a ser excluído.
+ * Exclui uma Ordem de Serviço pelo ID.
+ * @param {string|number} id - O ID da OS a ser excluída.
  */
 export const excluirOrdemServico = (id) => {
-    return fetchAutenticado('/ordem-servico', {
+    return fetchAutenticado(`/ordem-servico/${id}`, {
         method: 'DELETE',
-        body: { id },
     });
 };

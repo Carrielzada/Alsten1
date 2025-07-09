@@ -196,36 +196,46 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!ordemServico.cliente || !ordemServico.cliente.id) {
-            toast.error("Por favor, selecione um cliente.");
-            return;
-        }
+        const handleSubmit = async (e) => {
+            e.preventDefault();
 
-        try {
-            const ordemServicoToSend = {
-                ...ordemServico,
-                clienteIdBling: ordemServico.cliente.id,
-            };
-
-            delete ordemServicoToSend.cliente;
-
-            const response = await gravarOrdemServico(ordemServicoToSend);
-            if (response.status) {
-                toast.success(response.mensagem);
-                setOrdemServico(prev => ({ ...prev, id: response.os_id }));
-                if (onFormSubmit) {
-                    onFormSubmit();
-                }
-            } else {
-                toast.error(response.mensagem);
+            // 1. Client-side validation remains the same
+            if (!ordemServico.cliente?.id) {
+                toast.error("Por favor, selecione um Cliente.");
+                return;
             }
-        } catch (error) {
-            console.error("Erro ao salvar a Ordem de Serviço:", error);
-            toast.error("Erro ao salvar a Ordem de Serviço.");
-        }
-    };
+            if (!ordemServico.modeloEquipamento?.id) {
+                toast.error("Por favor, selecione um Modelo do Equipamento.");
+                return;
+            }
+            if (!ordemServico.defeitoAlegado.trim()) {
+                toast.error("Por favor, informe o Defeito Alegado.");
+                return;
+            }
+
+            try {
+                // 2. Simply pass the existing 'ordemServico' state object.
+                //    No need to create a new 'payload' object.
+                //    Your 'ordemServicoService' will handle stringifying it.
+                const response = await gravarOrdemServico(ordemServico);
+
+                if (response.status) {
+                    toast.success(response.mensagem);
+                    // If creating a new OS, update the state with the new ID from the response
+                    if (response.os_id && !ordemServico.id) {
+                        setOrdemServico(prev => ({ ...prev, id: response.os_id }));
+                    }
+                    if (onFormSubmit) {
+                        onFormSubmit();
+                    }
+                } else {
+                    toast.error(response.mensagem || "Ocorreu um erro ao salvar a Ordem de Serviço.");
+                }
+            } catch (error) {
+                console.error("Erro ao salvar a Ordem de Serviço:", error);
+                toast.error(error.message || "Não foi possível conectar com o servidor.");
+            }
+        };
 
     const resetForm = () => {
         setOrdemServico({

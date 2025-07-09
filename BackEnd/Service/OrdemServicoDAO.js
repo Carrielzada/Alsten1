@@ -26,12 +26,12 @@ class OrdemServicoDAO {
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `;
                     const valores = [
-                        ordemServico.cliente,
-                        ordemServico.modeloEquipamento,
+                        ordemServico.cliente?.id,         // CORRECT: Pass only the ID
+                        ordemServico.modeloEquipamento?.id, // CORRECT: Pass only the ID
                         ordemServico.defeitoAlegado,
                         ordemServico.numeroSerie,
-                        ordemServico.fabricante,
-                        ordemServico.urgencia?.id, // Use o operador ?. para evitar erros se a propriedade for nula
+                        ordemServico.fabricante?.id,       // CORRECT: Pass only the ID
+                        ordemServico.urgencia?.id,
                         ordemServico.tipoAnalise?.id,
                         ordemServico.tipoLacre?.id,
                         ordemServico.tipoLimpeza?.id,
@@ -39,7 +39,7 @@ class OrdemServicoDAO {
                         ordemServico.formaPagamento?.id,
                         ordemServico.etapa,
                         ordemServico.dataCriacao,
-                        JSON.stringify(ordemServico.arquivosAnexados)
+                        JSON.stringify(ordemServico.arquivosAnexados || [])
                     ];
                     const resultado = await conexao.query(sql, valores);
                     ordemServico.id = resultado[0].insertId;
