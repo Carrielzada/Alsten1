@@ -380,7 +380,7 @@ const TelaListagemOS = () => {
                                         <td style={{width: columns[12].width}}>
                                             {os.urgencia ? (
                                                 typeof os.urgencia === 'string' ? os.urgencia :
-                                                (os.urgencia.nivel || `Nível ${os.urgencia.id}` || '')
+                                                (os.urgencia.urgencia || '')
                                             ) : ''}
                                         </td>
                                         <td style={{width: columns[13].width}}>
