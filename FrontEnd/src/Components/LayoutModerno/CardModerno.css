@@ -1,35 +1,95 @@
 /* CardModerno.css */
 .card-moderno {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 25px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: left !important;
-  /* height: 100%; FOI REMOVIDO - A altura será determinada pelo conteúdo */
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
 }
 
 .card-moderno-cabecalho {
-  padding: 18px 25px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eee;
 }
 
-.card-moderno-cabecalho .card-moderno-titulo {
-  margin: 0;
-  font-size: 1.2em;
-  font-weight: 600;
-  color: #343a40;
+.card-moderno-titulo {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
 }
 
 .card-moderno-corpo {
-  padding: 20px 25px;
-  font-size: 1em;
-  line-height: 1.6;
-  color: #495057;
-  flex-grow: 1;
+    padding: 1.5rem;
+}
+
+/* Common button styles for Cad screens */
+.btn-cad {
+    padding: 0.25rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    line-height: 1.2 !important;
+    border-radius: 4px !important;
+}
+
+.btn-cad.btn-sm {
+    padding: 0.2rem 0.5rem !important;
+    font-size: 0.8125rem !important;
+}
+
+/* Icon-only action buttons */
+.btn-icon {
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-right: 0.25rem !important;
+    border-radius: 4px !important;
+}
+
+.btn-icon svg {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+/* Search button styles */
+.btn-search {
+    padding: 0.25rem 1rem !important;
+    font-size: 0.875rem !important;
+    line-height: 1.2 !important;
+    border-radius: 4px !important;
+    width: 120px !important;
+}
+
+/* Search container styles */
+.search-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding-top: 0.5rem !important;
+    height: 100% !important;
+}
+
+.btn-icon:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Add some spacing between buttons */
+.btn-cad + .btn-cad {
+    margin-left: 0.25rem !important;
+}
+
+/* Specific styles for action buttons in tables */
+.btn-table-action {
+    padding: 0.15rem 0.5rem !important;
+    font-size: 0.8125rem !important;
+    margin: 0 0.125rem !important;
+}
+
+/* Add some spacing between buttons */
+.btn-cad + .btn-cad,
+.btn-table-action + .btn-table-action {
+    margin-left: 0.25rem !important;
 }
 
 /* Estilos para formulários dentro de cards */

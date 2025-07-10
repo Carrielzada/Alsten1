@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import CardModerno from '../LayoutModerno/CardModerno';
 import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import { buscarModelo, atualizarModelo, excluirModelo, adicionarModelo } from "../../Services/modeloService.js";
 
 
@@ -114,10 +115,10 @@ const TelaCadModeloEquipamento = () => {
                   />
                 </Form.Group>
                 <div className="d-flex justify-content-end">
-                  <Button variant="secondary" type="button" onClick={limparFormulario} className="me-2">
+                  <Button variant="secondary" type="button" onClick={limparFormulario} className="btn-cad me-2">
                     Cancelar
                   </Button>
-                  <Button variant="primary" type="submit">
+                  <Button variant="primary" type="submit" className="btn-cad">
                     {modoEdicao ? 'Atualizar' : 'Salvar'}
                   </Button>
                 </div>
@@ -130,17 +131,23 @@ const TelaCadModeloEquipamento = () => {
           <Col md={12} lg={11}>
             <CardModerno titulo="Formas de Modelo Cadastradas">
               <Form onSubmit={handleBuscar} className="mb-3">
-                <Row>
-                  <Col md={8}>
+                <Row className="align-items-center">
+                  <Col md={9}>
                     <Form.Control
                       type="text"
                       value={termoBusca}
                       onChange={handleBuscaChange}
                       placeholder="Buscar por modelos de equipamentos..."
+                      className="form-control-lg"
                     />
                   </Col>
-                  <Col md={4} className="d-flex align-items-end">
-                    <Button variant="info" type="submit" className="w-100">
+                  <Col md={3} className="d-flex justify-content-start">
+                    <Button 
+                      variant="primary" 
+                      type="submit" 
+                      className="btn-lg w-100"
+                      style={{ backgroundColor: "#191970", borderColor: "#191970" }}
+                    >
                       Buscar
                     </Button>
                   </Col>
@@ -161,11 +168,21 @@ const TelaCadModeloEquipamento = () => {
                         <td>{modelo.id}</td>
                         <td>{modelo.modelo}</td>
                         <td>
-                          <Button variant="warning" size="sm" onClick={() => handleEditar(modelo)} className="me-1">
-                            Editar
+                          <Button 
+                            variant="warning" 
+                            onClick={() => handleEditar(modelo)} 
+                            className="btn-icon"
+                            title="Editar"
+                          >
+                            <FaEdit />
                           </Button>
-                          <Button variant="danger" size="sm" onClick={() => handleExcluir(modelo.id)}>
-                            Excluir
+                          <Button 
+                            variant="danger" 
+                            onClick={() => handleExcluir(modelo.id)} 
+                            className="btn-icon"
+                            title="Excluir"
+                          >
+                            <FaTrash />
                           </Button>
                         </td>
                       </tr>

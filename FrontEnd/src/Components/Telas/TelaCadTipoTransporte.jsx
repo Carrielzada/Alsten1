@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import CardModerno from '../LayoutModerno/CardModerno.jsx';
 import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import { buscarTiposTransporte, adicionarTipoTransporte, atualizarTipoTransporte, excluirTipoTransporte } from '../../Services/tipoTransporteService.js';
 
 const TelaCadTipoTransporte = () => {
@@ -127,17 +128,23 @@ const TelaCadTipoTransporte = () => {
           <Col md={12} lg={11}>
             <CardModerno titulo="Tipos de Transporte Cadastrados">
               <Form onSubmit={handleBuscar} className="mb-3">
-                <Row>
-                  <Col md={8}>
+                <Row className="align-items-center">
+                  <Col md={9}>
                     <Form.Control
                       type="text"
                       value={termoBusca}
                       onChange={handleBuscaChange}
                       placeholder="Buscar por tipo de transporte..."
+                      className="form-control-lg"
                     />
                   </Col>
-                  <Col md={4} className="d-flex align-items-end">
-                    <Button variant="info" type="submit" className="w-100">
+                  <Col md={3} className="d-flex justify-content-start">
+                    <Button 
+                      variant="primary" 
+                      type="submit" 
+                      className="btn-lg w-100"
+                      style={{ backgroundColor: "#191970", borderColor: "#191970" }}
+                    >
                       Buscar
                     </Button>
                   </Col>
@@ -158,11 +165,21 @@ const TelaCadTipoTransporte = () => {
                         <td>{tipo.id}</td>
                         <td>{tipo.tipo_transporte}</td>
                         <td>
-                          <Button variant="warning" size="sm" onClick={() => handleEditar(tipo)} className="me-1">
-                            Editar
+                          <Button 
+                            variant="warning" 
+                            onClick={() => handleEditar(tipo)} 
+                            className="btn-icon"
+                            title="Editar"
+                          >
+                            <FaEdit />
                           </Button>
-                          <Button variant="danger" size="sm" onClick={() => handleExcluir(tipo.id)}>
-                            Excluir
+                          <Button 
+                            variant="danger" 
+                            onClick={() => handleExcluir(tipo.id)}
+                            className="btn-icon"
+                            title="Excluir"
+                          >
+                            <FaTrash />
                           </Button>
                         </td>
                       </tr>
