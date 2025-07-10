@@ -1,6 +1,24 @@
 import axios from 'axios';
 import { URLSearchParams } from 'url'; // Adicionado para garantir que o construtor esteja disponível
 
+// Controle de taxa simples (rate limit) para Bling: máximo 3 req/s
+const BLING_RATE_LIMIT = 3; // 3 requisições por segundo
+const BLING_RATE_WINDOW = 1000; // janela de 1 segundo
+let blingRequestTimestamps = [];
+
+async function rateLimitBling() {
+    const now = Date.now();
+    // Remove timestamps fora da janela
+    blingRequestTimestamps = blingRequestTimestamps.filter(ts => now - ts < BLING_RATE_WINDOW);
+    if (blingRequestTimestamps.length >= BLING_RATE_LIMIT) {
+        // Espera até o mais antigo sair da janela
+        const waitTime = BLING_RATE_WINDOW - (now - blingRequestTimestamps[0]);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        return rateLimitBling(); // Chama recursivamente para garantir
+    }
+    blingRequestTimestamps.push(Date.now());
+}
+
 class BlingApiService {
     constructor(blingAuth) {
         this.blingAuth = blingAuth;
@@ -9,6 +27,7 @@ class BlingApiService {
 
     // Método genérico para fazer requisições autenticadas
     async makeAuthenticatedRequest(endpoint, options = {}) {
+        await rateLimitBling(); // Aplica o controle de taxa antes de cada requisição
         try {
             const token = await this.blingAuth.getValidToken();
             

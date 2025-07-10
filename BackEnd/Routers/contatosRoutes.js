@@ -20,10 +20,17 @@ router.get('/', async (req, res) => {
             limite = 100,
             criterio = '',
             tipo = '',
-            situacao = ''
+            situacao = '',
+            pesquisa = '',
+            numeroDocumento = '',
+            idTipoContato = ''
         } = req.query;
 
         const options = { pagina, limite, criterio, tipo, situacao };
+        if (pesquisa) options.pesquisa = pesquisa;
+        if (numeroDocumento) options.numeroDocumento = numeroDocumento;
+        if (idTipoContato) options.idTipoContato = idTipoContato;
+
         const result = await blingService.getContatos(options);
         
         if (result.success) {

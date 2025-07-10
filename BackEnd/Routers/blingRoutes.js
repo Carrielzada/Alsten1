@@ -96,6 +96,15 @@ router.get('/status', (req, res) => {
     }
 });
 
+// Rota de status para integração Bling
+router.get('/status', async (req, res) => {
+  try {
+    res.json({ status: 'ok' });
+  } catch (err) {
+    res.status(200).json({ status: 'offline', error: err.message });
+  }
+});
+
 // Rota para fazer logout (limpar tokens)
 router.post('/logout', (req, res) => {
     try {

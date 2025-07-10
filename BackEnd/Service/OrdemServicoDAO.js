@@ -5,13 +5,48 @@ import OrdemServico from "../Model/OrdemServico.js";
 import fs from 'fs/promises'; // Importa a versão com Promises da biblioteca fs
 import path from 'path';
 import { fileURLToPath } from 'url';
+import BlingApiService from './blingApiService.js';
+import { blingAuth } from '../Routers/blingRoutes.js';
 
 // __dirname não é disponível em módulos ES6, então precisamos recriá-lo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadDir = path.join(__dirname, '..', 'uploads');
 
+// Função utilitária para delay
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Função utilitária para tratar datas
+function toDateOrNull(val) {
+    if (!val || typeof val !== 'string' || val.trim() === '') return null;
+    // Regex para validar data YYYY-MM-DD
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return null;
+    // Checagem extra: se a data é válida (ex: 2024-02-30 é inválida)
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return null;
+    // Garante que o valor não seja tipo '1111-11-11' ou '11111-11-11'
+    if (val.startsWith('1111') || val.startsWith('11111')) return null;
+    return val;
+}
+
+// Função utilitária para parse seguro de JSON array
+function parseJsonArrayOrEmpty(val) {
+    if (!val || typeof val !== 'string' || val.trim() === '') return [];
+    try {
+        const parsed = JSON.parse(val);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
 class OrdemServicoDAO {
+    constructor() {
+        this.blingService = new BlingApiService(blingAuth);
+    }
+
     async gravar(ordemServico) {
         const conexao = await conectar();
         try {
@@ -21,8 +56,11 @@ class OrdemServicoDAO {
                     INSERT INTO ordem_servico 
                     (cliente, modeloEquipamento, defeitoAlegado, numeroSerie, fabricante, 
                     urgencia_id, tipo_analise_id, tipo_lacre_id, tipo_limpeza_id, tipo_transporte_id, pagamento_id,
-                    etapa, dataCriacao, arquivosAnexados)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    etapa, dataCriacao, arquivosAnexados, vendedor_id, dias_pagamento_id, data_entrega, 
+                    data_aprovacao_orcamento, dias_reparo, data_equipamento_pronto, informacoes_confidenciais,
+                    checklist_items, agendado, possui_acessorio, tipo_transporte_texto, transporte_cif_fob,
+                    pedido_compras, defeito_constatado, servico_realizar, valor, etapa_id, comprovante_aprovacao, nota_fiscal)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `;
                 const valores = [
                     ordemServico.cliente?.id || ordemServico.cliente,         // Pode ser ID ou CNPJ
@@ -38,7 +76,26 @@ class OrdemServicoDAO {
                     ordemServico.formaPagamento?.id || ordemServico.formaPagamento,
                     ordemServico.etapa,
                     ordemServico.dataCriacao,
-                    JSON.stringify(ordemServico.arquivosAnexados || [])
+                    JSON.stringify(ordemServico.arquivosAnexados || []),
+                    ordemServico.vendedor?.id || ordemServico.vendedor,
+                    ordemServico.diasPagamento?.id || ordemServico.diasPagamento,
+                    toDateOrNull(ordemServico.dataEntrega),
+                    toDateOrNull(ordemServico.dataAprovacaoOrcamento),
+                    ordemServico.diasReparo,
+                    toDateOrNull(ordemServico.dataEquipamentoPronto),
+                    ordemServico.informacoesConfidenciais,
+                    JSON.stringify(ordemServico.checklistItems || []),
+                    ordemServico.agendado ? 1 : 0,
+                    ordemServico.possuiAcessorio ? 1 : 0,
+                    ordemServico.tipoTransporteTexto,
+                    ordemServico.transporteCifFob,
+                    ordemServico.pedidoCompras,
+                    ordemServico.defeitoConstatado,
+                    ordemServico.servicoRealizar,
+                    ordemServico.valor,
+                    ordemServico.etapaId?.id || ordemServico.etapaId,
+                    ordemServico.comprovanteAprovacao,
+                    ordemServico.notaFiscal
                 ];
 
                 const resultado = await conexao.query(sql, valores);
@@ -50,7 +107,10 @@ class OrdemServicoDAO {
                     SET cliente = ?, modeloEquipamento = ?, defeitoAlegado = ?, 
                     numeroSerie = ?, fabricante = ?, urgencia_id = ?, tipo_analise_id = ?, 
                     tipo_lacre_id = ?, tipo_limpeza_id = ?, tipo_transporte_id = ?, pagamento_id = ?,
-                    etapa = ?, arquivosAnexados = ?
+                    etapa = ?, arquivosAnexados = ?, vendedor_id = ?, dias_pagamento_id = ?, data_entrega = ?,
+                    data_aprovacao_orcamento = ?, dias_reparo = ?, data_equipamento_pronto = ?, informacoes_confidenciais = ?,
+                    checklist_items = ?, agendado = ?, possui_acessorio = ?, tipo_transporte_texto = ?, transporte_cif_fob = ?,
+                    pedido_compras = ?, defeito_constatado = ?, servico_realizar = ?, valor = ?, etapa_id = ?, comprovante_aprovacao = ?, nota_fiscal = ?
                     WHERE id = ?
                 `;
                 const valores = [
@@ -67,6 +127,25 @@ class OrdemServicoDAO {
                     ordemServico.formaPagamento?.id || ordemServico.formaPagamento,
                     ordemServico.etapa,
                     JSON.stringify(ordemServico.arquivosAnexados),
+                    ordemServico.vendedor?.id || ordemServico.vendedor,
+                    ordemServico.diasPagamento?.id || ordemServico.diasPagamento,
+                    toDateOrNull(ordemServico.dataEntrega),
+                    toDateOrNull(ordemServico.dataAprovacaoOrcamento),
+                    ordemServico.diasReparo,
+                    toDateOrNull(ordemServico.dataEquipamentoPronto),
+                    ordemServico.informacoesConfidenciais,
+                    JSON.stringify(ordemServico.checklistItems || []),
+                    ordemServico.agendado ? 1 : 0,
+                    ordemServico.possuiAcessorio ? 1 : 0,
+                    ordemServico.tipoTransporteTexto,
+                    ordemServico.transporteCifFob,
+                    ordemServico.pedidoCompras,
+                    ordemServico.defeitoConstatado,
+                    ordemServico.servicoRealizar,
+                    ordemServico.valor,
+                    ordemServico.etapaId?.id || ordemServico.etapaId,
+                    ordemServico.comprovanteAprovacao,
+                    ordemServico.notaFiscal,
                     ordemServico.id
                 ];
 
@@ -94,7 +173,10 @@ class OrdemServicoDAO {
                     tl.tipo_lacre,
                     tLimp.tipo_limpeza,
                     tt.tipo_transporte,
-                    p.pagamento
+                    p.pagamento,
+                    u.nome as vendedor_nome,
+                    dp.dias as dias_pagamento_valor,
+                    eos.nome as etapa_nome
                 FROM ordem_servico os
                 LEFT JOIN modelo m ON os.modeloEquipamento = m.id OR os.modeloEquipamento = m.modelo
                 LEFT JOIN fabricante f ON os.fabricante = f.id OR os.fabricante = f.nome_fabricante
@@ -104,6 +186,9 @@ class OrdemServicoDAO {
                 LEFT JOIN tipo_limpeza tLimp ON os.tipo_limpeza_id = tLimp.id
                 LEFT JOIN tipo_transporte tt ON os.tipo_transporte_id = tt.id
                 LEFT JOIN pagamento p ON os.pagamento_id = p.id
+                LEFT JOIN users u ON os.vendedor_id = u.id
+                LEFT JOIN dias_pagamento dp ON os.dias_pagamento_id = dp.id
+                LEFT JOIN etapa_os eos ON os.etapa_id = eos.id
                 WHERE os.cliente LIKE ? OR m.modelo LIKE ? OR os.numeroSerie LIKE ?
                 ORDER BY os.dataCriacao DESC
             `;
@@ -112,14 +197,31 @@ class OrdemServicoDAO {
 
             const listaOrdensServico = [];
             for (const registro of registros) {
+                let clienteData = { id: registro.cliente, nome: `Cliente ${registro.cliente}`, numeroDocumento: registro.cliente };
+                // Se o cliente parece ser um ID numérico, buscar do Bling com delay
+                if (registro.cliente && /^\d+$/.test(registro.cliente)) {
+                    try {
+                        const blingResponse = await this.blingService.getContato(registro.cliente);
+                        if (blingResponse.success && blingResponse.data) {
+                            clienteData = {
+                                id: blingResponse.data.id,
+                                nome: blingResponse.data.nome,
+                                numeroDocumento: blingResponse.data.numeroDocumento,
+                                telefone: blingResponse.data.telefone,
+                                email: blingResponse.data.email,
+                                tipo: blingResponse.data.tipo
+                            };
+                        }
+                    } catch (error) {
+                        console.log(`Não foi possível buscar cliente ${registro.cliente} no Bling:`, error.message);
+                    }
+                    // Delay de 350ms entre requisições ao Bling
+                    await sleep(80);
+                }
                 // Retornar objeto direto em vez de usar o modelo para preservar os objetos completos
                 const os = {
                     id: registro.id,
-                    cliente: { 
-                        id: registro.cliente, 
-                        nome: `Cliente ${registro.cliente}`,
-                        numeroDocumento: registro.cliente
-                    },
+                    cliente: clienteData,
                     modeloEquipamento: registro.modelo_nome ? { 
                         id: registro.modeloEquipamento, 
                         modelo: registro.modelo_nome 
@@ -137,14 +239,32 @@ class OrdemServicoDAO {
                         nome_fabricante: registro.fabricante || `Fabricante ${registro.fabricante}` 
                     },
                     urgencia: registro.urgencia_id ? { id: registro.urgencia_id, urgencia: registro.urgencia } : null,
-                    tipoAnalise: registro.tipo_analise_id ? { id: registro.tipo_analise_id, tipoAnalise: registro.tipo_analise } : null,
-                    tipoLacre: registro.tipo_lacre_id ? { id: registro.tipo_lacre_id, tipoLacre: registro.tipo_lacre } : null,
-                    tipoLimpeza: registro.tipo_limpeza_id ? { id: registro.tipo_limpeza_id, tipoLimpeza: registro.tipo_limpeza } : null,
-                    tipoTransporte: registro.tipo_transporte_id ? { id: registro.tipo_transporte_id, tipoTransporte: registro.tipo_transporte } : null,
+                    tipoAnalise: registro.tipo_analise_id ? { id: registro.tipo_analise_id, tipo_analise: registro.tipo_analise } : null,
+                    tipoLacre: registro.tipo_lacre_id ? { id: registro.tipo_lacre_id, tipo_lacre: registro.tipo_lacre } : null,
+                    tipoLimpeza: registro.tipo_limpeza_id ? { id: registro.tipo_limpeza_id, tipo_limpeza: registro.tipo_limpeza } : null,
+                    tipoTransporte: registro.tipo_transporte_id ? { id: registro.tipo_transporte_id, tipo_transporte: registro.tipo_transporte } : null,
                     formaPagamento: registro.pagamento_id ? { id: registro.pagamento_id, pagamento: registro.pagamento } : null,
                     arquivosAnexados: registro.arquivosAnexados ? JSON.parse(registro.arquivosAnexados) : [],
                     etapa: registro.etapa,
-                    dataCriacao: registro.dataCriacao
+                    dataCriacao: registro.dataCriacao,
+                    vendedor: registro.vendedor_id ? { id: registro.vendedor_id, nome: registro.vendedor_nome } : null,
+                    diasPagamento: registro.dias_pagamento_id ? { id: registro.dias_pagamento_id, dias: registro.dias_pagamento_valor } : null,
+                    dataEntrega: registro.data_entrega,
+                    dataAprovacaoOrcamento: registro.data_aprovacao_orcamento,
+                    diasReparo: registro.dias_reparo,
+                    dataEquipamentoPronto: registro.data_equipamento_pronto,
+                    informacoesConfidenciais: registro.informacoes_confidenciais,
+                    checklistItems: parseJsonArrayOrEmpty(registro.checklist_items),
+                    agendado: !!registro.agendado,
+                    possuiAcessorio: !!registro.possui_acessorio,
+                    tipoTransporteTexto: registro.tipo_transporte_texto,
+                    transporteCifFob: registro.transporte_cif_fob,
+                    pedidoCompras: registro.pedido_compras,
+                    defeitoConstatado: registro.defeito_constatado,
+                    servicoRealizar: registro.servico_realizar,
+                    valor: registro.valor,
+                    etapaId: registro.etapa_id ? { id: registro.etapa_id, nome: registro.etapa_nome } : null,
+                    notaFiscal: registro.nota_fiscal
                 };
                 listaOrdensServico.push(os);
             }
@@ -170,7 +290,10 @@ class OrdemServicoDAO {
                     tl.tipo_lacre,
                     tLimp.tipo_limpeza,
                     tt.tipo_transporte,
-                    p.pagamento
+                    p.pagamento,
+                    u.nome as vendedor_nome,
+                    dp.dias as dias_pagamento_valor,
+                    eos.nome as etapa_nome
                 FROM ordem_servico os
                 LEFT JOIN modelo m ON os.modeloEquipamento = m.id OR os.modeloEquipamento = m.modelo
                 LEFT JOIN fabricante f ON os.fabricante = f.id OR os.fabricante = f.nome_fabricante
@@ -180,20 +303,41 @@ class OrdemServicoDAO {
                 LEFT JOIN tipo_limpeza tLimp ON os.tipo_limpeza_id = tLimp.id
                 LEFT JOIN tipo_transporte tt ON os.tipo_transporte_id = tt.id
                 LEFT JOIN pagamento p ON os.pagamento_id = p.id
+                LEFT JOIN users u ON os.vendedor_id = u.id
+                LEFT JOIN dias_pagamento dp ON os.dias_pagamento_id = dp.id
+                LEFT JOIN etapa_os eos ON os.etapa_id = eos.id
                 WHERE os.id = ?
             `;
             const [registros] = await conexao.query(sql, [id]);
 
             if (registros.length > 0) {
                 const registro = registros[0];
-                // Retornar objeto direto em vez de usar o modelo para preservar os objetos completos
+                // Buscar dados do cliente no Bling se for apenas um ID
+                let clienteData = { 
+                    id: registro.cliente, 
+                    nome: `Cliente ${registro.cliente}`,
+                    numeroDocumento: registro.cliente
+                };
+                if (registro.cliente && /^\d+$/.test(registro.cliente)) {
+                    try {
+                        const blingResponse = await this.blingService.getContato(registro.cliente);
+                        if (blingResponse.success && blingResponse.data) {
+                            clienteData = {
+                                id: blingResponse.data.id,
+                                nome: blingResponse.data.nome,
+                                numeroDocumento: blingResponse.data.numeroDocumento,
+                                telefone: blingResponse.data.telefone,
+                                email: blingResponse.data.email,
+                                tipo: blingResponse.data.tipo
+                            };
+                        }
+                    } catch (error) {
+                        console.log(`Não foi possível buscar cliente ${registro.cliente} no Bling:`, error.message);
+                    }
+                }
                 const os = {
                     id: registro.id,
-                    cliente: { 
-                        id: registro.cliente, 
-                        nome: `Cliente ${registro.cliente}`,
-                        numeroDocumento: registro.cliente
-                    },
+                    cliente: clienteData,
                     modeloEquipamento: registro.modelo_nome ? { 
                         id: registro.modeloEquipamento, 
                         modelo: registro.modelo_nome 
@@ -211,14 +355,32 @@ class OrdemServicoDAO {
                         nome_fabricante: registro.fabricante || `Fabricante ${registro.fabricante}` 
                     },
                     urgencia: registro.urgencia_id ? { id: registro.urgencia_id, urgencia: registro.urgencia } : null,
-                    tipoAnalise: registro.tipo_analise_id ? { id: registro.tipo_analise_id, tipoAnalise: registro.tipo_analise } : null,
-                    tipoLacre: registro.tipo_lacre_id ? { id: registro.tipo_lacre_id, tipoLacre: registro.tipo_lacre } : null,
-                    tipoLimpeza: registro.tipo_limpeza_id ? { id: registro.tipo_limpeza_id, tipoLimpeza: registro.tipo_limpeza } : null,
-                    tipoTransporte: registro.tipo_transporte_id ? { id: registro.tipo_transporte_id, tipoTransporte: registro.tipo_transporte } : null,
+                    tipoAnalise: registro.tipo_analise_id ? { id: registro.tipo_analise_id, tipo_analise: registro.tipo_analise } : null,
+                    tipoLacre: registro.tipo_lacre_id ? { id: registro.tipo_lacre_id, tipo_lacre: registro.tipo_lacre } : null,
+                    tipoLimpeza: registro.tipo_limpeza_id ? { id: registro.tipo_limpeza_id, tipo_limpeza: registro.tipo_limpeza } : null,
+                    tipoTransporte: registro.tipo_transporte_id ? { id: registro.tipo_transporte_id, tipo_transporte: registro.tipo_transporte } : null,
                     formaPagamento: registro.pagamento_id ? { id: registro.pagamento_id, pagamento: registro.pagamento } : null,
                     arquivosAnexados: registro.arquivosAnexados ? JSON.parse(registro.arquivosAnexados) : [],
                     etapa: registro.etapa,
-                    dataCriacao: registro.dataCriacao
+                    dataCriacao: registro.dataCriacao,
+                    vendedor: registro.vendedor_id ? { id: registro.vendedor_id, nome: registro.vendedor_nome } : null,
+                    diasPagamento: registro.dias_pagamento_id ? { id: registro.dias_pagamento_id, dias: registro.dias_pagamento_valor } : null,
+                    dataEntrega: registro.data_entrega,
+                    dataAprovacaoOrcamento: registro.data_aprovacao_orcamento,
+                    diasReparo: registro.dias_reparo,
+                    dataEquipamentoPronto: registro.data_equipamento_pronto,
+                    informacoesConfidenciais: registro.informacoes_confidenciais,
+                    checklistItems: parseJsonArrayOrEmpty(registro.checklist_items),
+                    agendado: !!registro.agendado,
+                    possuiAcessorio: !!registro.possui_acessorio,
+                    tipoTransporteTexto: registro.tipo_transporte_texto,
+                    transporteCifFob: registro.transporte_cif_fob,
+                    pedidoCompras: registro.pedido_compras,
+                    defeitoConstatado: registro.defeito_constatado,
+                    servicoRealizar: registro.servico_realizar,
+                    valor: registro.valor,
+                    etapaId: registro.etapa_id ? { id: registro.etapa_id, nome: registro.etapa_nome } : null,
+                    notaFiscal: registro.nota_fiscal
                 };
                 return os;
             } else {

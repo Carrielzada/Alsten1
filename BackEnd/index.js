@@ -25,6 +25,12 @@ import rotaClientePJ from './Routers/rotaClientePJ.js';
 import rotaUsers from './Routers/rotaUsers.js';
 import rotaLogs from './Routers/rotaLogs.js';
 
+// Novas rotas para os novos recursos
+import rotaDiasPagamento from './Routers/rotaDiasPagamento.js';
+import rotaChecklistItem from './Routers/rotaChecklistItem.js';
+import rotaEtapaOS from './Routers/rotaEtapaOS.js';
+import rotaServicoPadrao from './Routers/rotaServicoPadrao.js';
+
 // Importações das novas rotas do Bling
 import blingRoutes from './Routers/blingRoutes.js';
 import contatosRoutes from './Routers/contatosRoutes.js';
@@ -88,6 +94,12 @@ app.use("/fabricante", verificarAutenticacao, rotaFabricante);
 app.use("/defeito-alegado", verificarAutenticacao, rotaDefeitoAlegado);
 app.use("/clientepj", verificarAutenticacao, rotaClientePJ);
 app.use("/logs", verificarAutenticacao, rotaLogs);
+
+// Novas rotas para os novos recursos
+app.use("/dias-pagamento", verificarAutenticacao, rotaDiasPagamento);
+app.use("/checklist-item", verificarAutenticacao, rotaChecklistItem);
+app.use("/etapa-os", verificarAutenticacao, rotaEtapaOS);
+app.use("/servico-padrao", verificarAutenticacao, rotaServicoPadrao);
 
 // Rotas do Bling (já corrigidas no passo anterior)
 app.use("/bling", blingRoutes);

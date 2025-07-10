@@ -1,23 +1,41 @@
-const urlBase = "http://localhost:4000/users";
+import { getToken } from "./authService";
 
+const API_URL = "http://localhost:4000";
 
-export async function registrar(token, nome, email, password, role_id, id_dados) {
-    const resposta = await fetch(urlBase + "/registrar", {
+async function handleResponse(response) {
+    const contentType = response.headers.get("content-type");
+    let data;
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+        data = await response.json();
+    } else {
+        data = await response.text(); 
+    }
+
+    if (!response.ok) {
+        const error = (data && data.mensagem) || data || response.statusText;
+        console.error("Erro na API:", error, "Status:", response.status, "Data:", data);
+        throw new Error(error);
+    }
+    return data;
+}
+
+export async function registrar(nome, email, password, role_id, id_dados) {
+    const token = getToken();
+    const response = await fetch(`${API_URL}/users/registrar`, {
         method: "POST",
-        credentials: "include",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({ nome, email, password, role_id, id_dados }),
     });
-    return await resposta.json();
+    return handleResponse(response);
 }
 
-export async function alterarSenha(token, email, senhaAtual, novaSenha, confirmarSenha) {
-    const resposta = await fetch(`${urlBase}/alterarSenha`, {
+export async function alterarSenha(email, senhaAtual, novaSenha, confirmarSenha) {
+    const token = getToken();
+    const response = await fetch(`${API_URL}/users/alterarSenha`, {
         method: "PUT",
-        credentials: "include",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
@@ -29,100 +47,68 @@ export async function alterarSenha(token, email, senhaAtual, novaSenha, confirma
             confirmPassword: confirmarSenha,
         }),
     });
-    return await resposta.json();
+    return handleResponse(response);
 }
 
-export async function consultarUsuarios(token) {
-    const resposta = await fetch(`${urlBase}/`, {
+export async function consultarUsuarios() {
+    const token = getToken();
+    const response = await fetch(`${API_URL}/users/`, {
         method: "GET",
-        credentials: "include",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
         },
     });
-
-    if (!resposta.ok) {
-        const erro = await resposta.text();
-        throw new Error(erro);
-    }
-
-    return await resposta.json();
+    return handleResponse(response);
 }
 
-export async function deletarUsuario(id, token) {
-    const resposta = await fetch(`${urlBase}/${id}`, {
+export async function deletarUsuario(id) {
+    const token = getToken();
+    const response = await fetch(`${API_URL}/users/${id}`, {
         method: "DELETE",
-        credentials: "include",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
         },
     });
-
-    if (!resposta.ok) {
-        const erro = await resposta.text();
-        throw new Error(erro);
-    }
-
-    return await resposta.json();
+    return handleResponse(response);
 }
 
-export async function atualizarMeuPerfil(token, dadosAtualizados) {
-    const resposta = await fetch(`${urlBase}/meuPerfil`, {
+export async function atualizarMeuPerfil(dadosAtualizados) {
+    const token = getToken();
+    const response = await fetch(`${API_URL}/users/meuPerfil`, {
         method: "PUT",
-        credentials: "include",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(dadosAtualizados),
     });
-
-    if (!resposta.ok) {
-        const erro = await resposta.text();
-        throw new Error(erro);
-    }
-
-    return await resposta.json();
+    return handleResponse(response);
 }
 
-
-export async function atualizarUsuarioPorId(id, token, dadosAtualizados) {
-    const resposta = await fetch(`${urlBase}/${id}`, {
+export async function atualizarUsuarioPorId(id, dadosAtualizados) {
+    const token = getToken();
+    const response = await fetch(`${API_URL}/users/${id}`, {
         method: "PUT",
-        credentials: "include",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(dadosAtualizados),
     });
-
-    if (!resposta.ok) {
-        const erro = await resposta.text();
-        throw new Error(erro);
-    }
-
-    return await resposta.json();
+    return handleResponse(response);
 }
 
-
-export async function consultarPorRole(role_id, token) {
-    const resposta = await fetch(`${urlBase}/role?role_id=${role_id}`, {
+export async function consultarPorRole(role_id) {
+    const token = getToken();
+    const response = await fetch(`${API_URL}/users/role?role_id=${role_id}`, {
         method: "GET",
-        credentials: "include",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
         },
     });
-
-    if (!resposta.ok) {
-        const erro = await resposta.text();
-        throw new Error(erro);
-    }
-
-    return await resposta.json();
+    return handleResponse(response);
 }
 

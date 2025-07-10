@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Resizable } from 'react-resizable';
 import { buscarTodasOrdensServico, consultarOrdemServicoPorId } from '../../Services/ordemServicoService';
 import Layout from '../Templates2/Layout';
-import { Modal, Badge } from 'react-bootstrap';
-import { FaEdit, FaHistory, FaPlus } from 'react-icons/fa';
+import { Modal, Badge, Tooltip, OverlayTrigger, Button } from 'react-bootstrap';
+import { FaEdit, FaHistory, FaPlus, FaEye, FaIdCard, FaPhone, FaEnvelope } from 'react-icons/fa';
 import FormCadOrdemServico from './Formularios/FormCadOrdemServico';
 import TelaLogsOS from './TelaLogsOS';
+import ClienteInfoModal from '../busca/ClienteInfoModal';
 
 // Ensure you have run: npm install react-resizable
 import 'react-resizable/css/styles.css';
@@ -41,6 +42,8 @@ const TelaListagemOS = () => {
     const [showLogsModal, setShowLogsModal] = useState(false);
     const [ordemServicoEmEdicao, setOrdemServicoEmEdicao] = useState(null);
     const [osIdParaLogs, setOsIdParaLogs] = useState(null);
+    const [showClienteModal, setShowClienteModal] = useState(false);
+    const [clienteSelecionado, setClienteSelecionado] = useState(null);
 
     const [columns, setColumns] = useState([
         { title: 'ID AP', width: 80 },
@@ -115,6 +118,11 @@ const TelaListagemOS = () => {
         setShowEditModal(true);
     };
 
+    const handleVerDetalhesCliente = (cliente) => {
+        setClienteSelecionado(cliente);
+        setShowClienteModal(true);
+    };
+
     const getEtapaBadge = (etapa) => {
         const badges = {
             'Previsto': 'primary', 'Em Andamento': 'warning',
@@ -128,100 +136,129 @@ const TelaListagemOS = () => {
         return `etapa-${sanitizedEtapa}`;
     };
 
+    const formatarDocumento = (documento) => {
+        if (!documento) return '';
+        
+        // Remove caracteres não numéricos
+        const numeros = documento.replace(/\D/g, '');
+        
+        if (numeros.length === 11) {
+            // CPF
+            return numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        } else if (numeros.length === 14) {
+            // CNPJ
+            return numeros.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        }
+        
+        return documento;
+    };
+
+    const renderClienteInfo = (cliente) => {
+        if (!cliente) return 'Não informado';
+        
+        const nome = cliente.nome || `Cliente ${cliente.id}`;
+        const documento = cliente.numeroDocumento ? formatarDocumento(cliente.numeroDocumento) : '';
+        
+        // Se temos apenas o ID, mostrar de forma mais simples
+        if (!cliente.nome || cliente.nome.startsWith('Cliente ')) {
+            return (
+                <span
+                    className="text-muted cursor-pointer"
+                    style={{ textDecoration: 'underline dotted' }}
+                    onClick={() => handleVerDetalhesCliente(cliente)}
+                    title="Ver detalhes do cliente"
+                >
+                    <FaIdCard className="me-1" />
+                    {nome}
+                </span>
+            );
+        }
+
+        // Se temos dados completos, mostrar nome e documento
+        return (
+            <span
+                className="fw-bold cursor-pointer"
+                style={{ textDecoration: 'underline dotted' }}
+                onClick={() => handleVerDetalhesCliente(cliente)}
+                title="Ver detalhes do cliente"
+            >
+                {nome}
+                {documento && (
+                    <small className="text-muted ms-2">
+                        <FaIdCard className="me-1" />
+                        {documento}
+                    </small>
+                )}
+            </span>
+        );
+    };
+
+    const renderClienteTooltip = (cliente) => {
+        if (!cliente || !cliente.nome || cliente.nome.startsWith('Cliente ')) {
+            return (
+                <div>
+                    <strong>Cliente não encontrado no Bling</strong><br />
+                    ID: {cliente?.id || 'N/A'}
+                </div>
+            );
+        }
+
+        return (
+            <div>
+                <strong>{cliente.nome}</strong><br />
+                {cliente.numeroDocumento && (
+                    <>
+                        <FaIdCard className="me-1" />
+                        {formatarDocumento(cliente.numeroDocumento)}<br />
+                    </>
+                )}
+                {cliente.telefone && (
+                    <>
+                        <FaPhone className="me-1" />
+                        {cliente.telefone}<br />
+                    </>
+                )}
+                {cliente.email && (
+                    <>
+                        <FaEnvelope className="me-1" />
+                        {cliente.email}<br />
+                    </>
+                )}
+                {cliente.tipo && (
+                    <Badge bg="info" className="mt-1">
+                        {cliente.tipo}
+                    </Badge>
+                )}
+            </div>
+        );
+    };
+
+    // Estilos CSS inline
+    const tooltipStyles = {
+        cursor: 'pointer',
+        transition: 'all 0.2s ease'
+    };
+
+    const tooltipHoverStyles = {
+        backgroundColor: '#f8f9fa',
+        borderRadius: '4px',
+        padding: '2px 4px'
+    };
+
     if (loading) return <Layout><p>Carregando ordens de serviço...</p></Layout>;
     if (error) return <Layout><p>Erro ao carregar ordens de serviço: {error}</p></Layout>;
 
     return (
         <Layout>
-            <div className="container-fluid p-3">
-                <style>{`
-                    /* Resizable handle styles */
-                    .resizable-table th {
-                        position: relative !important;
-                        background-clip: padding-box !important;
-                    }
-                    .react-resizable-handle {
-                        position: absolute;
-                        right: 3px;
-                        bottom: 0;
-                        z-index: 100;
-                        width: 10px;
-                        height: 100%;
-                        cursor: col-resize;
-                        /* NEW: Add a visible white line as the handle */
-                        border-right: 3px solid rgba(255, 255, 255, 0.3);
-                        transition: border-color 0.2s ease-in-out;
-                    }
-                    .react-resizable-handle:hover,
-                    .react-resizable-handle:active {
-                        /* Make the line more prominent on hover/drag */
-                        border-right-color: rgba(255, 255, 255, 0.8);
-                    }
-
-                    /* Row color styles */
-                    .table > tbody > tr.etapa-previsto > td { --bs-table-bg: #FFFFFF; }
-                    .table > tbody > tr.etapa-recebido > td { --bs-table-bg: #FFE4E1; }
-                    .table > tbody > tr.etapa-em-análise > td { --bs-table-bg: #FFCDD2; }
-                    .table > tbody > tr.etapa-analisado > td { --bs-table-bg: #E57373; }
-                    .table > tbody > tr.etapa-aprovado > td,
-                    .table > tbody > tr.etapa-pré-aprovado > td,
-                    .table > tbody > tr.etapa-sem-custo > td { --bs-table-bg: #B3E5FC; }
-                    .table > tbody > tr.etapa-reprovado > td { --bs-table-bg: #9FA8DA; }
-                    .table > tbody > tr.etapa-expedição > td { --bs-table-bg: #FFF9C4; }
-                    .table > tbody > tr.etapa-despacho > td { --bs-table-bg: #C8E6C9; }
-                    .table > tbody > tr.etapa-aguardando-informação > td { --bs-table-bg: #FFECB3; }
-                    
-                    .table-hover > tbody > tr:hover > td {
-                        --bs-table-hover-bg: rgba(0, 0, 0, 0.075);
-                    }
-
-                    /* Custom style for the "Nova OS" button */
-                    .btn-nova-os {
-                        background-color: #198754;
-                        color: white;
-                        border: none;
-                        padding: 0.5rem 1rem;
-                        border-radius: 0.25rem;
-                        font-size: 0.9rem;
-                        font-weight: 500;
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 0.5rem;
-                        cursor: pointer;
-                        transition: background-color 0.2s;
-                    }
-                    .btn-nova-os:hover {
-                        background-color: #157347;
-                    }
-
-                    /* Custom styles for extra small action buttons */
-                    .action-btn {
-                        background: transparent;
-                        border: none;
-                        color: #6c757d;
-                        padding: 0.1rem 0.3rem;
-                        margin: 0 2px;
-                        font-size: 0.85rem;
-                        line-height: 1;
-                        cursor: pointer;
-                        border-radius: 0.2rem;
-                        display: inline-flex;
-                        align-items: center;
-                        justify-content: center;
-                    }
-                    .action-btn:hover {
-                        background-color: #e9ecef;
-                        color: #212529;
-                    }
-                `}</style>
-
-                {/* Responsive Header */}
-                <div className="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center mb-4">
-                    <h2 className="mb-3 mb-md-0">Painel de Ordens de Serviço</h2>
-                    <button className="btn-nova-os" onClick={handleNovaOS}>
-                        <FaPlus />
-                        <span className="d-none d-sm-inline">Nova Ordem de Serviço</span>
-                        <span className="d-inline d-sm-none">Nova OS</span>
+            <div className="container-fluid">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h2>
+                        <FaEdit className="me-2" />
+                        Listagem de Ordens de Serviço
+                    </h2>
+                    <button className="btn btn-primary" onClick={handleNovaOS}>
+                        <FaPlus className="me-2" />
+                        Nova OS
                     </button>
                 </div>
 
@@ -241,33 +278,60 @@ const TelaListagemOS = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {Array.isArray(ordensServico) && ordensServico.length > 0 ? ordensServico.map(os => (
-                                <tr key={os.id} className={getRowClassName(os.etapa)}>
-                                    <td style={{width: columns[0].width}}><strong>#{os.id}</strong></td>
-                                    <td style={{width: columns[1].width}}></td>
-                                    <td style={{width: columns[2].width}}>{typeof os.cliente === 'object' && os.cliente ? os.cliente.nome : os.cliente || 'Não informado'}</td>
-                                    <td style={{width: columns[3].width}}>{typeof os.modeloEquipamento === 'object' && os.modeloEquipamento ? os.modeloEquipamento.modelo : os.modeloEquipamento || 'Não informado'}</td>
-                                    <td style={{width: columns[4].width}}><div className="text-truncate" title={os.defeitoAlegado}>{os.defeitoAlegado || 'Não informado'}</div></td>
-                                    <td style={{width: columns[5].width}}></td>
-                                    <td style={{width: columns[6].width}}><Badge bg={getEtapaBadge(os.etapa)}>{os.etapa || 'Não definida'}</Badge></td>
-                                    <td style={{width: columns[7].width}}></td>
-                                    <td style={{width: columns[8].width}}></td>
-                                    <td style={{width: columns[9].width}}></td>
-                                    <td style={{width: columns[10].width}}></td>
-                                    <td style={{width: columns[11].width}}></td>
-                                    <td style={{width: columns[12].width}}></td>
-                                    <td style={{width: columns[13].width}}>
-                                        <div>
-                                            <button className="action-btn" onClick={() => handleEditarOS(os.id)} title="Editar OS">
-                                                <FaEdit />
-                                            </button>
-                                            <button className="action-btn" onClick={() => handleVerLogs(os.id)} title="Ver Histórico">
-                                                <FaHistory />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )) : (
+                            {ordensServico.length > 0 ? (
+                                ordensServico.map((os) => (
+                                    <tr key={os.id} className={getRowClassName(os.etapa)}>
+                                        <td style={{width: columns[0].width}}><strong>#{os.id}</strong></td>
+                                        <td style={{width: columns[1].width}}></td>
+                                        <td style={{width: columns[2].width}}>
+                                            <OverlayTrigger
+                                                placement="top"
+                                                overlay={
+                                                    <Tooltip id={`tooltip-${os.id}`}>
+                                                        {renderClienteTooltip(os.cliente)}
+                                                    </Tooltip>
+                                                }
+                                            >
+                                                <div 
+                                                    style={tooltipStyles}
+                                                    onMouseEnter={(e) => {
+                                                        e.target.style.backgroundColor = tooltipHoverStyles.backgroundColor;
+                                                        e.target.style.borderRadius = tooltipHoverStyles.borderRadius;
+                                                        e.target.style.padding = tooltipHoverStyles.padding;
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.target.style.backgroundColor = '';
+                                                        e.target.style.borderRadius = '';
+                                                        e.target.style.padding = '';
+                                                    }}
+                                                >
+                                                    {renderClienteInfo(os.cliente)}
+                                                </div>
+                                            </OverlayTrigger>
+                                        </td>
+                                        <td style={{width: columns[3].width}}>{typeof os.modeloEquipamento === 'object' && os.modeloEquipamento ? os.modeloEquipamento.modelo : os.modeloEquipamento || 'Não informado'}</td>
+                                        <td style={{width: columns[4].width}}><div className="text-truncate" title={os.defeitoAlegado}>{os.defeitoAlegado || 'Não informado'}</div></td>
+                                        <td style={{width: columns[5].width}}></td>
+                                        <td style={{width: columns[6].width}}><Badge bg={getEtapaBadge(os.etapa)}>{os.etapa || 'Não definida'}</Badge></td>
+                                        <td style={{width: columns[7].width}}></td>
+                                        <td style={{width: columns[8].width}}></td>
+                                        <td style={{width: columns[9].width}}></td>
+                                        <td style={{width: columns[10].width}}></td>
+                                        <td style={{width: columns[11].width}}></td>
+                                        <td style={{width: columns[12].width}}></td>
+                                        <td style={{width: columns[13].width}}>
+                                            <div>
+                                                <button className="action-btn" onClick={() => handleEditarOS(os.id)} title="Editar OS">
+                                                    <FaEdit />
+                                                </button>
+                                                <button className="action-btn" onClick={() => handleVerLogs(os.id)} title="Ver Histórico">
+                                                    <FaHistory />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
                                 <tr>
                                     <td colSpan={columns.length} className="text-center text-muted">Nenhuma Ordem de Serviço encontrada</td>
                                 </tr>
@@ -276,20 +340,39 @@ const TelaListagemOS = () => {
                     </table>
                 </div>
 
-                {/* Modals */}
-                <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl" backdrop="static">
+                {/* Modal de edição */}
+                <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl">
                     <Modal.Header closeButton>
-                        <Modal.Title>{ordemServicoEmEdicao ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço'}</Modal.Title>
+                        <Modal.Title>
+                            {ordemServicoEmEdicao ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço'}
+                        </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <FormCadOrdemServico onFormSubmit={handleFormSubmit} modoEdicao={!!ordemServicoEmEdicao} ordemServicoEmEdicao={ordemServicoEmEdicao} />
+                        <FormCadOrdemServico
+                            onFormSubmit={handleFormSubmit}
+                            modoEdicao={!!ordemServicoEmEdicao}
+                            ordemServicoEmEdicao={ordemServicoEmEdicao}
+                        />
                     </Modal.Body>
                 </Modal>
-                <Modal show={showLogsModal} onHide={() => setShowLogsModal(false)} size="xl" backdrop="static">
-                    <Modal.Body className="p-0">
-                        {osIdParaLogs && <TelaLogsOS osId={osIdParaLogs} onClose={() => setShowLogsModal(false)} />}
+
+                {/* Modal de logs */}
+                <Modal show={showLogsModal} onHide={() => setShowLogsModal(false)} size="xl">
+                    <Modal.Header closeButton>
+                        <Modal.Title>Histórico de Alterações - OS #{osIdParaLogs}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <TelaLogsOS osId={osIdParaLogs} />
                     </Modal.Body>
                 </Modal>
+
+                {/* Modal de detalhes do cliente */}
+                <ClienteInfoModal
+                    show={showClienteModal}
+                    onHide={() => setShowClienteModal(false)}
+                    cliente={clienteSelecionado}
+                    title="Detalhes do Cliente"
+                />
             </div>
         </Layout>
     );

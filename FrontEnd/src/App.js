@@ -23,10 +23,12 @@ import TelaCadClientePJ from "./Components/Telas/TelaCadClientePJ";
 
 // Novo Layout
 import LayoutModerno from "./Components/LayoutModerno/LayoutModerno";
+import { BlingAuthProvider, useBlingAuth } from './Components/busca/BlingAuthProvider';
+import BlingAuthModal from './Components/BlingAuthModal';
 
 export const ContextoUsuarioLogado = createContext(null);
 
-function App() {
+function AppContent() {
   const [usuarioLogado, setUsuarioLogado] = useState({
     id: null,
     nome: "",
@@ -35,6 +37,10 @@ function App() {
     role: null,
   });
 
+  // Use o contexto global do Bling
+  const { isAuthenticated: isBlingAuthenticated, isLoading: isBlingLoading, authenticate: authenticateBling, checkAuthStatus: checkBlingAuthStatus } = useBlingAuth();
+  const [blingChecked, setBlingChecked] = useState(false);
+
   useEffect(() => {
     const usuarioSalvo = localStorage.getItem("usuarioLogado");
     if (usuarioSalvo) {
@@ -42,6 +48,16 @@ function App() {
       setUsuarioLogado(usuario);
     }
   }, []);
+
+  useEffect(() => {
+    if (usuarioLogado.logado) {
+      checkBlingAuthStatus().finally(() => setBlingChecked(true));
+    } else {
+      setBlingChecked(false);
+    }
+  }, [usuarioLogado.logado, checkBlingAuthStatus]);
+
+  if (usuarioLogado.logado && !blingChecked) return null;
 
   const RotasProtegidasComLayout = () => (
     <LayoutModerno>
@@ -74,6 +90,13 @@ function App() {
   return (
     <ContextoUsuarioLogado.Provider value={{ usuarioLogado, setUsuarioLogado }}>
       <BrowserRouter>
+        {usuarioLogado.logado && !isBlingAuthenticated && (
+          <BlingAuthModal
+            show={true}
+            onAuthenticate={authenticateBling}
+            isLoading={isBlingLoading}
+          />
+        )}
         <Routes>
           <Route path="/login" element={<TelaLogin />} />
           {
@@ -101,6 +124,14 @@ function App() {
         </Routes>
       </BrowserRouter>
     </ContextoUsuarioLogado.Provider>
+  );
+}
+
+function App() {
+  return (
+    <BlingAuthProvider>
+      <AppContent />
+    </BlingAuthProvider>
   );
 }
 

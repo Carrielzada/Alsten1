@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useBling, useBlingContatos } from '../../Components/busca/useBling';
 import AsyncSelect from 'react-select/async';
 import debounce from 'lodash.debounce';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 const ClienteSelector = ({
     onClienteSelect,
@@ -11,7 +12,6 @@ const ClienteSelector = ({
 }) => {
     const { isAuthenticated, authenticate, isLoading: authLoading } = useBling();
     const {
-        fetchContatosForSelect,
         searchContatosByName,
         fetchContatoById
     } = useBlingContatos();
@@ -19,18 +19,15 @@ const ClienteSelector = ({
     const [isLoading, setIsLoading] = useState(false);
     const [selectedValue, setSelectedValue] = useState(null);
 
-    // Define valor inicial quando controlado
     useEffect(() => {
         if (controlledValue && controlledValue.id) {
-            // Se já temos os dados completos do cliente
             if (controlledValue.nome) {
                 setSelectedValue({
                     value: controlledValue.id,
-                    label: controlledValue.nome,
+                    label: `${controlledValue.nome}${controlledValue.numeroDocumento ? ` (${formatarDocumento(controlledValue.numeroDocumento)})` : ''}`,
                     original: controlledValue
                 });
             } else {
-                // Se só temos o ID, precisamos buscar os dados no Bling
                 const buscarClientePorId = async () => {
                     try {
                         setIsLoading(true);
@@ -38,7 +35,7 @@ const ClienteSelector = ({
                         if (cliente) {
                             setSelectedValue({
                                 value: cliente.id,
-                                label: cliente.nome,
+                                label: `${cliente.nome}${cliente.numeroDocumento ? ` (${formatarDocumento(cliente.numeroDocumento)})` : ''}`,
                                 original: cliente
                             });
                         } else {
@@ -49,7 +46,6 @@ const ClienteSelector = ({
                             });
                         }
                     } catch (error) {
-                        console.error('Erro ao buscar cliente por ID:', error);
                         setSelectedValue({
                             value: controlledValue.id,
                             label: `Cliente ${controlledValue.id}`,
@@ -66,22 +62,29 @@ const ClienteSelector = ({
         }
     }, [controlledValue]);
 
-    // Função sem debounce, usada internamente
+    const formatarDocumento = (documento) => {
+        if (!documento) return '';
+        const numeros = documento.replace(/\D/g, '');
+        if (numeros.length === 11) {
+            return numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        } else if (numeros.length === 14) {
+            return numeros.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        }
+        return documento;
+    };
+
     const loadOptionsRaw = useCallback(async (inputValue, callback) => {
-        if (!isAuthenticated || !inputValue || inputValue.trim().length < 3) {
+        if (!isAuthenticated || !inputValue || inputValue.trim().length < 2) {
             callback([]);
             return;
         }
-
         setIsLoading(true);
-
         try {
             const response = await searchContatosByName(inputValue.trim());
-
             if (response && Array.isArray(response.data)) {
                 const options = response.data.map(cliente => ({
                     value: cliente.id,
-                    label: cliente.nome,
+                    label: `${cliente.nome}${cliente.numeroDocumento ? ` (${formatarDocumento(cliente.numeroDocumento)})` : ''}`,
                     original: cliente
                 }));
                 callback(options);
@@ -89,18 +92,16 @@ const ClienteSelector = ({
                 callback([]);
             }
         } catch (error) {
-            console.error('Erro ao buscar dados do Bling:', error);
             callback([]);
         } finally {
             setIsLoading(false);
         }
     }, [isAuthenticated, searchContatosByName]);
 
-    // Debounce externo, apenas 1 referência
     const debouncedLoadOptions = useCallback(
         debounce((inputValue, callback) => {
             loadOptionsRaw(inputValue, callback);
-        }, 600),
+        }, 400),
         [loadOptionsRaw]
     );
 
@@ -112,9 +113,9 @@ const ClienteSelector = ({
     if (!isAuthenticated) {
         return (
             <div className="cliente-selector">
-                <div className="auth-required p-3 border rounded text-center">
-                    <p>É necessário fazer login no Bling para carregar os clientes.</p>
-                    <button onClick={authenticate} disabled={authLoading} className="btn btn-primary">
+                <div className="auth-required p-2 border rounded text-center">
+                    <small>É necessário fazer login no Bling para carregar os clientes.</small>
+                    <button onClick={authenticate} disabled={authLoading} className="btn btn-sm btn-primary mt-2">
                         {authLoading ? 'Carregando...' : 'Fazer Login no Bling'}
                     </button>
                 </div>
@@ -123,23 +124,47 @@ const ClienteSelector = ({
     }
 
     const customStyles = {
-        control: (provided) => ({ ...provided, minHeight: '38px' }),
+        control: (provided) => ({ ...provided, minHeight: '32px', fontSize: '14px' }),
+        menu: (provided) => ({ ...provided, zIndex: 9999 }),
     };
 
     return (
-        <div className="cliente-selector">
-            <AsyncSelect
-                cacheOptions
-                defaultOptions
-                loadOptions={debouncedLoadOptions}
-                value={selectedValue}
-                onChange={handleSelectionChange}
-                placeholder={placeholder}
-                isDisabled={disabled || authLoading}
-                isLoading={isLoading}
-                isClearable
-                styles={customStyles}
-            />
+        <div style={{ minWidth: 220, maxWidth: 350 }}>
+            <OverlayTrigger
+                placement="top"
+                overlay={selectedValue && selectedValue.original && selectedValue.original.nome ? (
+                    <Tooltip id={`tooltip-cliente-${selectedValue.value}`}>
+                        <div>
+                            <strong>{selectedValue.original.nome}</strong><br />
+                            {selectedValue.original.numeroDocumento && (
+                                <span>{formatarDocumento(selectedValue.original.numeroDocumento)}<br /></span>
+                            )}
+                            {selectedValue.original.telefone && (
+                                <span>{selectedValue.original.telefone}<br /></span>
+                            )}
+                            {selectedValue.original.email && (
+                                <span>{selectedValue.original.email}<br /></span>
+                            )}
+                        </div>
+                    </Tooltip>
+                ) : <></>}
+            >
+                <div>
+                    <AsyncSelect
+                        cacheOptions
+                        defaultOptions={false}
+                        loadOptions={debouncedLoadOptions}
+                        value={selectedValue}
+                        onChange={handleSelectionChange}
+                        placeholder={placeholder}
+                        isDisabled={disabled || authLoading}
+                        isLoading={isLoading}
+                        isClearable
+                        styles={customStyles}
+                        menuPlacement="auto"
+                    />
+                </div>
+            </OverlayTrigger>
         </div>
     );
 };

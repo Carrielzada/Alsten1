@@ -61,11 +61,23 @@ export const useBling = () => {
                     'width=600,height=700,scrollbars=yes,resizable=yes'
                 );
 
-                // Monitora o fechamento da janela de autenticação
+                // Listener para receber mensagem da popup
+                const handleMessage = (event) => {
+                    if (event.data === 'bling-auth-success') {
+                        window.removeEventListener('message', handleMessage);
+                        if (authWindow && !authWindow.closed) authWindow.close();
+                        setTimeout(() => {
+                            checkAuthStatus();
+                        }, 500);
+                    }
+                };
+                window.addEventListener('message', handleMessage);
+
+                // Fallback: monitora o fechamento da janela (caso o postMessage não funcione)
                 const checkClosed = setInterval(() => {
                     if (authWindow.closed) {
                         clearInterval(checkClosed);
-                        // Verifica o status após o fechamento da janela
+                        window.removeEventListener('message', handleMessage);
                         setTimeout(() => {
                             checkAuthStatus();
                         }, 1000);
@@ -154,20 +166,29 @@ export const useBlingContatos = () => {
         try {
             setIsLoading(true);
             setError(null);
-            
-            const params = new URLSearchParams({
-                pagina: options.pagina || 1,
-                limite: options.limite || 100,
-                ...(options.criterio && { criterio: options.criterio }),
-                ...(options.tipo && { tipo: options.tipo }),
-                ...(options.situacao && { situacao: options.situacao })
-            });
 
-            const response = await blingApi.get(`/bling/contatos?${params}`);
-            
+            let url = '/bling/contatos';
+            let params = new URLSearchParams();
+
+            // NOVA LÓGICA: só envia paginação se não houver pesquisa, numeroDocumento ou idTipoContato
+            if (options.pesquisa) {
+                params.append('pesquisa', options.pesquisa);
+            } else if (options.numeroDocumento) {
+                params.append('numeroDocumento', options.numeroDocumento);
+            } else if (options.idTipoContato) {
+                params.append('idTipoContato', options.idTipoContato);
+            } else {
+                params.append('pagina', options.pagina || 1);
+                params.append('limite', options.limite || 100);
+            }
+            if (options.tipo) params.append('tipo', options.tipo);
+            if (options.situacao) params.append('situacao', options.situacao);
+
+            const response = await blingApi.get(`${url}?${params.toString()}`);
+
             if (response.data.success) {
                 setContatos(response.data.data);
-                setPagination(response.data.meta);
+                setPagination(response.data.meta || {});
                 return response.data;
             } else {
                 throw new Error(response.data.error || 'Erro ao buscar contatos');
@@ -176,13 +197,10 @@ export const useBlingContatos = () => {
             const errorMessage = err.response?.data?.message || err.message || 'Erro ao buscar contatos';
             setError(errorMessage);
             setContatos([]);
-            
-            // Se for erro de autenticação, limpa os dados
             if (err.response?.status === 401) {
                 setContatos([]);
                 setPagination({ pagina: 1, limite: 100, total: 0, totalPaginas: 0 });
             }
-            
             throw err;
         } finally {
             setIsLoading(false);
@@ -250,23 +268,19 @@ export const useBlingContatos = () => {
         }
     }, []);
 
-    // Busca contatos por nome
+    // Busca contatos por nome/documento
     const searchContatosByName = useCallback(async (nome, options = {}) => {
         try {
             setIsLoading(true);
             setError(null);
-            
-            const params = new URLSearchParams({
-                pagina: options.pagina || 1,
-                limite: options.limite || 100,
-                ...(options.tipo && { tipo: options.tipo })
-            });
-
-            const response = await blingApi.get(`/bling/contatos/search/${encodeURIComponent(nome)}?${params}`);
-            
+            const params = new URLSearchParams();
+            params.append('pesquisa', nome);
+            if (options.tipo) params.append('tipo', options.tipo);
+            if (options.situacao) params.append('situacao', options.situacao);
+            const response = await blingApi.get(`/bling/contatos?${params.toString()}`);
             if (response.data.success) {
                 setContatos(response.data.data);
-                setPagination(response.data.meta);
+                setPagination(response.data.meta || {});
                 return response.data;
             } else {
                 throw new Error(response.data.error || 'Erro na busca');

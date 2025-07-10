@@ -25,7 +25,12 @@ class OrdemServicoCtrl {
             const { 
                 id, cliente, modeloEquipamento, defeitoAlegado, numeroSerie, 
                 fabricante, urgencia, tipoAnalise, tipoLacre, tipoLimpeza, 
-                tipoTransporte, formaPagamento, arquivosAnexados, etapa 
+                tipoTransporte, formaPagamento, arquivosAnexados, etapa,
+                vendedor, diasPagamento, dataEntrega, dataAprovacaoOrcamento,
+                diasReparo, dataEquipamentoPronto, informacoesConfidenciais,
+                checklistItems, agendado, possuiAcessorio, tipoTransporteTexto,
+                transporteCifFob, pedidoCompras, defeitoConstatado, servicoRealizar,
+                valor, etapaId, comprovanteAprovacao, notaFiscal
             } = req.body;
 
             // Para PUT, usar o ID da URL se não estiver no body
@@ -46,7 +51,27 @@ class OrdemServicoCtrl {
                     tipoTransporte,
                     formaPagamento,
                     arquivosAnexados,
-                    etapa
+                    etapa,
+                    undefined, // dataCriacao
+                    vendedor,
+                    diasPagamento,
+                    dataEntrega,
+                    dataAprovacaoOrcamento,
+                    diasReparo,
+                    dataEquipamentoPronto,
+                    informacoesConfidenciais,
+                    checklistItems,
+                    agendado,
+                    possuiAcessorio,
+                    tipoTransporteTexto,
+                    transporteCifFob,
+                    pedidoCompras,
+                    defeitoConstatado,
+                    servicoRealizar,
+                    valor,
+                    etapaId,
+                    comprovanteAprovacao,
+                    notaFiscal
                 );
 
                 const osDAO = new OrdemServicoDAO();
