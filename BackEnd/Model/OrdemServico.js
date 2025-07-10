@@ -3,17 +3,17 @@
 class OrdemServico {
     constructor(id, cliente, modeloEquipamento, defeitoAlegado, numeroSerie, fabricante, urgencia, tipoAnalise, tipoLacre, tipoLimpeza, tipoTransporte, formaPagamento, arquivosAnexados = [], etapa = 'Previsto', dataCriacao = new Date()) {
         this.id = id;
-        this.cliente = cliente;
-        this.modeloEquipamento = modeloEquipamento;
+        this.cliente = cliente?.id ? cliente.id : cliente;
+        this.modeloEquipamento = modeloEquipamento?.id ? modeloEquipamento.id : modeloEquipamento;
         this.defeitoAlegado = defeitoAlegado;
         this.numeroSerie = numeroSerie;
-        this.fabricante = fabricante;
-        this.urgencia = urgencia;
-        this.tipoAnalise = tipoAnalise;
-        this.tipoLacre = tipoLacre;
-        this.tipoLimpeza = tipoLimpeza;
-        this.tipoTransporte = tipoTransporte;
-        this.formaPagamento = formaPagamento;
+        this.fabricante = fabricante?.id ? fabricante.id : fabricante;
+        this.urgencia = urgencia?.id ? urgencia.id : urgencia;
+        this.tipoAnalise = tipoAnalise?.id ? tipoAnalise.id : tipoAnalise;
+        this.tipoLacre = tipoLacre?.id ? tipoLacre.id : tipoLacre;
+        this.tipoLimpeza = tipoLimpeza?.id ? tipoLimpeza.id : tipoLimpeza;
+        this.tipoTransporte = tipoTransporte?.id ? tipoTransporte.id : tipoTransporte;
+        this.formaPagamento = formaPagamento?.id ? formaPagamento.id : formaPagamento;
         this.arquivosAnexados = arquivosAnexados; // Esta propriedade será um array de strings
         this.etapa = etapa;
         this.dataCriacao = dataCriacao;

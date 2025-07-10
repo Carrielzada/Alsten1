@@ -1,5 +1,6 @@
 import OrdemServico from "../Model/OrdemServico.js";
 import OrdemServicoDAO from "../Service/OrdemServicoDAO.js";
+import OrdemServicoLogDAO from "../Service/OrdemServicoLogDAO.js";
 import upload from '../Service/uploadService.js'; // Importa o middleware de upload
 
 class OrdemServicoCtrl {
@@ -225,6 +226,24 @@ class OrdemServicoCtrl {
             res.status(400).json({
                 status: false,
                 mensagem: "Método não permitido."
+            });
+        }
+    }
+
+    async consultarLogs(req, res) {
+        res.type("application/json");
+        const logDAO = new OrdemServicoLogDAO();
+        const osId = req.params.id;
+        try {
+            const logs = await logDAO.consultarLogsPorOsId(osId);
+            res.status(200).json({
+                status: true,
+                logs: logs
+            });
+        } catch (error) {
+            res.status(500).json({
+                status: false,
+                mensagem: "Erro ao consultar logs da Ordem de Serviço: " + error.message,
             });
         }
     }

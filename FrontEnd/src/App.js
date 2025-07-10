@@ -6,6 +6,7 @@ import TelaHomeCliente from "./Components/Telas/TelaHomeCliente";
 import ProtectedComponent from "./ProtectedComponent";
 import TelaListagemOS from "./Components/Telas/TelaListagemOS";
 import TelaCadOrdemServico from "./Components/Telas/TelaCadOrdemServico";
+import TelaListagemLogsOS from "./Components/Telas/TelaListagemLogsOS";
 // Porque tem um espaço aqui?
 
 import FormUploadArquivo from "./Components/Telas/Formularios/FormUploadArquivo";
@@ -61,7 +62,9 @@ function App() {
         <Route path="/cadastros/defeito-alegado" element={<TelaCadDefeitoAlegado />} />
         <Route path="/cadastros/clientes" element={<TelaCadClientePJ />} />
         <Route path="/sua-conta" element={<div>Tela Sua Conta (Em construção)</div>} />
-        <Route path="/ordem-servico" element={<TelaCadOrdemServico />} />
+        <Route path="/cadastrar-ordem-servico" element={<TelaCadOrdemServico />} />
+        <Route path="/cadastrar-ordem-servico/:id" element={<TelaCadOrdemServico />} />
+        <Route path="/ordem-servico/:id/logs" element={<TelaListagemLogsOS />} />
         {/* Adicionar outras rotas protegidas aqui */}
         <Route path="*" element={<Tela404 />} /> {/* Fallback para rotas não encontradas dentro do layout */}
       </Routes>

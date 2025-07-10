@@ -23,7 +23,9 @@ rotaOrdemServico.post('/anexar-arquivo/:id', ordemServicoCtrl.anexarArquivo);
 rotaOrdemServico.delete('/:id/arquivo/:nomeArquivo', ordemServicoCtrl.removerArquivo);
 
 // Rota de exclusão de OS
-rotaOrdemServico.delete('/:id', ordemServicoCtrl.excluir);
+rotaOrdemServico.delete("/:id", ordemServicoCtrl.excluir);
 
+// Rota para consultar logs de uma OS
+rotaOrdemServico.get("/:id/logs", ordemServicoCtrl.consultarLogs);
 
 export default rotaOrdemServico;

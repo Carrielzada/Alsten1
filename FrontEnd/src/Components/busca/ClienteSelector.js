@@ -1,79 +1,79 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useBling, useBlingContatos } from '../../Components/busca/useBling';
 import AsyncSelect from 'react-select/async';
+import debounce from 'lodash.debounce';
 
 const ClienteSelector = ({
     onClienteSelect,
-    value: controlledValue, // This is the full client object from the parent
+    value: controlledValue,
     disabled = false,
     placeholder = "Selecione ou busque um cliente..."
 }) => {
-    // 1. Re-introduce the authentication hooks from your old code
     const { isAuthenticated, authenticate, isLoading: authLoading } = useBling();
     const {
         fetchContatosForSelect,
-        searchContatosByName,
-        fetchContatoById,
+        searchContatosByName
     } = useBlingContatos();
 
     const [isLoading, setIsLoading] = useState(false);
     const [selectedValue, setSelectedValue] = useState(null);
 
-    // This effect handles setting the initial value when loading an existing record
+    // Define valor inicial quando controlado
     useEffect(() => {
         if (controlledValue && controlledValue.id) {
-            const initialOption = {
+            setSelectedValue({
                 value: controlledValue.id,
                 label: controlledValue.nome,
                 original: controlledValue
-            };
-            setSelectedValue(initialOption);
+            });
         } else {
             setSelectedValue(null);
         }
     }, [controlledValue]);
 
-
-    // This function loads options as the user types
-    const loadOptions = useCallback((inputValue, callback) => {
-        if (!isAuthenticated) {
+    // Função sem debounce, usada internamente
+    const loadOptionsRaw = useCallback(async (inputValue, callback) => {
+        if (!isAuthenticated || !inputValue || inputValue.trim().length < 3) {
             callback([]);
             return;
         }
 
         setIsLoading(true);
-        const fetchCall = inputValue
-            ? searchContatosByName(inputValue)
-            : fetchContatosForSelect({ tipo: 'cliente', limite: 100 });
 
-        fetchCall
-            .then(response => {
-                let formattedOptions = [];
-                if (response && Array.isArray(response.data)) {
-                    formattedOptions = response.data.map(cliente => ({
-                        value: cliente.id,
-                        label: cliente.nome,
-                        original: cliente // Store the original full object
-                    }));
-                }
-                callback(formattedOptions);
-            })
-            .catch(error => {
-                console.error('Erro ao buscar dados do Bling:', error);
+        try {
+            const response = await searchContatosByName(inputValue.trim());
+
+            if (response && Array.isArray(response.data)) {
+                const options = response.data.map(cliente => ({
+                    value: cliente.id,
+                    label: cliente.nome,
+                    original: cliente
+                }));
+                callback(options);
+            } else {
                 callback([]);
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
-    }, [isAuthenticated, fetchContatosForSelect, searchContatosByName]);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar dados do Bling:', error);
+            callback([]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isAuthenticated, searchContatosByName]);
 
-    // This function handles the change event
+    // Debounce externo, apenas 1 referência
+    const debouncedLoadOptions = useCallback(
+        debounce((inputValue, callback) => {
+            loadOptionsRaw(inputValue, callback);
+        }, 600),
+        [loadOptionsRaw]
+    );
+
     const handleSelectionChange = (selectedOption) => {
         setSelectedValue(selectedOption);
         onClienteSelect(selectedOption ? selectedOption.original : null);
     };
-    
-    // 2. Re-introduce the authentication check from your old code
+
     if (!isAuthenticated) {
         return (
             <div className="cliente-selector">
@@ -87,7 +87,6 @@ const ClienteSelector = ({
         );
     }
 
-    // Custom styles can be simplified or kept as they were
     const customStyles = {
         control: (provided) => ({ ...provided, minHeight: '38px' }),
     };
@@ -97,11 +96,11 @@ const ClienteSelector = ({
             <AsyncSelect
                 cacheOptions
                 defaultOptions
-                loadOptions={loadOptions}
+                loadOptions={debouncedLoadOptions}
                 value={selectedValue}
                 onChange={handleSelectionChange}
                 placeholder={placeholder}
-                isDisabled={disabled || authLoading} // Also disable while authenticating
+                isDisabled={disabled || authLoading}
                 isLoading={isLoading}
                 isClearable
                 styles={customStyles}

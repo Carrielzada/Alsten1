@@ -69,3 +69,11 @@ export const excluirOrdemServico = (id) => {
         method: 'DELETE',
     });
 };
+
+/**
+ * Busca logs de uma Ordem de Serviço.
+ */
+export const buscarLogsOrdemServico = () => {
+    return fetchAutenticado('/ordem-servico/logs');
+};
+
