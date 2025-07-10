@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Resizable } from 'react-resizable';
 import { buscarTodasOrdensServico, consultarOrdemServicoPorId } from '../../Services/ordemServicoService';
 import Layout from '../Templates2/Layout';
-import { Modal, Badge, Tooltip, OverlayTrigger, Button } from 'react-bootstrap';
-import { FaEdit, FaHistory, FaPlus, FaEye, FaIdCard, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { Modal, Badge, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope } from 'react-icons/fa';
 import FormCadOrdemServico from './Formularios/FormCadOrdemServico';
 import TelaLogsOS from './TelaLogsOS';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
@@ -251,6 +251,50 @@ const TelaListagemOS = () => {
     return (
         <Layout>
             <div className="container-fluid">
+                <style>{`
+                    /* Resizable handle styles */
+                    .resizable-table th {
+                        position: relative !important;
+                        background-clip: padding-box !important;
+                    }
+                    .react-resizable-handle {
+                        position: absolute;
+                        right: 3px;
+                        bottom: 0;
+                        z-index: 100;
+                        width: 10px;
+                        height: 100%;
+                        cursor: col-resize;
+                        /* NEW: Add a visible white line as the handle */
+                        border-right: 3px solid rgba(255, 255, 255, 0.3);
+                        transition: border-color 0.2s ease-in-out;
+                    }
+                    .react-resizable-handle:hover,
+                    .react-resizable-handle:active {
+                        /* Make the line more prominent on hover/drag */
+                        border-right-color: rgba(255, 255, 255, 0.8);
+                    }
+
+                    /* Custom styles for extra small action buttons */
+                    .action-btn {
+                        background: transparent;
+                        border: none;
+                        color: #6c757d;
+                        padding: 0.1rem 0.3rem;
+                        margin: 0 2px;
+                        font-size: 0.85rem;
+                        line-height: 1;
+                        cursor: pointer;
+                        border-radius: 0.2rem;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .action-btn:hover {
+                        background-color: #e9ecef;
+                        color: #212529;
+                    }
+                `}</style>
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <h2>
                         <FaEdit className="me-2" />
