@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Badge } from 'react-bootstrap';
+import { Table, Card, Badge, Button, Modal } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { buscarLogsOrdemServico } from '../../Services/ordemServicoService';
+import { buscarLogsOrdemServicoPorId } from '../../Services/ordemServicoService';
 import { FaEye, FaHistory, FaUser, FaCalendar, FaEdit } from 'react-icons/fa';
 
-const TelaListagemLogsOS = () => {
+const TelaLogsOS = ({ osId, onClose }) => {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -15,23 +15,31 @@ const TelaListagemLogsOS = () => {
         const fetchLogs = async () => {
             try {
                 setLoading(true);
-                const response = await buscarLogsOrdemServico();
+                const response = await buscarLogsOrdemServicoPorId(osId);
                 
-                if (response.status && response.logs) {
-                    setLogs(response.logs);
+                if (response.status) {
+                    setLogs(response.logs || []);
                 } else {
+                    // Se não há logs, não é um erro, apenas não há dados
                     setLogs([]);
                 }
             } catch (error) {
                 console.error("Erro ao buscar logs:", error);
-                toast.error("Erro ao buscar logs: " + error.message);
-                setLogs([]);
+                // Se a tabela não existe, mostrar mensagem amigável
+                if (error.message.includes("doesn't exist")) {
+                    setLogs([]);
+                } else {
+                    toast.error("Erro ao buscar logs da OS");
+                }
             } finally {
                 setLoading(false);
             }
         };
-        fetchLogs();
-    }, []);
+
+        if (osId) {
+            fetchLogs();
+        }
+    }, [osId]);
 
     const handleVerDetalhes = (log) => {
         setLogSelecionado(log);
@@ -77,26 +85,32 @@ const TelaListagemLogsOS = () => {
     }
 
     return (
-        <div className="container mt-4">
-            <h2>
-                <FaHistory className="me-2" />
-                Listagem de Logs de Ordem de Serviço
-            </h2>
-            
+        <div className="container-fluid p-3">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4>
+                    <FaHistory className="me-2" />
+                    Histórico de Alterações - OS #{osId}
+                </h4>
+                <Button variant="secondary" onClick={onClose}>
+                    Fechar
+                </Button>
+            </div>
+
             {logs.length === 0 ? (
-                <div className="text-center p-4">
-                    <FaHistory className="text-muted mb-3" style={{ fontSize: '3rem' }} />
-                    <h5>Nenhum log encontrado</h5>
-                    <p className="text-muted">
-                        Não há logs de alterações registrados no sistema.
-                    </p>
-                </div>
+                <Card className="text-center p-4">
+                    <Card.Body>
+                        <FaHistory className="text-muted mb-3" style={{ fontSize: '3rem' }} />
+                        <h5>Nenhuma alteração registrada</h5>
+                        <p className="text-muted">
+                            Esta Ordem de Serviço ainda não possui alterações registradas.
+                        </p>
+                    </Card.Body>
+                </Card>
             ) : (
                 <Table striped bordered hover responsive>
                     <thead className="table-dark">
                         <tr>
                             <th>Data/Hora</th>
-                            <th>OS ID</th>
                             <th>Usuário</th>
                             <th>Campo Alterado</th>
                             <th>Valor Anterior</th>
@@ -110,9 +124,6 @@ const TelaListagemLogsOS = () => {
                                 <td>
                                     <FaCalendar className="me-1" />
                                     {formatarData(log.data_alteracao)}
-                                </td>
-                                <td>
-                                    <Badge bg="primary">#{log.ordem_servico_id}</Badge>
                                 </td>
                                 <td>
                                     <FaUser className="me-1" />
@@ -146,6 +157,7 @@ const TelaListagemLogsOS = () => {
                 </Table>
             )}
 
+            {/* Modal com detalhes do log */}
             <Modal show={showModal} onHide={handleCloseModal} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>
@@ -168,22 +180,12 @@ const TelaListagemLogsOS = () => {
                             </div>
                             <div className="row mb-3">
                                 <div className="col-md-6">
-                                    <strong>OS ID:</strong>
-                                    <p>{logSelecionado.ordem_servico_id}</p>
-                                </div>
-                                <div className="col-md-6">
-                                    <strong>ID do Log:</strong>
-                                    <p>{logSelecionado.id}</p>
-                                </div>
-                            </div>
-                            <div className="row mb-3">
-                                <div className="col-md-6">
                                     <strong>Campo Alterado:</strong>
                                     <p>{getCampoLabel(logSelecionado.campo_alterado)}</p>
                                 </div>
                                 <div className="col-md-6">
-                                    <strong>Campo Original:</strong>
-                                    <p>{logSelecionado.campo_alterado}</p>
+                                    <strong>ID do Log:</strong>
+                                    <p>{logSelecionado.id}</p>
                                 </div>
                             </div>
                             <div className="row mb-3">
@@ -195,6 +197,10 @@ const TelaListagemLogsOS = () => {
                                     <strong>Novo Valor:</strong>
                                     <p className="text-success fw-bold">{logSelecionado.valor_novo || 'N/A'}</p>
                                 </div>
+                            </div>
+                            <div className="mb-3">
+                                <strong>Descrição:</strong>
+                                <p className="text-muted">{logSelecionado.descricao}</p>
                             </div>
                         </div>
                     )}
@@ -209,6 +215,4 @@ const TelaListagemLogsOS = () => {
     );
 };
 
-export default TelaListagemLogsOS;
-
-
+export default TelaLogsOS; 

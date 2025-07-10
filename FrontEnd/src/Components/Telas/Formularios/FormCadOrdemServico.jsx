@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Form, Row, Col, Button, Container, FormLabel } from "react-bootstrap";
+import { Form, Row, Col, Button, Container } from "react-bootstrap";
 import { FaSave, FaTimes, FaPaperclip } from "react-icons/fa";
 import CaixaSelecaoPesquisavel from '../../busca/CaixaSelecaoPesquisavel';
 import { buscarFabricantes } from '../../../Services/fabricanteService';
@@ -21,16 +21,16 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
     const [ordemServico, setOrdemServico] = useState({
         id: '',
         cliente: null,
-        modeloEquipamento: '',
+        modeloEquipamento: null,
         defeitoAlegado: '',
         numeroSerie: '',
-        fabricante: '',
-        urgencia: '',
-        tipoAnalise: '',
-        tipoLacre: '',
-        tipoLimpeza: '',
-        tipoTransporte: '',
-        formaPagamento: '',
+        fabricante: null,
+        urgencia: null,
+        tipoAnalise: null,
+        tipoLacre: null,
+        tipoLimpeza: null,
+        tipoTransporte: null,
+        formaPagamento: null,
         arquivosAnexados: [],
         etapa: 'Previsto'
     });
@@ -44,6 +44,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
     const [tiposTransporte, setTiposTransporte] = useState([]);
     const [formasPagamento, setFormasPagamento] = useState([]);
     const [arquivoParaUpload, setArquivoParaUpload] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(false); // Para controlar se pode editar o ID
 
     useEffect(() => {
         const carregarDadosCadastrais = async () => {
@@ -90,6 +91,22 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             setOrdemServico(ordemServicoEmEdicao);
         }
     }, [modoEdicao, ordemServicoEmEdicao]);
+
+    useEffect(() => {
+        // Verificar se o usuário é admin
+        const checkAdminStatus = () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    setIsAdmin(payload.role === 1); // Role 1 = Admin
+                } catch (error) {
+                    console.error('Erro ao decodificar token:', error);
+                }
+            }
+        };
+        checkAdminStatus();
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -241,16 +258,16 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
         setOrdemServico({
             id: '',
             cliente: null,
-            modeloEquipamento: '',
+            modeloEquipamento: null,
             defeitoAlegado: '',
             numeroSerie: '',
-            fabricante: '',
-            urgencia: '',
-            tipoAnalise: '',
-            tipoLacre: '',
-            tipoLimpeza: '',
-            tipoTransporte: '',
-            formaPagamento: '',
+            fabricante: null,
+            urgencia: null,
+            tipoAnalise: null,
+            tipoLacre: null,
+            tipoLimpeza: null,
+            tipoTransporte: null,
+            formaPagamento: null,
             arquivosAnexados: [],
             etapa: 'Previsto'
         });
@@ -263,6 +280,29 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                     {modoEdicao ? 'Editar Ordem de Serviço' : 'Cadastro de Ordem de Serviço'}
                 </h5>
                 <hr />
+
+                {/* Campo de ID - Apenas visível em modo de edição */}
+                {modoEdicao && (
+                    <Row className="mb-3">
+                        <Col md={6}>
+                            <Form.Group controlId="id">
+                                <Form.Label>ID da Ordem de Serviço</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    value={ordemServico.id || ''}
+                                    readOnly={!isAdmin}
+                                    disabled={!isAdmin}
+                                    className={!isAdmin ? 'bg-light' : ''}
+                                />
+                                {!isAdmin && (
+                                    <Form.Text className="text-muted">
+                                        Apenas administradores podem alterar o ID
+                                    </Form.Text>
+                                )}
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                )}
 
                 <Row className="mb-3">
                     <Col md={6}>

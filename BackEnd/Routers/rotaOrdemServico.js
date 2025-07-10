@@ -7,6 +7,9 @@ const ordemServicoCtrl = new OrdemServicoCtrl();
 // Rota de cadastro/atualização de OS
 rotaOrdemServico.post('/', ordemServicoCtrl.gravar);
 
+// Rota de atualização de OS (PUT)
+rotaOrdemServico.put('/:id', ordemServicoCtrl.gravar);
+
 // Rota de consulta de todas as OS
 rotaOrdemServico.get('/', ordemServicoCtrl.consultar);
 

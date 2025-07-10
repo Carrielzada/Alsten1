@@ -23,6 +23,7 @@ import rotaFabricante from './Routers/rotaFabricante.js';
 import rotaDefeitoAlegado from './Routers/rotaDefeitoAlegado.js';
 import rotaClientePJ from './Routers/rotaClientePJ.js';
 import rotaUsers from './Routers/rotaUsers.js';
+import rotaLogs from './Routers/rotaLogs.js';
 
 // Importações das novas rotas do Bling
 import blingRoutes from './Routers/blingRoutes.js';
@@ -86,6 +87,7 @@ app.use("/tipo-transporte", verificarAutenticacao, rotaTipoTransporte);
 app.use("/fabricante", verificarAutenticacao, rotaFabricante);
 app.use("/defeito-alegado", verificarAutenticacao, rotaDefeitoAlegado);
 app.use("/clientepj", verificarAutenticacao, rotaClientePJ);
+app.use("/logs", verificarAutenticacao, rotaLogs);
 
 // Rotas do Bling (já corrigidas no passo anterior)
 app.use("/bling", blingRoutes);

@@ -32,6 +32,14 @@ export const consultarOrdemServicoPorId = (id) => {
 };
 
 /**
+ * Busca logs de uma Ordem de Serviço específica.
+ * @param {string|number} osId - O ID da Ordem de Serviço.
+ */
+export const buscarLogsOrdemServicoPorId = (osId) => {
+    return fetchAutenticado(`/ordem-servico/${osId}/logs`);
+};
+
+/**
  * Anexa um arquivo a uma Ordem de Serviço existente.
  * @param {string|number} osId - O ID da Ordem de Serviço.
  * @param {File} arquivo - O arquivo a ser anexado.
@@ -74,6 +82,6 @@ export const excluirOrdemServico = (id) => {
  * Busca logs de uma Ordem de Serviço.
  */
 export const buscarLogsOrdemServico = () => {
-    return fetchAutenticado('/ordem-servico/logs');
+    return fetchAutenticado('/logs');
 };
 

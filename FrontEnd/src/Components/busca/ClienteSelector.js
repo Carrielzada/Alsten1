@@ -12,7 +12,8 @@ const ClienteSelector = ({
     const { isAuthenticated, authenticate, isLoading: authLoading } = useBling();
     const {
         fetchContatosForSelect,
-        searchContatosByName
+        searchContatosByName,
+        fetchContatoById
     } = useBlingContatos();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -21,11 +22,45 @@ const ClienteSelector = ({
     // Define valor inicial quando controlado
     useEffect(() => {
         if (controlledValue && controlledValue.id) {
-            setSelectedValue({
-                value: controlledValue.id,
-                label: controlledValue.nome,
-                original: controlledValue
-            });
+            // Se já temos os dados completos do cliente
+            if (controlledValue.nome) {
+                setSelectedValue({
+                    value: controlledValue.id,
+                    label: controlledValue.nome,
+                    original: controlledValue
+                });
+            } else {
+                // Se só temos o ID, precisamos buscar os dados no Bling
+                const buscarClientePorId = async () => {
+                    try {
+                        setIsLoading(true);
+                        const cliente = await fetchContatoById(controlledValue.id);
+                        if (cliente) {
+                            setSelectedValue({
+                                value: cliente.id,
+                                label: cliente.nome,
+                                original: cliente
+                            });
+                        } else {
+                            setSelectedValue({
+                                value: controlledValue.id,
+                                label: `Cliente ${controlledValue.id}`,
+                                original: { id: controlledValue.id, nome: `Cliente ${controlledValue.id}` }
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Erro ao buscar cliente por ID:', error);
+                        setSelectedValue({
+                            value: controlledValue.id,
+                            label: `Cliente ${controlledValue.id}`,
+                            original: { id: controlledValue.id, nome: `Cliente ${controlledValue.id}` }
+                        });
+                    } finally {
+                        setIsLoading(false);
+                    }
+                };
+                buscarClientePorId();
+            }
         } else {
             setSelectedValue(null);
         }

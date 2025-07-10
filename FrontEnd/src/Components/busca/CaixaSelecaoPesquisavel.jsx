@@ -16,7 +16,8 @@ const CaixaSelecaoPesquisavel = ({
         label: item[campoExibir] || `(Opção Inválida - ID: ${item[campoChave]})`
     })) : [];
 
-    const valorAtual = opcoes.find(opcao => opcao.value === valorSelecionado) || null;
+    // eslint-disable-next-line eqeqeq
+    const valorAtual = opcoes.find(opcao => opcao.value == valorSelecionado) || null;
 
     const handleChange = (opcaoSelecionada) => {
         onChange({

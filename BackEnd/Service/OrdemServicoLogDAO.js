@@ -6,10 +6,10 @@ class OrdemServicoLogDAO {
         try {
             const sql = `
                 INSERT INTO ordem_servico_log 
-                (os_id, usuario_id, campo_alterado, valor_antigo, valor_novo, descricao)
-                VALUES (?, ?, ?, ?, ?, ?)
+                (ordem_servico_id, user_id, campo_alterado, valor_anterior, valor_novo, data_alteracao)
+                VALUES (?, ?, ?, ?, ?, NOW())
             `;
-            const valores = [os_id, usuario_id, campo_alterado, valor_antigo, valor_novo, descricao];
+            const valores = [os_id, usuario_id, campo_alterado, valor_antigo, valor_novo];
             await conexao.query(sql, valores);
             return true;
         } catch (error) {
@@ -24,16 +24,51 @@ class OrdemServicoLogDAO {
         const conexao = await conectar();
         try {
             const sql = `
-                SELECT osl.*, u.nome as nome_usuario
+                SELECT 
+                    osl.id,
+                    osl.ordem_servico_id,
+                    osl.user_id,
+                    osl.campo_alterado,
+                    osl.valor_anterior,
+                    osl.valor_novo,
+                    osl.data_alteracao,
+                    u.nome as nome_usuario
                 FROM ordem_servico_log osl
-                LEFT JOIN usuarios u ON osl.usuario_id = u.id
-                WHERE osl.os_id = ?
+                LEFT JOIN users u ON osl.user_id = u.id
+                WHERE osl.ordem_servico_id = ?
                 ORDER BY osl.data_alteracao DESC
             `;
             const [registros] = await conexao.query(sql, [os_id]);
             return registros;
         } catch (error) {
             console.error("Erro ao consultar logs de Ordem de Serviço:", error);
+            throw error;
+        } finally {
+            conexao.release();
+        }
+    }
+
+    async consultarTodosLogs() {
+        const conexao = await conectar();
+        try {
+            const sql = `
+                SELECT 
+                    osl.id,
+                    osl.ordem_servico_id,
+                    osl.user_id,
+                    osl.campo_alterado,
+                    osl.valor_anterior,
+                    osl.valor_novo,
+                    osl.data_alteracao,
+                    u.nome as nome_usuario
+                FROM ordem_servico_log osl
+                LEFT JOIN users u ON osl.user_id = u.id
+                ORDER BY osl.data_alteracao DESC
+            `;
+            const [registros] = await conexao.query(sql);
+            return registros;
+        } catch (error) {
+            console.error("Erro ao consultar todos os logs de Ordem de Serviço:", error);
             throw error;
         } finally {
             conexao.release();

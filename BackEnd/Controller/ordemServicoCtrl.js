@@ -4,18 +4,36 @@ import OrdemServicoLogDAO from "../Service/OrdemServicoLogDAO.js";
 import upload from '../Service/uploadService.js'; // Importa o middleware de upload
 
 class OrdemServicoCtrl {
+    constructor() {
+        this.gravar = this.gravar.bind(this);
+        this.consultar = this.consultar.bind(this);
+        this.consultarPorId = this.consultarPorId.bind(this);
+        this.excluir = this.excluir.bind(this);
+        this.anexarArquivo = this.anexarArquivo.bind(this);
+        this.removerArquivo = this.removerArquivo.bind(this);
+        this.consultarLogs = this.consultarLogs.bind(this);
+        this.registrarLogsAlteracoes = this.registrarLogsAlteracoes.bind(this);
+    }
+
     async gravar(req, res) {
+        console.log('=== MÉTODO GRAVAR CHAMADO ===');
+        console.log('Método HTTP:', req.method);
+        console.log('Body:', req.body);
+        
         res.type("application/json");
-        if (req.method === "POST" && req.is("application/json")) {
+        if ((req.method === "POST" || req.method === "PUT") && req.is("application/json")) {
             const { 
                 id, cliente, modeloEquipamento, defeitoAlegado, numeroSerie, 
                 fabricante, urgencia, tipoAnalise, tipoLacre, tipoLimpeza, 
                 tipoTransporte, formaPagamento, arquivosAnexados, etapa 
             } = req.body;
 
+            // Para PUT, usar o ID da URL se não estiver no body
+            const osId = req.method === "PUT" ? req.params.id : id;
+
             if (cliente && modeloEquipamento && defeitoAlegado) {
                 const os = new OrdemServico(
-                    id, 
+                    osId, 
                     cliente, 
                     modeloEquipamento, 
                     defeitoAlegado, 
@@ -30,10 +48,28 @@ class OrdemServicoCtrl {
                     arquivosAnexados,
                     etapa
                 );
+
                 const osDAO = new OrdemServicoDAO();
+                const logDAO = new OrdemServicoLogDAO();
+                
                 try {
+                    // Se for uma atualização, buscar dados antigos para comparação
+                    let dadosAntigos = null;
+                    if (req.method === "PUT" && osId) {
+                        dadosAntigos = await osDAO.consultarPorId(osId);
+                    }
+
                     await osDAO.gravar(os);
-                    if (id) {
+
+                    // Registrar logs de auditoria para atualizações
+                    if (req.method === "PUT" && dadosAntigos) {
+                        const usuarioId = req.user?.id;
+                        console.log('Dados antigos para comparação:', dadosAntigos);
+                        console.log('Dados novos para comparação:', os);
+                        await this.registrarLogsAlteracoes(dadosAntigos, os, usuarioId, logDAO);
+                    }
+
+                    if (osId) {
                         res.status(200).json({
                             status: true,
                             mensagem: "Ordem de Serviço atualizada com sucesso!",
@@ -236,16 +272,176 @@ class OrdemServicoCtrl {
         const osId = req.params.id;
         try {
             const logs = await logDAO.consultarLogsPorOsId(osId);
+            
             res.status(200).json({
                 status: true,
                 logs: logs
             });
         } catch (error) {
+            console.error('Erro ao consultar logs:', error);
             res.status(500).json({
                 status: false,
                 mensagem: "Erro ao consultar logs da Ordem de Serviço: " + error.message,
             });
         }
+    }
+
+    // Método auxiliar para registrar logs de alterações
+    async registrarLogsAlteracoes(dadosAntigos, dadosNovos, usuarioId, logDAO) {
+        const camposParaMonitorar = [
+            'cliente', 'modeloEquipamento', 'defeitoAlegado', 'numeroSerie', 
+            'fabricante', 'urgencia', 'tipoAnalise', 'tipoLacre', 'tipoLimpeza', 
+            'tipoTransporte', 'formaPagamento', 'etapa'
+        ];
+
+        for (const campo of camposParaMonitorar) {
+            const valorAntigo = dadosAntigos[campo];
+            const valorNovo = dadosNovos[campo];
+
+            // Normalizar valores para comparação
+            const valorAntigoNormalizado = this.normalizarValor(valorAntigo);
+            const valorNovoNormalizado = this.normalizarValor(valorNovo);
+
+            // Só registrar se realmente houve mudança
+            if (valorAntigoNormalizado !== valorNovoNormalizado) {
+                const valorAntigoStr = await this.extrairNomeDoValor(valorAntigo, campo);
+                const valorNovoStr = await this.extrairNomeDoValor(valorNovo, campo);
+
+                const descricao = `Campo "${campo}" alterado de "${valorAntigoStr}" para "${valorNovoStr}"`;
+                await logDAO.registrarLog(
+                    dadosNovos.id,
+                    usuarioId,
+                    campo,
+                    valorAntigoStr,
+                    valorNovoStr,
+                    descricao
+                );
+            }
+        }
+    }
+
+    // Método auxiliar para normalizar valores para comparação
+    normalizarValor(valor) {
+        if (!valor) return null;
+        
+        // Se for objeto, extrair o ID
+        if (typeof valor === 'object' && valor !== null) {
+            return valor.id || valor.numeroDocumento || valor;
+        }
+        
+        // Se for primitivo, retornar como está
+        return valor;
+    }
+
+    // Método auxiliar para extrair nomes dos valores (agora assíncrono)
+    async extrairNomeDoValor(valor, campo) {
+        // console.log(`=== EXTRAINDO NOME PARA CAMPO: ${campo} ===`);
+        // console.log(`Valor recebido:`, valor);
+        // console.log(`Tipo do valor:`, typeof valor);
+        
+        if (!valor) {
+            // console.log(`Valor é null/undefined, retornando N/A`);
+            return 'N/A';
+        }
+
+        // Se for objeto, extrai normalmente
+        if (typeof valor === 'object') {
+            // console.log(`Valor é objeto, extraindo nome...`);
+            switch (campo) {
+                case 'cliente':
+                    const nomeCliente = valor.nome || valor.numeroDocumento || valor.id || 'Cliente';
+                    // console.log(`Nome do cliente extraído: ${nomeCliente}`);
+                    return nomeCliente;
+                case 'modeloEquipamento':
+                    const nomeModelo = valor.modelo || valor.id || 'Modelo';
+                    // console.log(`Nome do modelo extraído: ${nomeModelo}`);
+                    return nomeModelo;
+                case 'fabricante':
+                    const nomeFabricante = valor.nome_fabricante || valor.id || 'Fabricante';
+                    // console.log(`Nome do fabricante extraído: ${nomeFabricante}`);
+                    return nomeFabricante;
+                case 'urgencia':
+                    const nomeUrgencia = valor.urgencia || valor.id || 'Urgência';
+                    // console.log(`Nome da urgência extraído: ${nomeUrgencia}`);
+                    return nomeUrgencia;
+                case 'tipoAnalise':
+                    const nomeTipoAnalise = valor.tipoAnalise || valor.id || 'Tipo de Análise';
+                    // console.log(`Nome do tipo de análise extraído: ${nomeTipoAnalise}`);
+                    return nomeTipoAnalise;
+                case 'tipoLacre':
+                    const nomeTipoLacre = valor.tipoLacre || valor.id || 'Tipo de Lacre';
+                    // console.log(`Nome do tipo de lacre extraído: ${nomeTipoLacre}`);
+                    return nomeTipoLacre;
+                case 'tipoLimpeza':
+                    const nomeTipoLimpeza = valor.tipoLimpeza || valor.id || 'Tipo de Limpeza';
+                    // console.log(`Nome do tipo de limpeza extraído: ${nomeTipoLimpeza}`);
+                    return nomeTipoLimpeza;
+                case 'tipoTransporte':
+                    const nomeTipoTransporte = valor.tipoTransporte || valor.id || 'Tipo de Transporte';
+                    // console.log(`Nome do tipo de transporte extraído: ${nomeTipoTransporte}`);
+                    return nomeTipoTransporte;
+                case 'formaPagamento':
+                    const nomeFormaPagamento = valor.pagamento || valor.id || 'Forma de Pagamento';
+                    // console.log(`Nome da forma de pagamento extraído: ${nomeFormaPagamento}`);
+                    return nomeFormaPagamento;
+                default:
+                    const nomeDefault = valor.id || JSON.stringify(valor);
+                    // console.log(`Nome padrão extraído: ${nomeDefault}`);
+                    return nomeDefault;
+            }
+        }
+
+        // Se for primitivo (ID), buscar no banco
+        // console.log(`Valor é primitivo (ID), buscando no banco...`);
+        switch (campo) {
+            case 'modeloEquipamento':
+                const nomeModelo = await this.buscarNomePorId('modelo', valor, 'modelo');
+                // console.log(`Nome do modelo buscado no banco: ${nomeModelo}`);
+                return nomeModelo;
+            case 'fabricante':
+                const nomeFabricante = await this.buscarNomePorId('fabricante', valor, 'nome_fabricante');
+                // console.log(`Nome do fabricante buscado no banco: ${nomeFabricante}`);
+                return nomeFabricante;
+            case 'urgencia':
+                const nomeUrgencia = await this.buscarNomePorId('urgencia', valor, 'urgencia');
+                // console.log(`Nome da urgência buscado no banco: ${nomeUrgencia}`);
+                return nomeUrgencia;
+            case 'tipoAnalise':
+                const nomeTipoAnalise = await this.buscarNomePorId('tipo_analise', valor, 'tipo_analise');
+                // console.log(`Nome do tipo de análise buscado no banco: ${nomeTipoAnalise}`);
+                return nomeTipoAnalise;
+            case 'tipoLacre':
+                const nomeTipoLacre = await this.buscarNomePorId('tipo_lacre', valor, 'tipo_lacre');
+                // console.log(`Nome do tipo de lacre buscado no banco: ${nomeTipoLacre}`);
+                return nomeTipoLacre;
+            case 'tipoLimpeza':
+                const nomeTipoLimpeza = await this.buscarNomePorId('tipo_limpeza', valor, 'tipo_limpeza');
+                // console.log(`Nome do tipo de limpeza buscado no banco: ${nomeTipoLimpeza}`);
+                return nomeTipoLimpeza;
+            case 'tipoTransporte':
+                const nomeTipoTransporte = await this.buscarNomePorId('tipo_transporte', valor, 'tipo_transporte');
+                // console.log(`Nome do tipo de transporte buscado no banco: ${nomeTipoTransporte}`);
+                return nomeTipoTransporte;
+            case 'formaPagamento':
+                const nomeFormaPagamento = await this.buscarNomePorId('pagamento', valor, 'pagamento');
+                // console.log(`Nome da forma de pagamento buscado no banco: ${nomeFormaPagamento}`);
+                return nomeFormaPagamento;
+            default:
+                // console.log(`Campo não mapeado, retornando valor como string: ${String(valor)}`);
+                return String(valor);
+        }
+    }
+
+    // Método auxiliar para buscar nome pelo ID em uma tabela
+    async buscarNomePorId(tabela, id, campoNome) {
+        const conectar = (await import('../Service/conexao.js')).default;
+        const conexao = await conectar();
+        const [rows] = await conexao.query(`SELECT \`${campoNome}\` FROM \`${tabela}\` WHERE id = ?`, [id]);
+        conexao.release();
+        if (rows.length > 0) {
+            return rows[0][campoNome];
+        }
+        return String(id);
     }
 }
 
