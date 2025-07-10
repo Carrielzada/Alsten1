@@ -57,7 +57,7 @@ const ClienteInfoModal = ({ show, onHide, cliente, title = "Informações do Cli
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={onHide}>
+                    <Button variant="secondary" onClick={onHide} size="sm">
                         Fechar
                     </Button>
                 </Modal.Footer>
@@ -223,15 +223,30 @@ const ClienteInfoModal = ({ show, onHide, cliente, title = "Informações do Cli
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>
+                <Button 
+                    variant="secondary" 
+                    onClick={onHide} 
+                    size="sm"
+                    style={{ 
+                        padding: '0.25rem 0.5rem',
+                        fontSize: '0.875rem',
+                        lineHeight: '1.2'
+                    }}
+                >
                     Fechar
                 </Button>
                 {cliente.telefone && (
                     <Button 
                         variant="outline-primary" 
                         onClick={() => window.open(`tel:${cliente.telefone.replace(/\D/g, '')}`)}
+                        size="sm"
+                        style={{ 
+                            padding: '0.25rem 0.5rem',
+                            fontSize: '0.875rem',
+                            lineHeight: '1.2'
+                        }}
                     >
-                        <FaPhone className="me-2" />
+                        <FaPhone className="me-1" style={{ fontSize: '0.75rem' }} />
                         Ligar
                     </Button>
                 )}
@@ -239,8 +254,14 @@ const ClienteInfoModal = ({ show, onHide, cliente, title = "Informações do Cli
                     <Button 
                         variant="outline-info" 
                         onClick={() => window.open(`mailto:${cliente.email}`)}
+                        size="sm"
+                        style={{ 
+                            padding: '0.25rem 0.5rem',
+                            fontSize: '0.875rem',
+                            lineHeight: '1.2'
+                        }}
                     >
-                        <FaEnvelope className="me-2" />
+                        <FaEnvelope className="me-1" style={{ fontSize: '0.75rem' }} />
                         Enviar E-mail
                     </Button>
                 )}
