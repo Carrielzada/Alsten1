@@ -326,7 +326,7 @@ const TelaListagemOS = () => {
                                 ordensServico.map((os) => (
                                     <tr key={os.id} className={getRowClassName(os.etapa)}>
                                         <td style={{width: columns[0].width}}><strong>#{os.id}</strong></td>
-                                        <td style={{width: columns[1].width}}></td>
+                                        <td style={{width: columns[1].width}}>{os.pedidoCompras || ''}</td>
                                         <td style={{width: columns[2].width}}>
                                             <OverlayTrigger
                                                 placement="top"
@@ -353,16 +353,36 @@ const TelaListagemOS = () => {
                                                 </div>
                                             </OverlayTrigger>
                                         </td>
-                                        <td style={{width: columns[3].width}}>{typeof os.modeloEquipamento === 'object' && os.modeloEquipamento ? os.modeloEquipamento.modelo : os.modeloEquipamento || 'Não informado'}</td>
-                                        <td style={{width: columns[4].width}}><div className="text-truncate" title={os.defeitoAlegado}>{os.defeitoAlegado || 'Não informado'}</div></td>
-                                        <td style={{width: columns[5].width}}></td>
-                                        <td style={{width: columns[6].width}}><Badge bg={getEtapaBadge(os.etapa)}>{os.etapa || 'Não definida'}</Badge></td>
-                                        <td style={{width: columns[7].width}}></td>
-                                        <td style={{width: columns[8].width}}></td>
-                                        <td style={{width: columns[9].width}}></td>
-                                        <td style={{width: columns[10].width}}></td>
-                                        <td style={{width: columns[11].width}}></td>
-                                        <td style={{width: columns[12].width}}></td>
+                                        <td style={{width: columns[3].width}}>
+                                            {os.modeloEquipamento ? (
+                                                typeof os.modeloEquipamento === 'string' ? os.modeloEquipamento :
+                                                (os.modeloEquipamento.modelo || `Modelo ${os.modeloEquipamento.id}` || '')
+                                            ) : 'Não informado'}
+                                        </td>
+                                        <td style={{width: columns[4].width}}>
+                                            <div className="text-truncate" title={os.defeitoAlegado}>
+                                                {os.defeitoAlegado || 'Não informado'}
+                                            </div>
+                                        </td>
+                                        <td style={{width: columns[5].width}}>{os.vendedor?.nome || ''}</td>
+                                        <td style={{width: columns[6].width}}>
+                                            <Badge bg={getEtapaBadge(os.etapa)}>{os.etapa || 'Não definida'}</Badge>
+                                        </td>
+                                        <td style={{width: columns[7].width}}>
+                                            {os.cliente && typeof os.cliente === 'object' && os.cliente.cidade ? os.cliente.cidade : ''}
+                                        </td>
+                                        <td style={{width: columns[8].width}}>{os.notaFiscal || ''}</td>
+                                        <td style={{width: columns[9].width}}>
+                                            {os.dataEntrega ? new Date(os.dataEntrega).toLocaleDateString() : ''}
+                                        </td>
+                                        <td style={{width: columns[10].width}}>{os.tipoTransporteTexto || ''}</td>
+                                        <td style={{width: columns[11].width}}>{os.transporteCifFob || ''}</td>
+                                        <td style={{width: columns[12].width}}>
+                                            {os.urgencia ? (
+                                                typeof os.urgencia === 'string' ? os.urgencia :
+                                                (os.urgencia.nivel || `Nível ${os.urgencia.id}` || '')
+                                            ) : ''}
+                                        </td>
                                         <td style={{width: columns[13].width}}>
                                             <div>
                                                 <button className="action-btn" onClick={() => handleEditarOS(os.id)} title="Editar OS">
