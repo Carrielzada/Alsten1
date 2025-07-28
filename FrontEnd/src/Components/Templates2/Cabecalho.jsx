@@ -1,5 +1,5 @@
 import { Navbar } from "react-bootstrap";
-import logoImage from "../../assets/imagens/logoalsten.jpg";
+import logoImage from "../../assets/imagens/logoalsten.png";
 
 export default function Cabecalho(props) {
   return (

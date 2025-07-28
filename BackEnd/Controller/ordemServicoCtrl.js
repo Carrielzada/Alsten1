@@ -2,6 +2,7 @@ import OrdemServico from "../Model/OrdemServico.js";
 import OrdemServicoDAO from "../Service/OrdemServicoDAO.js";
 import OrdemServicoLogDAO from "../Service/OrdemServicoLogDAO.js";
 import upload from '../Service/uploadService.js'; // Importa o middleware de upload
+import { criarLock, verificarLock, removerLock } from '../Service/OrdemServicoLockService.js';
 
 class OrdemServicoCtrl {
     constructor() {
@@ -308,6 +309,42 @@ class OrdemServicoCtrl {
                 status: false,
                 mensagem: "Erro ao consultar logs da Ordem de Serviço: " + error.message,
             });
+        }
+    }
+
+    // --- LOCK DE EDIÇÃO CONCORRENTE ---
+    async criarLock(req, res) {
+        const osId = req.params.id;
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ status: false, mensagem: 'Usuário não autenticado!' });
+        const ok = criarLock(osId, userId);
+        if (ok) {
+            res.json({ status: true, mensagem: 'Lock adquirido com sucesso!' });
+        } else {
+            const lock = verificarLock(osId);
+            res.status(409).json({ status: false, mensagem: 'OS já está sendo editada por outro usuário!', lock });
+        }
+    }
+
+    async verificarLock(req, res) {
+        const osId = req.params.id;
+        const lock = verificarLock(osId);
+        if (!lock) {
+            res.json({ status: false, livre: true });
+        } else {
+            res.json({ status: true, livre: false, lock });
+        }
+    }
+
+    async removerLock(req, res) {
+        const osId = req.params.id;
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ status: false, mensagem: 'Usuário não autenticado!' });
+        const ok = removerLock(osId, userId);
+        if (ok) {
+            res.json({ status: true, mensagem: 'Lock removido com sucesso!' });
+        } else {
+            res.status(403).json({ status: false, mensagem: 'Você não possui o lock desta OS.' });
         }
     }
 

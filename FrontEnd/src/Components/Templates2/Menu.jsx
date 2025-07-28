@@ -10,7 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaSignOutAlt, FaBell, FaBars } from "react-icons/fa";
 import { ContextoUsuarioLogado } from "../../App"; // Ajuste o caminho se necessário
 import { alterarSenha } from "../../Services/usersService"; // Ajuste o caminho se necessário
-import logoImage from "../../assets/imagens/logoalsten.jpg"; // << AJUSTE O CAMINHO PARA SUA LOGO
+import logoImage from "../../assets/imagens/logoalsten.png"; // << AJUSTE O CAMINHO PARA SUA LOGO
 
 // Adicionamos 'toggleBarra' como propriedade (props)
 export default function Menu({ toggleBarra }) {

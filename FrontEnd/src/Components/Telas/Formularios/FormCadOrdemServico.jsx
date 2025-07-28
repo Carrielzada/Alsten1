@@ -24,7 +24,43 @@ import ClienteSelector from '../../busca/ClienteSelector';
 import ClienteSearchAdvanced from '../../busca/ClienteSearchAdvanced';
 import '../../busca/ClienteSelector.css';
 
-const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao }) => {
+// Mapeamento dos campos obrigatórios por etapa
+const obrigatoriosPorEtapa = {
+    "Previsto": ["cliente", "modeloEquipamento", "defeitoAlegado"],
+    "Recebido": ["numeroSerie", "arquivosAnexados", "fabricante", "dataEntrega"],
+    "Em Análise": ["enderecamento", "tipoAnalise", "checklistItems", "tipoLimpeza", "defeitoConstatado", "servicoRealizar", "diasReparo", "informacoesConfidenciais"],
+    "Analisado": ["valor", "enviarOrcamento"],
+    "Aguardando aprovação": ["pedidoCompras", "comprovanteAprovacao", "tipoTransporte", "transporteCifFob"], // caso aprovado
+    "Reprovado": ["comprovanteAprovacao"],
+    "Pré-aprovado": [],
+    "Aguardando informação": ["comprovanteAprovacao", "pedidoCompras"],
+    "Expedição": ["conferenciaFotos"],
+    "Despacho": [],
+    "Sem custo": [],
+};
+
+// Função utilitária para checar obrigatoriedade dinâmica
+function validarCamposObrigatorios(etapa, dados, opcoes = {}) {
+    const obrigatorios = obrigatoriosPorEtapa[etapa] || [];
+    const faltando = [];
+    obrigatorios.forEach(campo => {
+        // Regras especiais para alguns campos
+        if (campo === "arquivosAnexados") {
+            if (!dados.arquivosAnexados || dados.arquivosAnexados.length === 0) faltando.push("Anexos do sistema");
+        } else if (campo === "checklistItems") {
+            if (!dados.checklistItems || dados.checklistItems.length === 0) faltando.push("Checklist");
+        } else if (campo === "enviarOrcamento") {
+            if (!opcoes.enviouOrcamento) faltando.push("Enviar orçamento");
+        } else if (campo === "conferenciaFotos") {
+            if (!opcoes.conferiuFotos) faltando.push("Conferência das fotos");
+        } else if (!dados[campo] || (typeof dados[campo] === 'string' && !dados[campo].trim())) {
+            faltando.push(campo);
+        }
+    });
+    return faltando;
+}
+
+const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, onDirtyChange }) => {
     const [ordemServico, setOrdemServico] = useState({
         id: '',
         cliente: null,
@@ -58,8 +94,18 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
         servicoRealizar: '',
         valor: '',
         etapaId: null,
+        comprovanteAprovacao: '',
         notaFiscal: ''
     });
+    const [dirty, setDirty] = useState(false);
+
+    // Detecta alterações no formulário
+    useEffect(() => {
+        if (onDirtyChange) onDirtyChange(dirty);
+    }, [dirty, onDirtyChange]);
+
+    // Marca como dirty ao alterar qualquer campo
+    const markDirty = () => { if (!dirty) setDirty(true); };
 
     const [fabricantes, setFabricantes] = useState([]);
     const [modelos, setModelos] = useState([]);
@@ -208,6 +254,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                 servicoRealizar: ordemServicoEmEdicao.servicoRealizar ?? '',
                 valor: ordemServicoEmEdicao.valor ?? '',
                 notaFiscal: ordemServicoEmEdicao.notaFiscal ?? '',
+                comprovanteAprovacao: ordemServicoEmEdicao.comprovanteAprovacao ?? '',
                 // Garante que checklistItems seja sempre array
                 checklistItems: Array.isArray(ordemServicoEmEdicao.checklistItems)
                   ? ordemServicoEmEdicao.checklistItems
@@ -238,6 +285,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
     }, []);
 
     const handleInputChange = (e) => {
+        markDirty();
         const { name, value } = e.target;
         setOrdemServico(prevState => ({
             ...prevState,
@@ -246,6 +294,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
     };
 
     const handleCheckboxChange = (e) => {
+        markDirty();
         const { name, checked } = e.target;
         setOrdemServico(prevState => ({
             ...prevState,
@@ -254,6 +303,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
     };
 
     const handleChecklistChange = (itemId, checked) => {
+        markDirty();
         setOrdemServico(prevState => {
             const currentItems = prevState.checklistItems || [];
             if (checked) {
@@ -271,6 +321,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
     };
 
     const handleClienteSelect = (clienteBling) => {
+        markDirty();
         setOrdemServico(prevState => ({
             ...prevState,
             cliente: clienteBling
@@ -278,6 +329,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
     };
 
     const handleSelectChange = (e) => {
+        markDirty();
         const { name, value } = e.target;
         let selectedObject = null;
 
@@ -379,17 +431,11 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
         const handleSubmit = async (e) => {
             e.preventDefault();
 
-            // 1. Client-side validation remains the same
-            if (!ordemServico.cliente?.id) {
-                toast.error("Por favor, selecione um Cliente.");
-                return;
-            }
-            if (!ordemServico.modeloEquipamento?.id) {
-                toast.error("Por favor, selecione um Modelo do Equipamento.");
-                return;
-            }
-            if (!ordemServico.defeitoAlegado.trim()) {
-                toast.error("Por favor, informe o Defeito Alegado.");
+            // Validação dinâmica por etapa
+            const etapaAtual = ordemServico.etapaId?.nome || ordemServico.etapa || 'Previsto';
+            const faltando = validarCamposObrigatorios(etapaAtual, ordemServico);
+            if (faltando.length > 0) {
+                toast.error("Preencha os campos obrigatórios: " + faltando.join(", "));
                 return;
             }
 
@@ -448,6 +494,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
             servicoRealizar: '',
             valor: '',
             etapaId: null,
+            comprovanteAprovacao: '',
             notaFiscal: ''
         });
     };
@@ -780,19 +827,6 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao })
                 </Row>
 
                 <Row className="mb-3">
-                    <Col md={6}>
-                        <Form.Group controlId="diasReparo">
-                            <Form.Label>Dias de Reparo</Form.Label>
-                            <Form.Control
-                                type="number"
-                                name="diasReparo"
-                                value={ordemServico.diasReparo || ''}
-                                onChange={handleInputChange}
-                                min="0"
-                                placeholder="Ex: 5"
-                            />
-                        </Form.Group>
-                    </Col>
                     <Col md={6}>
                         <Form.Group controlId="dataEquipamentoPronto">
                             <Form.Label>Data do Equipamento Pronto</Form.Label>

@@ -36,6 +36,7 @@ function AppContent() {
     token: "",
     role: null,
   });
+  const [usuarioCarregado, setUsuarioCarregado] = useState(false);
 
   // Use o contexto global do Bling
   const { isAuthenticated: isBlingAuthenticated, isLoading: isBlingLoading, authenticate: authenticateBling, checkAuthStatus: checkBlingAuthStatus } = useBlingAuth();
@@ -47,6 +48,7 @@ function AppContent() {
       const usuario = JSON.parse(usuarioSalvo);
       setUsuarioLogado(usuario);
     }
+    setUsuarioCarregado(true);
   }, []);
 
   useEffect(() => {
@@ -57,6 +59,7 @@ function AppContent() {
     }
   }, [usuarioLogado.logado, checkBlingAuthStatus]);
 
+  if (!usuarioCarregado) return <div>Carregando...</div>;
   if (usuarioLogado.logado && !blingChecked) return null;
 
   const RotasProtegidasComLayout = () => (

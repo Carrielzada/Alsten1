@@ -85,3 +85,16 @@ export const buscarLogsOrdemServico = () => {
     return fetchAutenticado('/logs');
 };
 
+// --- LOCK DE EDIÇÃO CONCORRENTE ---
+export const adquirirLockOS = (osId) => {
+    return fetchAutenticado(`/ordem-servico/${osId}/lock`, { method: 'POST' });
+};
+
+export const verificarLockOS = (osId) => {
+    return fetchAutenticado(`/ordem-servico/${osId}/lock`, { method: 'GET' });
+};
+
+export const liberarLockOS = (osId) => {
+    return fetchAutenticado(`/ordem-servico/${osId}/lock`, { method: 'DELETE' });
+};
+

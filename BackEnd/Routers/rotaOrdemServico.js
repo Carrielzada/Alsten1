@@ -1,5 +1,6 @@
 import { Router } from "express";
 import OrdemServicoCtrl from "../Controller/ordemServicoCtrl.js";
+import { verificarAutenticacao } from '../Security/autenticar.js';
 
 const rotaOrdemServico = new Router();
 const ordemServicoCtrl = new OrdemServicoCtrl();
@@ -30,5 +31,10 @@ rotaOrdemServico.delete("/:id", ordemServicoCtrl.excluir);
 
 // Rota para consultar logs de uma OS
 rotaOrdemServico.get("/:id/logs", ordemServicoCtrl.consultarLogs);
+
+// --- LOCK DE EDIÇÃO CONCORRENTE ---
+rotaOrdemServico.post('/:id/lock', verificarAutenticacao, ordemServicoCtrl.criarLock);
+rotaOrdemServico.get('/:id/lock', verificarAutenticacao, ordemServicoCtrl.verificarLock);
+rotaOrdemServico.delete('/:id/lock', verificarAutenticacao, ordemServicoCtrl.removerLock);
 
 export default rotaOrdemServico;

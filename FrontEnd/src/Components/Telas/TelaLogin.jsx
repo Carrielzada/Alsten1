@@ -4,7 +4,7 @@ import { ContextoUsuarioLogado } from "../../App";
 import { login } from "../../Services/loginService";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { registrar } from "../../Services/usersService";
-import logoImage from "../../assets/imagens/logoalsten.jpg";
+import logoImage from "../../assets/imagens/logoalsten.png";
 import { useNavigate } from "react-router-dom";
 
 export default function TelaLogin() {

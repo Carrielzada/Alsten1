@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Resizable } from 'react-resizable';
 import { buscarTodasOrdensServico, consultarOrdemServicoPorId } from '../../Services/ordemServicoService';
 import Layout from '../Templates2/Layout';
-import { Modal, Badge, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { Modal as BootstrapModal, Badge, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope } from 'react-icons/fa';
 import FormCadOrdemServico from './Formularios/FormCadOrdemServico';
 import TelaLogsOS from './TelaLogsOS';
@@ -44,8 +44,11 @@ const TelaListagemOS = () => {
     const [osIdParaLogs, setOsIdParaLogs] = useState(null);
     const [showClienteModal, setShowClienteModal] = useState(false);
     const [clienteSelecionado, setClienteSelecionado] = useState(null);
+    const [formDirty, setFormDirty] = useState(false);
+    const [showConfirmCloseModal, setShowConfirmCloseModal] = useState(false);
 
     const [columns, setColumns] = useState([
+        { title: 'Ações', width: 65 },
         { title: 'ID AP', width: 80 },
         { title: 'ID ER', width: 80 },
         { title: 'Cliente', width: 200 },
@@ -59,7 +62,6 @@ const TelaListagemOS = () => {
         { title: 'TP T', width: 80 },
         { title: 'Transporte', width: 120 },
         { title: 'Nível U', width: 100 },
-        { title: 'Ações', width: 65 },
     ]);
 
     const handleResize = (index) => (e, { size }) => {
@@ -90,16 +92,9 @@ const TelaListagemOS = () => {
         }
     };
 
-    const handleEditarOS = async (osId) => {
-        try {
-            const response = await consultarOrdemServicoPorId(osId);
-            if (response) {
-                setOrdemServicoEmEdicao(response);
-                setShowEditModal(true);
-            }
-        } catch (error) {
-            console.error('Erro ao buscar OS para edição:', error);
-        }
+    const handleEditarOS = (osId) => {
+        const url = `${window.location.origin}/cadastrar-ordem-servico/${osId}`;
+        window.open(url, '_blank');
     };
 
     const handleVerLogs = (osId) => {
@@ -110,12 +105,35 @@ const TelaListagemOS = () => {
     const handleFormSubmit = () => {
         setShowEditModal(false);
         setOrdemServicoEmEdicao(null);
+        setFormDirty(false);
         fetchOrdensServico();
+    };
+
+    const handleCloseEditModal = () => {
+        if (formDirty) {
+            setShowConfirmCloseModal(true);
+        } else {
+            setShowEditModal(false);
+            setOrdemServicoEmEdicao(null);
+            setFormDirty(false);
+        }
+    };
+
+    const handleConfirmClose = () => {
+        setShowEditModal(false);
+        setOrdemServicoEmEdicao(null);
+        setFormDirty(false);
+        setShowConfirmCloseModal(false);
+    };
+
+    const handleCancelClose = () => {
+        setShowConfirmCloseModal(false);
     };
 
     const handleNovaOS = () => {
         setOrdemServicoEmEdicao(null);
         setShowEditModal(true);
+        setFormDirty(false);
     };
 
     const handleVerDetalhesCliente = (cliente) => {
@@ -126,7 +144,9 @@ const TelaListagemOS = () => {
     const getEtapaBadge = (etapa) => {
         const badges = {
             'Previsto': 'primary', 'Em Andamento': 'warning',
-            'Concluído': 'success', 'Cancelado': 'danger'
+            'Concluído': 'success', 'Cancelado': 'danger',
+            'REPROVADO': 'danger', // Adicione outras etapas conforme necessário
+            'SEM CUSTO': 'info'
         };
         return badges[etapa] || 'secondary';
     };
@@ -275,6 +295,17 @@ const TelaListagemOS = () => {
                         border-right-color: rgba(255, 255, 255, 0.8);
                     }
 
+                    /* CORES DAS ETAPAS - aplica em todas as células da linha */
+                    .etapa-previsto > td { background-color: #fff !important; }
+                    .etapa-recebido > td { background-color: #ffe4ec !important; }
+                    .etapa-em-análise > td, .etapa-em-analise > td { background-color: #ffd6d6 !important; }
+                    .etapa-analisado > td { background-color: #ff6b6b !important; color: #fff !important; }
+                    .etapa-aprovado > td, .etapa-pré-aprovado > td, .etapa-pre-aprovado > td, .etapa-sem-custo > td { background-color: #e3f0ff !important; }
+                    .etapa-reprovado > td { background-color: #003366 !important; color: #fff !important; }
+                    .etapa-expedição > td, .etapa-expedicao > td { background-color: #fffbe0 !important; }
+                    .etapa-despacho > td { background-color: #d4f7d4 !important; }
+                    .etapa-aguardando-informação > td, .etapa-aguardando-informacao > td { background-color: #ffe5b4 !important; }
+
                     /* Custom styles for extra small action buttons */
                     .action-btn {
                         background: transparent;
@@ -324,10 +355,20 @@ const TelaListagemOS = () => {
                         <tbody>
                             {ordensServico.length > 0 ? (
                                 ordensServico.map((os) => (
-                                    <tr key={os.id} className={getRowClassName(os.etapa)}>
-                                        <td style={{width: columns[0].width}}><strong>#{os.id}</strong></td>
-                                        <td style={{width: columns[1].width}}>{os.pedidoCompras || ''}</td>
-                                        <td style={{width: columns[2].width}}>
+                                    <tr key={os.id} className={getRowClassName(os.etapaId?.nome || os.etapa)}>
+                                        <td style={{width: columns[0].width}}>
+                                            <div>
+                                                <button className="action-btn" onClick={() => handleEditarOS(os.id)} title="Editar OS">
+                                                    <FaEdit />
+                                                </button>
+                                                <button className="action-btn" onClick={() => handleVerLogs(os.id)} title="Ver Histórico">
+                                                    <FaHistory />
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td style={{width: columns[1].width}}><strong>#{os.id}</strong></td>
+                                        <td style={{width: columns[2].width}}>{os.pedidoCompras || ''}</td>
+                                        <td style={{width: columns[3].width}}>
                                             <OverlayTrigger
                                                 placement="top"
                                                 overlay={
@@ -353,45 +394,41 @@ const TelaListagemOS = () => {
                                                 </div>
                                             </OverlayTrigger>
                                         </td>
-                                        <td style={{width: columns[3].width}}>
+                                        <td style={{width: columns[4].width}}>
                                             {os.modeloEquipamento ? (
                                                 typeof os.modeloEquipamento === 'string' ? os.modeloEquipamento :
                                                 (os.modeloEquipamento.modelo || `Modelo ${os.modeloEquipamento.id}` || '')
                                             ) : 'Não informado'}
                                         </td>
-                                        <td style={{width: columns[4].width}}>
+                                        <td style={{width: columns[5].width}}>
                                             <div className="text-truncate" title={os.defeitoAlegado}>
                                                 {os.defeitoAlegado || 'Não informado'}
                                             </div>
                                         </td>
-                                        <td style={{width: columns[5].width}}>{os.vendedor?.nome || ''}</td>
-                                        <td style={{width: columns[6].width}}>
-                                            <Badge bg={getEtapaBadge(os.etapa)}>{os.etapa || 'Não definida'}</Badge>
-                                        </td>
+                                        <td style={{width: columns[6].width}}>{os.vendedor?.nome || ''}</td>
                                         <td style={{width: columns[7].width}}>
+                                            <Badge bg={getEtapaBadge(os.etapaId?.nome || os.etapa)}>{os.etapaId?.nome || os.etapa || 'Não definida'}</Badge>
+                                        </td>
+                                        <td style={{width: columns[8].width}}>
                                             {os.cliente && typeof os.cliente === 'object' && os.cliente.cidade ? os.cliente.cidade : ''}
                                         </td>
-                                        <td style={{width: columns[8].width}}>{os.notaFiscal || ''}</td>
-                                        <td style={{width: columns[9].width}}>
+                                        <td style={{width: columns[9].width}}>{os.notaFiscal || ''}</td>
+                                        <td style={{width: columns[10].width}}>
                                             {os.dataEntrega ? new Date(os.dataEntrega).toLocaleDateString() : ''}
                                         </td>
-                                        <td style={{width: columns[10].width}}>{os.tipoTransporteTexto || ''}</td>
-                                        <td style={{width: columns[11].width}}>{os.transporteCifFob || ''}</td>
-                                        <td style={{width: columns[12].width}}>
+                                        <td style={{width: columns[11].width}}>
+  {os.tipoTransporte
+    ? (typeof os.tipoTransporte === 'string'
+        ? os.tipoTransporte
+        : (os.tipoTransporte.tipo_transporte || ''))
+    : (os.tipoTransporteTexto || '')}
+</td>
+                                        <td style={{width: columns[12].width}}>{os.transporteCifFob || ''}</td>
+                                        <td style={{width: columns[13].width}}>
                                             {os.urgencia ? (
                                                 typeof os.urgencia === 'string' ? os.urgencia :
                                                 (os.urgencia.urgencia || '')
                                             ) : ''}
-                                        </td>
-                                        <td style={{width: columns[13].width}}>
-                                            <div>
-                                                <button className="action-btn" onClick={() => handleEditarOS(os.id)} title="Editar OS">
-                                                    <FaEdit />
-                                                </button>
-                                                <button className="action-btn" onClick={() => handleVerLogs(os.id)} title="Ver Histórico">
-                                                    <FaHistory />
-                                                </button>
-                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -404,31 +441,44 @@ const TelaListagemOS = () => {
                     </table>
                 </div>
 
-                {/* Modal de edição */}
-                <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl">
-                    <Modal.Header closeButton>
-                        <Modal.Title>
-                            {ordemServicoEmEdicao ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço'}
-                        </Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
+                {/* Modal de logs */}
+                <BootstrapModal show={showLogsModal} onHide={() => setShowLogsModal(false)} size="xl">
+                    <BootstrapModal.Header closeButton>
+                        <BootstrapModal.Title>Histórico de Alterações - OS #{osIdParaLogs}</BootstrapModal.Title>
+                    </BootstrapModal.Header>
+                    <BootstrapModal.Body>
+                        <TelaLogsOS osId={osIdParaLogs} />
+                    </BootstrapModal.Body>
+                </BootstrapModal>
+
+                {/* Modal de cadastro de OS (apenas para NOVA OS) */}
+                <BootstrapModal show={showEditModal} onHide={handleCloseEditModal} size="xl" backdrop="static" keyboard={false}>
+                    <BootstrapModal.Header closeButton>
+                        <BootstrapModal.Title>Nova Ordem de Serviço</BootstrapModal.Title>
+                    </BootstrapModal.Header>
+                    <BootstrapModal.Body>
                         <FormCadOrdemServico
                             onFormSubmit={handleFormSubmit}
-                            modoEdicao={!!ordemServicoEmEdicao}
-                            ordemServicoEmEdicao={ordemServicoEmEdicao}
+                            modoEdicao={false}
+                            ordemServicoEmEdicao={null}
+                            onDirtyChange={setFormDirty}
                         />
-                    </Modal.Body>
-                </Modal>
+                    </BootstrapModal.Body>
+                </BootstrapModal>
 
-                {/* Modal de logs */}
-                <Modal show={showLogsModal} onHide={() => setShowLogsModal(false)} size="xl">
-                    <Modal.Header closeButton>
-                        <Modal.Title>Histórico de Alterações - OS #{osIdParaLogs}</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <TelaLogsOS osId={osIdParaLogs} />
-                    </Modal.Body>
-                </Modal>
+                {/* Modal de confirmação de fechamento */}
+                <BootstrapModal show={showConfirmCloseModal} onHide={handleCancelClose} centered>
+                    <BootstrapModal.Header closeButton>
+                        <BootstrapModal.Title>Tem certeza que deseja cancelar?</BootstrapModal.Title>
+                    </BootstrapModal.Header>
+                    <BootstrapModal.Body>
+                        Alterações não salvas serão perdidas.
+                    </BootstrapModal.Body>
+                    <BootstrapModal.Footer>
+                        <button className="btn btn-secondary" onClick={handleCancelClose}>Não</button>
+                        <button className="btn btn-danger" onClick={handleConfirmClose}>Sim, cancelar</button>
+                    </BootstrapModal.Footer>
+                </BootstrapModal>
 
                 {/* Modal de detalhes do cliente */}
                 <ClienteInfoModal

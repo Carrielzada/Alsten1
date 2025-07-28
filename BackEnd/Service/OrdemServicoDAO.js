@@ -53,54 +53,53 @@ class OrdemServicoDAO {
             if (!ordemServico.id) {
                 // Lógica para INCLUIR uma nova OS
                 const sql = `
-                    INSERT INTO ordem_servico 
-                    (cliente, modeloEquipamento, defeitoAlegado, numeroSerie, fabricante, 
-                    urgencia_id, tipo_analise_id, tipo_lacre_id, tipo_limpeza_id, tipo_transporte_id, pagamento_id,
-                    etapa, dataCriacao, arquivosAnexados, vendedor_id, dias_pagamento_id, data_entrega, 
-                    data_aprovacao_orcamento, dias_reparo, data_equipamento_pronto, informacoes_confidenciais,
-                    checklist_items, agendado, possui_acessorio, tipo_transporte_texto, transporte_cif_fob,
-                    pedido_compras, defeito_constatado, servico_realizar, valor, etapa_id, comprovante_aprovacao, nota_fiscal)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `;
-                const valores = [
-                    ordemServico.cliente?.id || ordemServico.cliente,         // Pode ser ID ou CNPJ
-                    ordemServico.modeloEquipamento?.id || ordemServico.modeloEquipamento,
-                    ordemServico.defeitoAlegado,
-                    ordemServico.numeroSerie,
-                    ordemServico.fabricante?.id || ordemServico.fabricante,
-                    ordemServico.urgencia?.id || ordemServico.urgencia,
-                    ordemServico.tipoAnalise?.id || ordemServico.tipoAnalise,
-                    ordemServico.tipoLacre?.id || ordemServico.tipoLacre,
-                    ordemServico.tipoLimpeza?.id || ordemServico.tipoLimpeza,
-                    ordemServico.tipoTransporte?.id || ordemServico.tipoTransporte,
-                    ordemServico.formaPagamento?.id || ordemServico.formaPagamento,
-                    ordemServico.etapa,
-                    ordemServico.dataCriacao,
-                    JSON.stringify(ordemServico.arquivosAnexados || []),
-                    ordemServico.vendedor?.id || ordemServico.vendedor,
-                    ordemServico.diasPagamento?.id || ordemServico.diasPagamento,
-                    toDateOrNull(ordemServico.dataEntrega),
-                    toDateOrNull(ordemServico.dataAprovacaoOrcamento),
-                    ordemServico.diasReparo,
-                    toDateOrNull(ordemServico.dataEquipamentoPronto),
-                    ordemServico.informacoesConfidenciais,
-                    JSON.stringify(ordemServico.checklistItems || []),
-                    ordemServico.agendado ? 1 : 0,
-                    ordemServico.possuiAcessorio ? 1 : 0,
-                    ordemServico.tipoTransporteTexto,
-                    ordemServico.transporteCifFob,
-                    ordemServico.pedidoCompras,
-                    ordemServico.defeitoConstatado,
-                    ordemServico.servicoRealizar,
-                    ordemServico.valor,
-                    ordemServico.etapaId?.id || ordemServico.etapaId,
-                    ordemServico.comprovanteAprovacao,
-                    ordemServico.notaFiscal
-                ];
-
-                const resultado = await conexao.query(sql, valores);
-                ordemServico.id = resultado[0].insertId;
-            } else {
+        INSERT INTO ordem_servico (
+            urgencia_id, tipo_analise_id, tipo_lacre_id, tipo_limpeza_id, tipo_transporte_id, pagamento_id,
+            cliente, modeloEquipamento, numeroSerie, dataCriacao, defeitoAlegado, fabricante, etapa, arquivosAnexados,
+            vendedor_id, dias_pagamento_id, data_entrega, data_aprovacao_orcamento, dias_reparo, data_equipamento_pronto,
+            informacoes_confidenciais, checklist_items, agendado, possui_acessorio, tipo_transporte_texto, transporte_cif_fob,
+            pedido_compras, defeito_constatado, servico_realizar, valor, etapa_id, comprovante_aprovacao, nota_fiscal
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const valores = [
+        ordemServico.urgencia?.id || ordemServico.urgencia,
+        ordemServico.tipoAnalise?.id || ordemServico.tipoAnalise,
+        ordemServico.tipoLacre?.id || ordemServico.tipoLacre,
+        ordemServico.tipoLimpeza?.id || ordemServico.tipoLimpeza,
+        ordemServico.tipoTransporte?.id || ordemServico.tipoTransporte,
+        ordemServico.formaPagamento?.id || ordemServico.formaPagamento,
+        ordemServico.cliente?.id || ordemServico.cliente,
+        ordemServico.modeloEquipamento?.id || ordemServico.modeloEquipamento,
+        ordemServico.numeroSerie,
+        ordemServico.dataCriacao,
+        ordemServico.defeitoAlegado,
+        ordemServico.fabricante?.id || ordemServico.fabricante,
+        ordemServico.etapa,
+        JSON.stringify(ordemServico.arquivosAnexados || []),
+        ordemServico.vendedor?.id || ordemServico.vendedor,
+        ordemServico.diasPagamento?.id || ordemServico.diasPagamento,
+        toDateOrNull(ordemServico.dataEntrega),
+        toDateOrNull(ordemServico.dataAprovacaoOrcamento),
+        ordemServico.diasReparo,
+        toDateOrNull(ordemServico.dataEquipamentoPronto),
+        ordemServico.informacoesConfidenciais,
+        JSON.stringify(ordemServico.checklistItems || []),
+        ordemServico.agendado ? 1 : 0,
+        ordemServico.possuiAcessorio ? 1 : 0,
+        ordemServico.tipoTransporteTexto,
+        ordemServico.transporteCifFob,
+        ordemServico.pedidoCompras,
+        ordemServico.defeitoConstatado,
+        ordemServico.servicoRealizar,
+        ordemServico.valor,
+        ordemServico.etapaId?.id || ordemServico.etapaId,
+        ordemServico.comprovanteAprovacao,
+        ordemServico.notaFiscal
+    ];
+    const resultado = await conexao.query(sql, valores);
+    ordemServico.id = resultado[0].insertId;
+} else {
                 // Lógica para ALTERAR uma OS existente
                 const sql = `
                     UPDATE ordem_servico 
