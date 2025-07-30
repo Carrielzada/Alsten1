@@ -11,7 +11,7 @@ import { blingAuth } from '../Routers/blingRoutes.js';
 // __dirname não é disponível em módulos ES6, então precisamos recriá-lo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const uploadDir = path.join(__dirname, '..', 'uploads');
+const uploadDir = path.join(__dirname, '..', '..', 'uploads');
 
 // Função utilitária para delay
 function sleep(ms) {

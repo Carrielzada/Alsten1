@@ -1,104 +1,311 @@
-.os-form-container {
-    max-width: 950px;
-    margin: 0 auto;
-    padding: 20px;
-    background: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Formulário Responsivo para Mobile/Tablet */
+.form-cad-os {
+    padding: 15px;
 }
 
-.os-form-title {
-    text-align: center;
-    margin-bottom: 24px;
-    font-size: 1.4rem;
-    font-weight: bold;
-}
-
-.os-form-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 18px;
-}
-
-.os-form-field {
-    flex: 1 1 280px;
-    display: flex;
-    flex-direction: column;
-}
-
-.os-form-label {
-    margin-bottom: 6px;
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-
-.os-form-input,
-.os-form-select,
-.os-form-textarea,
-.os-form-file {
-    padding: 8px;
-    border: 1px solid #bbb;
-    border-radius: 4px;
+/* Estilos base para todos os campos */
+.form-cad-os .form-control,
+.form-cad-os .form-select {
+    background-color: #ffffff !important;
+    border: 1px solid #ced4da !important;
+    color: #495057 !important;
     font-size: 1rem;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.os-form-textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-.os-form-note {
-    margin-top: 4px;
-    font-size: 0.85rem;
-    color: #666;
-}
-
-.os-form-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.os-form-button {
-    padding: 10px 20px;
-    background: #28a745;
-    color: white;
-    border: none;
+    padding: 8px 12px;
     border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
 }
 
-.os-form-button:hover {
-    background: #218838;
+.form-cad-os .form-control:focus,
+.form-cad-os .form-select:focus {
+    background-color: #ffffff !important;
+    border-color: #007bff !important;
+    color: #495057 !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-.os-form-button.secondary {
-    background: #dc3545;
+/* Labels */
+.form-cad-os .form-label {
+    color: #495057 !important;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
-.os-form-button.secondary:hover {
-    background: #c82333;
+/* Texto muted */
+.form-cad-os .text-muted {
+    color: #6c757d !important;
 }
 
-/* Responsividade adicional para telas pequenas */
-@media (max-width: 600px) {
-    .os-form-row {
-        flex-direction: column;
+/* Ajustes para telas pequenas */
+@media (max-width: 768px) {
+    .form-cad-os {
+        padding: 10px;
     }
-
-    .os-form-field {
-        flex: 1 1 100%;
+    
+    .form-cad-os .form-control,
+    .form-cad-os .form-select {
+        font-size: 1rem;
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
     }
+    
+    .form-cad-os .form-control:focus,
+    .form-cad-os .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    /* Botões maiores para touch */
+    .form-cad-os .btn {
+        min-height: 48px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 12px 20px;
+    }
+    
+    .form-cad-os .btn-lg {
+        min-height: 56px;
+        font-size: 1.1rem;
+        padding: 15px 25px;
+    }
+    
+    /* Cards com melhor espaçamento */
+    .form-cad-os .card {
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    
+    .form-cad-os .card-body {
+        padding: 20px;
+    }
+    
+    /* Grid responsivo */
+    .form-cad-os .row {
+        margin-left: -10px;
+        margin-right: -10px;
+    }
+    
+    .form-cad-os .col,
+    .form-cad-os .col-md-6,
+    .form-cad-os .col-sm-12 {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
 
-    .os-form-actions {
-        flex-direction: column;
+/* Ajustes para telas muito pequenas */
+@media (max-width: 576px) {
+    .form-cad-os {
+        padding: 8px;
+    }
+    
+    .form-cad-os .form-control,
+    .form-cad-os .form-select {
+        font-size: 16px; /* Evita zoom no iOS */
+        padding: 15px 12px;
+    }
+    
+    .form-cad-os .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    /* Stack vertical em telas muito pequenas */
+    .form-cad-os .row .col-md-6,
+    .form-cad-os .row .col-md-4 {
+        margin-bottom: 15px;
+    }
+}
+
+/* Melhorias para tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .form-cad-os .form-control,
+    .form-cad-os .form-select {
+        font-size: 1rem;
+        padding: 10px 12px;
+    }
+    
+    .form-cad-os .btn {
+        min-height: 44px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Melhorias para orientação landscape em mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .form-cad-os {
+        padding: 8px;
+    }
+    
+    .form-cad-os .form-control,
+    .form-cad-os .form-select {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+    
+    .form-cad-os .btn {
+        min-height: 40px;
+        font-size: 0.9rem;
+        padding: 8px 15px;
+    }
+}
+
+/* Melhorias para touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .form-cad-os .form-control,
+    .form-cad-os .form-select {
+        min-height: 44px;
+    }
+    
+    .form-cad-os .btn {
+        min-height: 48px;
+        touch-action: manipulation;
+    }
+    
+    /* Melhor feedback visual para touch */
+    .form-cad-os .btn:active {
+        transform: scale(0.98);
+    }
+    
+    .form-cad-os .form-control:focus,
+    .form-cad-os .form-select:focus {
+        transform: scale(1.02);
+    }
+}
+
+/* Animações suaves */
+.form-cad-os * {
+    transition: all 0.2s ease;
+}
+
+/* Loading states */
+.form-cad-os .form-control:disabled,
+.form-cad-os .form-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #e9ecef !important;
+}
+
+/* Error states */
+.form-cad-os .form-control.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-cad-os .invalid-feedback {
+    font-size: 0.875rem;
+    color: #dc3545;
+    margin-top: 0.25rem;
+}
+
+/* Sucesso states */
+.form-cad-os .form-control.is-valid {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Placeholder */
+.form-cad-os .form-control::placeholder {
+    color: #6c757d !important;
+    opacity: 1;
+}
+
+/* Select dropdown */
+.form-cad-os .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+}
+
+/* React-Select styles */
+.form-cad-os .react-select__control {
+    background-color: #ffffff !important;
+    border: 1px solid #ced4da !important;
+    color: #495057 !important;
+    min-height: 38px;
+    font-size: 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.form-cad-os .react-select__control:hover {
+    border-color: #007bff !important;
+}
+
+.form-cad-os .react-select__control--is-focused {
+    background-color: #ffffff !important;
+    border-color: #007bff !important;
+    color: #495057 !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-cad-os .react-select__menu {
+    background-color: #ffffff !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.form-cad-os .react-select__option {
+    background-color: #ffffff !important;
+    color: #495057 !important;
+    padding: 8px 12px;
+}
+
+.form-cad-os .react-select__option:hover {
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+}
+
+.form-cad-os .react-select__option--is-focused {
+    background-color: #e3f2fd !important;
+    color: #495057 !important;
+}
+
+.form-cad-os .react-select__option--is-selected {
+    background-color: #007bff !important;
+    color: #ffffff !important;
+}
+
+.form-cad-os .react-select__single-value {
+    color: #495057 !important;
+}
+
+.form-cad-os .react-select__placeholder {
+    color: #6c757d !important;
+}
+
+.form-cad-os .react-select__input-container {
+    color: #495057 !important;
+}
+
+.form-cad-os .react-select__indicator-separator {
+    background-color: #ced4da !important;
+}
+
+.form-cad-os .react-select__indicator {
+    color: #6c757d !important;
+}
+
+.form-cad-os .react-select__indicator:hover {
+    color: #495057 !important;
+}
+
+/* Mobile adjustments for react-select */
+@media (max-width: 768px) {
+    .form-cad-os .react-select__control {
+        min-height: 48px;
+        font-size: 1rem;
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+    }
+    
+    .form-cad-os .react-select__control--is-focused {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
 }

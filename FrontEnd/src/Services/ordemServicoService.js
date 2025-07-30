@@ -49,7 +49,7 @@ export const anexarArquivo = (osId, arquivo) => {
     formData.append('arquivo', arquivo);
 
     // This function remains correct, as FormData is handled properly.
-    return fetchAutenticado(`/ordem-servico/${osId}/anexar`, {
+    return fetchAutenticado(`/ordem-servico/anexar-arquivo/${osId}`, {
         method: 'POST',
         body: formData,
     });
@@ -61,10 +61,8 @@ export const anexarArquivo = (osId, arquivo) => {
  * @param {string} nomeArquivo - O nome do arquivo a ser removido.
  */
 export const removerArquivo = (osId, nomeArquivo) => {
-    return fetchAutenticado(`/ordem-servico/${osId}/remover-arquivo`, {
+    return fetchAutenticado(`/ordem-servico/${osId}/arquivo/${nomeArquivo}`, {
         method: 'DELETE',
-        // FIX: Pass the raw JavaScript object directly.
-        body: { nomeArquivo },
     });
 };
 

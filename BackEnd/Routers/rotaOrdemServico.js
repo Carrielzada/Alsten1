@@ -1,6 +1,7 @@
 import { Router } from "express";
 import OrdemServicoCtrl from "../Controller/ordemServicoCtrl.js";
 import { verificarAutenticacao } from '../Security/autenticar.js';
+import upload from '../Service/uploadService.js';
 
 const rotaOrdemServico = new Router();
 const ordemServicoCtrl = new OrdemServicoCtrl();
@@ -18,12 +19,10 @@ rotaOrdemServico.get('/', ordemServicoCtrl.consultar);
 rotaOrdemServico.get('/:id', ordemServicoCtrl.consultarPorId);
 
 // Rota para anexar um arquivo a uma OS
-// Use um middleware de upload antes do controlador para processar o arquivo
-// A rota precisa ter o ID da OS na URL
-rotaOrdemServico.post('/anexar-arquivo/:id', ordemServicoCtrl.anexarArquivo);
+// Aplica o middleware de upload antes do controlador
+rotaOrdemServico.post('/anexar-arquivo/:id', upload.single('arquivo'), ordemServicoCtrl.anexarArquivo);
 
 // Rota para remover um arquivo de uma OS
-// Use DELETE e passe o nome do arquivo na URL
 rotaOrdemServico.delete('/:id/arquivo/:nomeArquivo', ordemServicoCtrl.removerArquivo);
 
 // Rota de exclusão de OS

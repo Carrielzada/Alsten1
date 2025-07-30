@@ -212,44 +212,34 @@ class OrdemServicoCtrl {
         const osDAO = new OrdemServicoDAO();
         const osId = req.params.id;
 
-        // Usa o middleware de upload 'single' para um único arquivo com o nome do campo 'arquivo'
-        upload.single('arquivo')(req, res, async (err) => {
-            if (err) {
-                return res.status(400).json({
-                    status: false,
-                    mensagem: "Erro no upload do arquivo: " + err.message
-                });
-            }
+        if (!req.file) {
+            return res.status(400).json({
+                status: false,
+                mensagem: "Nenhum arquivo enviado."
+            });
+        }
 
-            if (!req.file) {
-                return res.status(400).json({
+        try {
+            const caminhoArquivo = req.file.path;
+            const sucesso = await osDAO.anexarArquivo(osId, caminhoArquivo);
+            if (sucesso) {
+                res.status(200).json({
+                    status: true,
+                    mensagem: "Arquivo anexado com sucesso!",
+                    caminho: req.file.filename // Retorna o nome do arquivo no servidor
+                });
+            } else {
+                res.status(404).json({
                     status: false,
-                    mensagem: "Nenhum arquivo enviado."
+                    mensagem: "Ordem de Serviço não encontrada para anexar o arquivo."
                 });
             }
-
-            try {
-                const caminhoArquivo = req.file.path;
-                const sucesso = await osDAO.anexarArquivo(osId, caminhoArquivo);
-                if (sucesso) {
-                    res.status(200).json({
-                        status: true,
-                        mensagem: "Arquivo anexado com sucesso!",
-                        caminho: req.file.filename // Retorna o nome do arquivo no servidor
-                    });
-                } else {
-                    res.status(404).json({
-                        status: false,
-                        mensagem: "Ordem de Serviço não encontrada para anexar o arquivo."
-                    });
-                }
-            } catch (error) {
-                res.status(500).json({
-                    status: false,
-                    mensagem: "Erro ao anexar arquivo: " + error.message,
-                });
-            }
-        });
+        } catch (error) {
+            res.status(500).json({
+                status: false,
+                mensagem: "Erro ao anexar arquivo: " + error.message,
+            });
+        }
     }
 
     async removerArquivo(req, res) {

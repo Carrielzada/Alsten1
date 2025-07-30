@@ -8,11 +8,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Define o diretório onde os arquivos serão armazenados
-const uploadDir = path.join(__dirname, '..', 'uploads');
+const uploadDir = path.join(__dirname, '..', '..', 'uploads');
+
+// Log para verificar o caminho de upload
+console.log(`Salvando uploads em: ${uploadDir}`);
 
 // Cria o diretório de uploads se ele não existir
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
+    console.log(`Diretório de uploads criado: ${uploadDir}`);
+} else {
+    console.log(`Diretório de uploads já existe: ${uploadDir}`);
 }
 
 // Configuração de armazenamento do multer
