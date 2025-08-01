@@ -93,13 +93,12 @@ const servicoPadraoService = {
     async excluir(id) {
         try {
             const token = getToken();
-            const response = await fetch(`${API_URL}/servico-padrao`, {
+            const response = await fetch(`${API_URL}/servico-padrao/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
                 },
-                body: JSON.stringify({ id }),
             });
             return handleResponse(response);
         } catch (error) {

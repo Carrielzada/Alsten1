@@ -20,21 +20,23 @@ import servicoPadraoService from '../../../Services/servicoPadraoService';
 import { buscarDefeitosAlegados } from '../../../Services/defeitoAlegadoService';
 import { consultarUsuarios } from '../../../Services/usersService';
 import ListaArquivosAnexados from '../../Visualizacao/ListaArquivosAnexados';
+import MobileImageUpload from '../../Visualizacao/MobileImageUpload';
 import ClienteSelector from '../../busca/ClienteSelector';
 import ClienteSearchAdvanced from '../../busca/ClienteSearchAdvanced';
 import '../../busca/ClienteSelector.css';
+import './FormCadOrdemServico.css';
 
 // Mapeamento dos campos obrigatórios por etapa
 const obrigatoriosPorEtapa = {
     "Previsto": ["cliente", "modeloEquipamento", "defeitoAlegado"],
     "Recebido": ["numeroSerie", "arquivosAnexados", "fabricante", "dataEntrega"],
-    "Em Análise": ["enderecamento", "tipoAnalise", "checklistItems", "tipoLimpeza", "defeitoConstatado", "servicoRealizar", "diasReparo", "informacoesConfidenciais"],
-    "Analisado": ["valor", "enviarOrcamento"],
-    "Aguardando aprovação": ["pedidoCompras", "comprovanteAprovacao", "tipoTransporte", "transporteCifFob"], // caso aprovado
+    "Em Análise": ["tipoAnalise", "checklistItems", "tipoLimpeza", "defeitoConstatado", "servicoRealizar", "diasReparo", "informacoesConfidenciais"],
+    "Analisado": ["valor"],
+    "Aguardando aprovação": ["pedidoCompras", "comprovanteAprovacao", "tipoTransporte", "transporteCifFob"],
     "Reprovado": ["comprovanteAprovacao"],
     "Pré-aprovado": [],
     "Aguardando informação": ["comprovanteAprovacao", "pedidoCompras"],
-    "Expedição": ["conferenciaFotos"],
+    "Expedição": [],
     "Despacho": [],
     "Sem custo": [],
 };
@@ -43,7 +45,13 @@ const obrigatoriosPorEtapa = {
 function validarCamposObrigatorios(etapa, dados, opcoes = {}) {
     const obrigatorios = obrigatoriosPorEtapa[etapa] || [];
     const faltando = [];
+    
+    console.log('Validando etapa:', etapa);
+    console.log('Campos obrigatórios para esta etapa:', obrigatorios);
+    
     obrigatorios.forEach(campo => {
+        console.log(`Validando campo: ${campo}, valor:`, dados[campo]);
+        
         // Regras especiais para alguns campos
         if (campo === "arquivosAnexados") {
             if (!dados.arquivosAnexados || dados.arquivosAnexados.length === 0) faltando.push("arquivosAnexados");
@@ -55,8 +63,57 @@ function validarCamposObrigatorios(etapa, dados, opcoes = {}) {
             if (!opcoes.conferiuFotos) faltando.push("conferenciaFotos");
         } else if (!dados[campo] || (typeof dados[campo] === 'string' && !dados[campo].trim())) {
             faltando.push(campo);
+            if (!dados.arquivosAnexados || dados.arquivosAnexados === null || dados.arquivosAnexados === undefined || 
+                dados.arquivosAnexados.length === 0) {
+                faltando.push("Anexos do sistema");
+            }
+        } else if (campo === "checklistItems") {
+            if (!dados.checklistItems || dados.checklistItems === null || dados.checklistItems === undefined || 
+                dados.checklistItems.length === 0) {
+                faltando.push("Checklist");
+            }
+        } else if (campo === "enviarOrcamento") {
+            if (!opcoes.enviouOrcamento || opcoes.enviouOrcamento === false) {
+                faltando.push("Enviar orçamento");
+            }
+        } else if (campo === "conferenciaFotos") {
+            if (!opcoes.conferiuFotos || opcoes.conferiuFotos === false) {
+                faltando.push("Conferência das fotos");
+            }
+        } else if (campo === "cliente" || campo === "modeloEquipamento" || campo === "fabricante" || 
+                   campo === "urgencia" || campo === "tipoAnalise" || campo === "tipoLacre" || 
+                   campo === "tipoLimpeza" || campo === "tipoTransporte" || campo === "formaPagamento") {
+            // Campos que são objetos
+            if (!dados[campo] || dados[campo] === null || dados[campo] === undefined || !dados[campo].id) {
+                faltando.push(campo);
+            }
+        } else if (campo === "valor") {
+            // Campo numérico
+            if (dados[campo] === null || dados[campo] === undefined || dados[campo] === '' || dados[campo] === 0) {
+                faltando.push(campo);
+            }
+        } else if (campo === "diasReparo") {
+            // Campo numérico
+            if (!dados[campo] || dados[campo] === null || dados[campo] === undefined || 
+                dados[campo].toString().trim() === '' || dados[campo] === 0) {
+                faltando.push(campo);
+            }
+        } else if (campo === "dataEntrega") {
+            // Campo de data
+            if (!dados[campo] || dados[campo] === null || dados[campo] === undefined || 
+                dados[campo].toString().trim() === '') {
+                faltando.push(campo);
+            }
+        } else {
+            // Campos de texto normais
+            if (!dados[campo] || dados[campo] === null || dados[campo] === undefined || 
+                (typeof dados[campo] === 'string' && dados[campo].trim() === '')) {
+                faltando.push(campo);
+            }
         }
     });
+    
+    console.log('Campos faltando:', faltando);
     return faltando;
 }
 
@@ -450,11 +507,47 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         }
     };
 
-        const handleSubmit = async (e) => {
+    // Função de teste para verificar validação
+    const testarValidacao = () => {
+        const etapaAtual = ordemServico.etapaId?.nome || ordemServico.etapa || 'Previsto';
+        console.log('=== TESTE DE VALIDAÇÃO ===');
+        console.log('Etapa atual:', etapaAtual);
+        console.log('Estado completo da OS:', ordemServico);
+        
+        const faltando = validarCamposObrigatorios(etapaAtual, ordemServico);
+        console.log('Campos faltando:', faltando);
+        
+        if (faltando.length > 0) {
+            toast.warning("Campos obrigatórios faltando: " + faltando.join(", "));
+        } else {
+            toast.success("Todos os campos obrigatórios estão preenchidos!");
+        }
+    };
+
+    // Função de teste para o sistema de anexos
+    const testarAnexos = () => {
+        console.log('=== TESTE DE ANEXOS ===');
+        console.log('ID da OS:', ordemServico.id);
+        console.log('Arquivos anexados:', ordemServico.arquivosAnexados);
+        console.log('Arquivo para upload:', arquivoParaUpload);
+        
+        if (!ordemServico.id) {
+            toast.warning("Salve a OS primeiro para testar anexos");
+        } else if (!arquivoParaUpload) {
+            toast.warning("Selecione um arquivo para testar");
+        } else {
+            toast.info("Clique em 'Anexar' para testar o upload");
+        }
+    };
+
+    const handleSubmit = async (e) => {
             e.preventDefault();
 
             // Validação dinâmica por etapa
             const etapaAtual = ordemServico.etapaId?.nome || ordemServico.etapa || 'Previsto';
+            console.log('Etapa atual:', etapaAtual);
+            console.log('Dados da OS:', ordemServico);
+            
             const faltando = validarCamposObrigatorios(etapaAtual, ordemServico);
             const faltandoRequired = camposSempreObrigatorios.filter(campo => {
                 if (typeof ordemServico[campo] === 'string') {
@@ -568,7 +661,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     }
 
     return (
-        <Container className="p-3 bg-white border rounded shadow-sm mx-auto" style={{ maxWidth: "800px" }}>
+        <Container className="p-3 bg-white border rounded shadow-sm mx-auto form-cad-os" style={{ maxWidth: "800px" }}>
             <Form onSubmit={handleSubmit} className="small">
                 <h5 className="mb-3 text-center fw-bold">
                     {modoEdicao ? 'Editar Ordem de Serviço' : 'Cadastro de Ordem de Serviço'}
@@ -707,10 +800,12 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             <Form.Control
                                 as="textarea"
                                 name="defeitoAlegado"
-                                style={{ height: '100px' }}
                                 value={ordemServico.defeitoAlegado || ''}
                                 onChange={handleInputChange}
-                                style={faltandoCampos.includes('defeitoAlegado') ? { border: '2px solid red' } : {}}
+                                style={{
+                                    height: '100px',
+                                    ...(faltandoCampos.includes('defeitoAlegado') ? { border: '2px solid red' } : {})
+                                }}
                             />
                         </Form.Group>
                     </Col>
@@ -830,6 +925,22 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                 )}
 
 
+                {/* Componente Mobile para Upload de Imagens - TEMPORARIAMENTE COMENTADO */}
+                {/* 
+                <Row className="mb-3">
+                    <Col>
+                        <MobileImageUpload
+                            arquivos={ordemServico.arquivosAnexados}
+                            onFileSelect={handleAnexarArquivo}
+                            onFileRemove={handleRemoverArquivo}
+                            maxFiles={10}
+                            acceptedTypes="image/*"
+                        />
+                    </Col>
+                </Row>
+                */}
+
+                {/* Campo de anexos original */}
                 {ordemServico.arquivosAnexados.length > 0 && (
                     <Row className="mb-2">
                         <Col>
@@ -1133,6 +1244,26 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                 </Row>
 
                 <Row className="mt-3 d-flex justify-content-center">
+                    <Col xs="auto">
+                        <Button
+                            variant="info"
+                            size="sm"
+                            className="px-3 me-2"
+                            onClick={testarValidacao}
+                        >
+                            Testar Validação
+                        </Button>
+                    </Col>
+                    <Col xs="auto">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="px-3"
+                            onClick={testarAnexos}
+                        >
+                            Testar Anexos
+                        </Button>
+                    </Col>
                     <Col xs="auto">
                         <Button
                             variant="secondary"

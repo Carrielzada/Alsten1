@@ -4,6 +4,7 @@ import session from 'express-session';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 // Ação mais importante: Carregar as variáveis de ambiente ANTES de tudo.
 dotenv.config();
@@ -78,6 +79,11 @@ app.use(express.json());
 
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
+// Log para verificar o caminho dos uploads
+const uploadsPath = path.join(__dirname, '..', 'uploads');
+console.log(`Servindo uploads de: ${uploadsPath}`);
+console.log(`Diretório existe: ${fs.existsSync(uploadsPath)}`);
+
 // Suas rotas continuam aqui...
 app.use('/users', rotaUsers);
 app.use('/autenticacao', rotaAutenticacao);
@@ -107,6 +113,27 @@ app.use("/bling/contatos", contatosRoutes);
 
 app.get('/', (_req, res) => {
     res.send('Servidor Alsten MVP rodando!');
+});
+
+// Rota de teste para verificar uploads
+app.get('/test-uploads', (req, res) => {
+    const uploadsPath = path.join(__dirname, '..', 'uploads');
+    
+    try {
+        const files = fs.readdirSync(uploadsPath);
+        res.json({
+            uploadsPath,
+            exists: fs.existsSync(uploadsPath),
+            files: files.slice(0, 10), // Mostra apenas os primeiros 10 arquivos
+            totalFiles: files.length
+        });
+    } catch (error) {
+        res.json({
+            error: error.message,
+            uploadsPath,
+            exists: fs.existsSync(uploadsPath)
+        });
+    }
 });
 
 app.listen(porta, host, () => {

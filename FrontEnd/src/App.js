@@ -20,11 +20,13 @@ import TelaCadTipoTransporte from "./Components/Telas/TelaCadTipoTransporte";
 import TelaCadFabricante from "./Components/Telas/TelaCadFabricante"; 
 import TelaCadDefeitoAlegado from "./Components/Telas/TelaCadDefeitoAlegado"; 
 import TelaCadClientePJ from "./Components/Telas/TelaCadClientePJ";
+import TelaCadServicoPadrao from "./Components/Telas/TelaCadServicoPadrao";
 
 // Novo Layout
 import LayoutModerno from "./Components/LayoutModerno/LayoutModerno";
 import { BlingAuthProvider, useBlingAuth } from './Components/busca/BlingAuthProvider';
 import BlingAuthModal from './Components/BlingAuthModal';
+import BlingSuccessPage from './Components/BlingSuccessPage';
 
 export const ContextoUsuarioLogado = createContext(null);
 
@@ -65,8 +67,6 @@ function AppContent() {
   const RotasProtegidasComLayout = () => (
     <LayoutModerno>
       <Routes>
-        {/* Rota inicial para admin/técnico agora é a listagem de OS */}
-        <Route path="/" element={<Navigate to="/ordens-servico" />} /> 
         <Route path="/ordens-servico" element={<TelaListagemOS />} />
         <Route path="/upload-teste" element={<FormUploadArquivo osId={null} onUploadSuccess={(filePath) => console.log("Upload Teste OK:", filePath)} />} />
         <Route path="/cadastros/modelo-equipamento" element={<TelaCadModeloEquipamento />} />
@@ -80,6 +80,7 @@ function AppContent() {
         <Route path="/cadastros/fabricante" element={<TelaCadFabricante />} />
         <Route path="/cadastros/defeito-alegado" element={<TelaCadDefeitoAlegado />} />
         <Route path="/cadastros/clientes" element={<TelaCadClientePJ />} />
+        <Route path="/cadastros/servico-realizado" element={<TelaCadServicoPadrao />} />
         <Route path="/sua-conta" element={<div>Tela Sua Conta (Em construção)</div>} />
         <Route path="/cadastrar-ordem-servico" element={<TelaCadOrdemServico />} />
         <Route path="/cadastrar-ordem-servico/:id" element={<TelaCadOrdemServico />} />
@@ -102,16 +103,21 @@ function AppContent() {
         )}
         <Routes>
           <Route path="/login" element={<TelaLogin />} />
+          <Route path="/bling/success" element={<BlingSuccessPage />} />
           {
             usuarioLogado.logado ? (
               // Se logado, verifica o role para direcionar
               (usuarioLogado.role === 1 || usuarioLogado.role === 2) ? (
                 // Rotas de Admin/Técnico com o novo layout
-                <Route path="/*" element={<ProtectedComponent allowedRoles={[1, 2]} usuarioLogado={usuarioLogado}><RotasProtegidasComLayout /></ProtectedComponent>} />
+                <>
+                  <Route path="/" element={<Navigate to="/ordens-servico" />} />
+                  <Route path="/*" element={<ProtectedComponent allowedRoles={[1, 2]} usuarioLogado={usuarioLogado}><RotasProtegidasComLayout /></ProtectedComponent>} />
+                </>
               ) : (usuarioLogado.role === 3 || usuarioLogado.role === 4) ? (
                 // Rotas de Cliente (podem ou não usar o mesmo layout, a definir)
                 // Por enquanto, mantendo separadas e simples
                 <>
+                  <Route path="/" element={<Navigate to="/home-cliente" />} />
                   <Route path="/home-cliente" element={<ProtectedComponent allowedRoles={[3, 4]} usuarioLogado={usuarioLogado}><TelaHomeCliente /></ProtectedComponent>} />
                   <Route path="/*" element={<Navigate to="/home-cliente" />} /> {/* Redireciona outras rotas para home-cliente */}
                 </>
@@ -121,7 +127,10 @@ function AppContent() {
               )
             ) : (
               // Se não está logado, todas as rotas levam para login, exceto /login em si
-              <Route path="/*" element={<Navigate to="/login" />} />
+              <>
+                <Route path="/" element={<Navigate to="/login" />} />
+                <Route path="/*" element={<Navigate to="/login" />} />
+              </>
             )
           }
         </Routes>
