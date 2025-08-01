@@ -46,19 +46,40 @@ function validarCamposObrigatorios(etapa, dados, opcoes = {}) {
     obrigatorios.forEach(campo => {
         // Regras especiais para alguns campos
         if (campo === "arquivosAnexados") {
-            if (!dados.arquivosAnexados || dados.arquivosAnexados.length === 0) faltando.push("Anexos do sistema");
+            if (!dados.arquivosAnexados || dados.arquivosAnexados.length === 0) faltando.push("arquivosAnexados");
         } else if (campo === "checklistItems") {
-            if (!dados.checklistItems || dados.checklistItems.length === 0) faltando.push("Checklist");
+            if (!dados.checklistItems || dados.checklistItems.length === 0) faltando.push("checklistItems");
         } else if (campo === "enviarOrcamento") {
-            if (!opcoes.enviouOrcamento) faltando.push("Enviar orçamento");
+            if (!opcoes.enviouOrcamento) faltando.push("enviarOrcamento");
         } else if (campo === "conferenciaFotos") {
-            if (!opcoes.conferiuFotos) faltando.push("Conferência das fotos");
+            if (!opcoes.conferiuFotos) faltando.push("conferenciaFotos");
         } else if (!dados[campo] || (typeof dados[campo] === 'string' && !dados[campo].trim())) {
             faltando.push(campo);
         }
     });
     return faltando;
 }
+
+const camposSempreObrigatorios = [
+    'modeloEquipamento',
+    'numeroSerie',
+    'fabricante',
+    'defeitoAlegado',
+    'cliente',
+    'vendedor',
+    'formaPagamento',
+    'urgencia',
+    'tipoLacre',
+    'tipoAnalise',
+    'tipoLimpeza',
+    'tipoTransporte',
+    'diasReparo',
+    'valor',
+    'etapaId',
+    'transporteCifFob',
+    'defeitoConstatado',
+    'servicoRealizar'
+];
 
 const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, onDirtyChange }) => {
     const [ordemServico, setOrdemServico] = useState({
@@ -98,6 +119,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         notaFiscal: ''
     });
     const [dirty, setDirty] = useState(false);
+    const [faltandoCampos, setFaltandoCampos] = useState([]);
 
     // Detecta alterações no formulário
     useEffect(() => {
@@ -434,8 +456,16 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
             // Validação dinâmica por etapa
             const etapaAtual = ordemServico.etapaId?.nome || ordemServico.etapa || 'Previsto';
             const faltando = validarCamposObrigatorios(etapaAtual, ordemServico);
-            if (faltando.length > 0) {
-                toast.error("Preencha os campos obrigatórios: " + faltando.join(", "));
+            const faltandoRequired = camposSempreObrigatorios.filter(campo => {
+                if (typeof ordemServico[campo] === 'string') {
+                    return !ordemServico[campo].trim();
+                }
+                return !ordemServico[campo];
+            });
+            const faltandoTotal = Array.from(new Set([...faltando, ...faltandoRequired]));
+            setFaltandoCampos(faltandoTotal); // <-- Salva os campos faltando para destacar
+            if (faltandoTotal.length > 0) {
+                toast.error("Preencha os campos obrigatórios: " + faltandoTotal.join(", "));
                 return;
             }
 
@@ -574,6 +604,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.vendedor?.id || ''}
                                 onChange={handleSelectChange}
                                 name="vendedor"
+                                style={faltandoCampos.includes('vendedor') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -584,10 +615,12 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     <Col md={6}>
                         <Form.Group controlId="cliente">
                             <Form.Label>Cliente *</Form.Label>
-                            <ClienteSearchAdvanced
-                                onClienteSelect={handleClienteSelect}
-                                selectedCliente={ordemServico.cliente}
-                            />
+                            <div style={faltandoCampos.includes('cliente') ? { border: '2px solid red', borderRadius: 4, padding: 2 } : {}}>
+                                <ClienteSearchAdvanced
+                                    onClienteSelect={handleClienteSelect}
+                                    selectedCliente={ordemServico.cliente}
+                                />
+                            </div>
                         </Form.Group>
                     </Col>
                     <Col md={6}>
@@ -600,6 +633,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.formaPagamento?.id || ''}
                                 onChange={handleSelectChange}
                                 name="formaPagamento"
+                                style={faltandoCampos.includes('formaPagamento') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -615,6 +649,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 name="dataEntrega"
                                 value={toInputDateString(ordemServico.dataEntrega)}
                                 onChange={handleInputChange}
+                                style={faltandoCampos.includes('dataEntrega') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -632,6 +667,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.modeloEquipamento?.id || ''}
                                 onChange={handleSelectChange}
                                 name="modeloEquipamento"
+                                style={faltandoCampos.includes('modeloEquipamento') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -643,7 +679,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 name="numeroSerie"
                                 value={ordemServico.numeroSerie || ''}
                                 onChange={handleInputChange}
-                                required
+                                style={faltandoCampos.includes('numeroSerie') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -657,6 +693,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.fabricante?.id || ''}
                                 onChange={handleSelectChange}
                                 name="fabricante"
+                                style={faltandoCampos.includes('fabricante') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -673,7 +710,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 style={{ height: '100px' }}
                                 value={ordemServico.defeitoAlegado || ''}
                                 onChange={handleInputChange}
-                                required
+                                style={faltandoCampos.includes('defeitoAlegado') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -703,6 +740,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.urgencia?.id || ''}
                                 onChange={handleSelectChange}
                                 name="urgencia"
+                                style={faltandoCampos.includes('urgencia') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -716,6 +754,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.tipoLacre?.id || ''}
                                 onChange={handleSelectChange}
                                 name="tipoLacre"
+                                style={faltandoCampos.includes('tipoLacre') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -729,6 +768,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.tipoAnalise?.id || ''}
                                 onChange={handleSelectChange}
                                 name="tipoAnalise"
+                                style={faltandoCampos.includes('tipoAnalise') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -745,6 +785,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.tipoLimpeza?.id || ''}
                                 onChange={handleSelectChange}
                                 name="tipoLimpeza"
+                                style={faltandoCampos.includes('tipoLimpeza') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -758,6 +799,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.tipoTransporte?.id || ''}
                                 onChange={handleSelectChange}
                                 name="tipoTransporte"
+                                style={faltandoCampos.includes('tipoTransporte') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -771,6 +813,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 type="file"
                                 name="arquivo"
                                 onChange={handleFileChange}
+                                style={faltandoCampos.includes('arquivosAnexados') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -810,6 +853,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.diasPagamento?.id || ''}
                                 onChange={handleSelectChange}
                                 name="diasPagamento"
+                                style={faltandoCampos.includes('diasPagamento') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -851,6 +895,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 value={ordemServico.diasReparo || ''}
                                 onChange={handleInputChange}
                                 placeholder="Ex: 5"
+                                style={faltandoCampos.includes('diasReparo') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -865,6 +910,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 step="0.01"
                                 min="0"
                                 placeholder="0,00"
+                                style={faltandoCampos.includes('valor') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -878,6 +924,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.etapaId?.id || ''}
                                 onChange={handleSelectChange}
                                 name="etapaId"
+                                style={faltandoCampos.includes('etapaId') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -888,7 +935,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     <Col md={3}>
                         <Form.Group controlId="checklist">
                             <Form.Label>Checklist</Form.Label>
-                            <div className="border rounded p-2" style={{ maxHeight: '120px', overflowY: 'auto' }}>
+                            <div className="border rounded p-2" style={{ maxHeight: '120px', overflowY: 'auto', border: faltandoCampos.includes('checklistItems') ? '2px solid red' : undefined }}>
                                 {checklistItems.map((item) => (
                                     <Form.Check
                                         key={item.id}
@@ -914,6 +961,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.tipoLimpeza?.id || ''}
                                 onChange={handleSelectChange}
                                 name="tipoLimpeza"
+                                style={faltandoCampos.includes('tipoLimpeza') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -957,6 +1005,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 valorSelecionado={ordemServico.tipoTransporte?.id || ''}
                                 onChange={handleSelectChange}
                                 name="tipoTransporte"
+                                style={faltandoCampos.includes('tipoTransporte') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -969,6 +1018,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 value={ordemServico.transporteCifFob || ''}
                                 onChange={handleInputChange}
                                 placeholder="CIF/FOB"
+                                style={faltandoCampos.includes('transporteCifFob') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
@@ -1013,7 +1063,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             <Form.Control
                                 as="textarea"
                                 name="defeitoConstatado"
-                                style={{ height: '80px' }}
+                                style={{ height: '80px', ...(faltandoCampos.includes('defeitoConstatado') ? { border: '2px solid red' } : {}) }}
                                 value={ordemServico.defeitoConstatado || ''}
                                 onChange={handleInputChange}
                                 placeholder="Descreva o defeito constatado..."
@@ -1046,7 +1096,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             <Form.Control
                                 as="textarea"
                                 name="servicoRealizar"
-                                style={{ height: '80px' }}
+                                style={{ height: '80px', ...(faltandoCampos.includes('servicoRealizar') ? { border: '2px solid red' } : {}) }}
                                 value={ordemServico.servicoRealizar || ''}
                                 onChange={handleInputChange}
                                 placeholder="Descreva o serviço a realizar..."

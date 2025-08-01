@@ -8,7 +8,8 @@ const CaixaSelecaoPesquisavel = ({
     campoExibir,
     valorSelecionado,
     onChange,
-    name
+    name,
+    style // <-- adicionar prop style
 }) => {
 
     const opcoes = Array.isArray(dados) ? dados.filter(Boolean).map(item => ({
@@ -44,7 +45,8 @@ const CaixaSelecaoPesquisavel = ({
                 control: (provided) => ({
                     ...provided,
                     minHeight: '38px',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    ...(style || {}) // <-- aplica a borda customizada
                 }),
                 valueContainer: (provided) => ({
                     ...provided,
