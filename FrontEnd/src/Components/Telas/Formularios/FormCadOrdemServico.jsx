@@ -26,30 +26,70 @@ import ClienteSearchAdvanced from '../../busca/ClienteSearchAdvanced';
 import '../../busca/ClienteSelector.css';
 import './FormCadOrdemServico.css';
 
-// Mapeamento dos campos obrigatórios por etapa
+// Mapeamento dos campos obrigatórios por etapa (usando nomes exatos do banco de dados)
 const obrigatoriosPorEtapa = {
-    "Previsto": ["cliente", "modeloEquipamento", "defeitoAlegado"],
-    "Recebido": ["numeroSerie", "arquivosAnexados", "fabricante", "dataEntrega"],
-    "Em Análise": ["tipoAnalise", "checklistItems", "tipoLimpeza", "defeitoConstatado", "servicoRealizar", "diasReparo", "informacoesConfidenciais"],
-    "Analisado": ["valor"],
-    "Aguardando aprovação": ["pedidoCompras", "comprovanteAprovacao", "tipoTransporte", "transporteCifFob"],
-    "Reprovado": ["comprovanteAprovacao"],
-    "Pré-aprovado": [],
-    "Aguardando informação": ["comprovanteAprovacao", "pedidoCompras"],
-    "Expedição": [],
-    "Despacho": [],
-    "Sem custo": [],
+    "PREVISTO": ["cliente", "modeloEquipamento", "defeitoAlegado"],
+    "RECEBIDO": ["numeroSerie", "arquivosAnexados", "fabricante", "dataEntrega"],
+    "EM ANÁLISE": ["tipoAnalise", "checklistItems", "tipoLimpeza", "defeitoConstatado", "servicoRealizar", "diasReparo", "informacoesConfidenciais"],
+    "ANALISADO": ["valor"],
+    "AGUARDANDO APROVAÇÃO": ["pedidoCompras", "comprovanteAprovacao", "tipoTransporte", "transporteCifFob"],
+    "PRÉ-APROVADO": [],
+    "APROVADO": [],
+    "REPROVADO": ["comprovanteAprovacao"],
+    "AGUARDANDO INFORMAÇÃO": ["comprovanteAprovacao", "pedidoCompras"],
+    "SEM CUSTO": [],
+    "EXPEDIÇÃO": [],
+    "DESPACHO": [],
+    "CONCLUÍDO": [],
 };
+
+// Lista ordenada das etapas conforme o fluxo do processo
+const ordemEtapas = [
+    "PREVISTO",
+    "RECEBIDO", 
+    "EM ANÁLISE",
+    "ANALISADO",
+    "AGUARDANDO APROVAÇÃO",
+    "PRÉ-APROVADO",
+    "APROVADO",
+    "REPROVADO",
+    "AGUARDANDO INFORMAÇÃO",
+    "SEM CUSTO",
+    "EXPEDIÇÃO",
+    "DESPACHO",
+    "CONCLUÍDO"
+];
 
 // Função utilitária para checar obrigatoriedade dinâmica
 function validarCamposObrigatorios(etapa, dados, opcoes = {}) {
-    const obrigatorios = obrigatoriosPorEtapa[etapa] || [];
+    // Obter todas as etapas em ordem para validar campos das etapas anteriores também
+    const etapaIndex = ordemEtapas.indexOf(etapa);
+    
+    // Se a etapa não for encontrada, retornar array vazio (sem validação)
+    if (etapaIndex === -1) {
+        console.warn('Etapa não encontrada na lista ordenada:', etapa);
+        return [];
+    }
+    
+    // Obter campos obrigatórios da etapa atual e de todas as etapas anteriores
+    let todosObrigatorios = [];
+    
+    // Incluir campos da etapa atual e de todas as etapas anteriores
+    for (let i = 0; i <= etapaIndex; i++) {
+        const etapaAtual = ordemEtapas[i];
+        const camposEtapa = obrigatoriosPorEtapa[etapaAtual] || [];
+        todosObrigatorios = [...todosObrigatorios, ...camposEtapa];
+    }
+    
+    // Remover duplicatas
+    todosObrigatorios = [...new Set(todosObrigatorios)];
+    
     const faltando = [];
     
     console.log('Validando etapa:', etapa);
-    console.log('Campos obrigatórios para esta etapa:', obrigatorios);
+    console.log('Campos obrigatórios para esta etapa e anteriores:', todosObrigatorios);
     
-    obrigatorios.forEach(campo => {
+    todosObrigatorios.forEach(campo => {
         console.log(`Validando campo: ${campo}, valor:`, dados[campo]);
         
         // Regras especiais para alguns campos
@@ -63,26 +103,10 @@ function validarCamposObrigatorios(etapa, dados, opcoes = {}) {
             if (!opcoes.conferiuFotos) faltando.push("conferenciaFotos");
         } else if (!dados[campo] || (typeof dados[campo] === 'string' && !dados[campo].trim())) {
             faltando.push(campo);
-            if (!dados.arquivosAnexados || dados.arquivosAnexados === null || dados.arquivosAnexados === undefined || 
-                dados.arquivosAnexados.length === 0) {
-                faltando.push("Anexos do sistema");
-            }
-        } else if (campo === "checklistItems") {
-            if (!dados.checklistItems || dados.checklistItems === null || dados.checklistItems === undefined || 
-                dados.checklistItems.length === 0) {
-                faltando.push("Checklist");
-            }
-        } else if (campo === "enviarOrcamento") {
-            if (!opcoes.enviouOrcamento || opcoes.enviouOrcamento === false) {
-                faltando.push("Enviar orçamento");
-            }
-        } else if (campo === "conferenciaFotos") {
-            if (!opcoes.conferiuFotos || opcoes.conferiuFotos === false) {
-                faltando.push("Conferência das fotos");
-            }
         } else if (campo === "cliente" || campo === "modeloEquipamento" || campo === "fabricante" || 
                    campo === "urgencia" || campo === "tipoAnalise" || campo === "tipoLacre" || 
-                   campo === "tipoLimpeza" || campo === "tipoTransporte" || campo === "formaPagamento") {
+                   campo === "tipoLimpeza" || campo === "tipoTransporte" || campo === "formaPagamento" ||
+                   campo === "etapaId" || campo === "vendedor" || campo === "diasPagamento") {
             // Campos que são objetos
             if (!dados[campo] || dados[campo] === null || dados[campo] === undefined || !dados[campo].id) {
                 faltando.push(campo);
@@ -117,26 +141,8 @@ function validarCamposObrigatorios(etapa, dados, opcoes = {}) {
     return faltando;
 }
 
-const camposSempreObrigatorios = [
-    'modeloEquipamento',
-    'numeroSerie',
-    'fabricante',
-    'defeitoAlegado',
-    'cliente',
-    'vendedor',
-    'formaPagamento',
-    'urgencia',
-    'tipoLacre',
-    'tipoAnalise',
-    'tipoLimpeza',
-    'tipoTransporte',
-    'diasReparo',
-    'valor',
-    'etapaId',
-    'transporteCifFob',
-    'defeitoConstatado',
-    'servicoRealizar'
-];
+
+
 
 const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, onDirtyChange }) => {
     const [ordemServico, setOrdemServico] = useState({
@@ -153,7 +159,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         tipoTransporte: null,
         formaPagamento: null,
         arquivosAnexados: [],
-        etapa: 'Previsto',
+        etapa: 'PREVISTO',
         // Novos campos
         vendedor: null,
         diasPagamento: null,
@@ -366,10 +372,22 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     const handleInputChange = (e) => {
         markDirty();
         const { name, value } = e.target;
-        setOrdemServico(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
+        
+        // Tratamento especial para campos numéricos
+        if (name === 'diasReparo' || name === 'valor') {
+            // Se o valor estiver vazio, definir como null para evitar erro de conversão no banco
+            const processedValue = value.trim() === '' ? null : value;
+            console.log(`Campo ${name} processado: valor original='${value}', processado=${processedValue === null ? 'null' : processedValue}`);
+            setOrdemServico(prevState => ({
+                ...prevState,
+                [name]: processedValue
+            }));
+        } else {
+            setOrdemServico(prevState => ({
+                ...prevState,
+                [name]: value
+            }));
+        }
     };
 
     const handleCheckboxChange = (e) => {
@@ -509,7 +527,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
 
     // Função de teste para verificar validação
     const testarValidacao = () => {
-        const etapaAtual = ordemServico.etapaId?.nome || ordemServico.etapa || 'Previsto';
+        const etapaAtual = ordemServico.etapaId?.nome || ordemServico.etapa || 'PREVISTO';
         console.log('=== TESTE DE VALIDAÇÃO ===');
         console.log('Etapa atual:', etapaAtual);
         console.log('Estado completo da OS:', ordemServico);
@@ -541,47 +559,71 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     };
 
     const handleSubmit = async (e) => {
-            e.preventDefault();
+        e.preventDefault();
 
-            // Validação dinâmica por etapa
-            const etapaAtual = ordemServico.etapaId?.nome || ordemServico.etapa || 'Previsto';
-            console.log('Etapa atual:', etapaAtual);
-            console.log('Dados da OS:', ordemServico);
-            
-            const faltando = validarCamposObrigatorios(etapaAtual, ordemServico);
-            const faltandoRequired = camposSempreObrigatorios.filter(campo => {
-                if (typeof ordemServico[campo] === 'string') {
-                    return !ordemServico[campo].trim();
+        // Validação dinâmica por etapa
+        const etapaAtual = ordemServico.etapaId?.nome || ordemServico.etapa || 'PREVISTO';
+        console.log('Etapa atual:', etapaAtual);
+        
+        // Criar uma cópia para validação (mantendo objetos intactos)
+        const dadosParaValidacao = JSON.parse(JSON.stringify(ordemServico));
+        
+        // Validar com os dados originais (antes de processar)
+        const faltando = validarCamposObrigatorios(etapaAtual, dadosParaValidacao);
+        setFaltandoCampos(faltando); // <-- Salva os campos faltando para destacar
+        if (faltando.length > 0) {
+            toast.error("Preencha os campos obrigatórios: " + faltando.join(", "));
+            return;
+        }
+        
+        // Após validação, preparar dados para envio
+        const dadosProcessados = { ...ordemServico };
+        
+        // Garantir que campos numéricos vazios sejam enviados como null
+        if (dadosProcessados.diasReparo === '' || dadosProcessados.diasReparo === undefined) {
+            dadosProcessados.diasReparo = null;
+            console.log('Campo diasReparo convertido para null antes do envio');
+        }
+        if (dadosProcessados.valor === '' || dadosProcessados.valor === undefined) {
+            dadosProcessados.valor = null;
+            console.log('Campo valor convertido para null antes do envio');
+        }
+        
+        // Garantir que o campo fabricante seja enviado apenas como ID
+        if (dadosProcessados.fabricante && typeof dadosProcessados.fabricante === 'object') {
+            dadosProcessados.fabricante = dadosProcessados.fabricante.id;
+            console.log('Campo fabricante convertido para ID antes do envio');
+        }
+        
+        // Garantir que o campo transporteCifFob seja enviado como null se estiver vazio
+        // O campo no banco é ENUM('CIF', 'FOB') NULL, então só aceita esses valores ou null
+        if (dadosProcessados.transporteCifFob === '' || dadosProcessados.transporteCifFob === undefined) {
+            dadosProcessados.transporteCifFob = null;
+            console.log('Campo transporteCifFob convertido para null antes do envio');
+        }
+        
+        console.log('Dados da OS processados:', dadosProcessados);
+
+        try {
+            const response = await gravarOrdemServico(dadosProcessados);
+
+            if (response.status) {
+                toast.success(response.mensagem || "Ordem de Serviço salva com sucesso!");
+                // If creating a new OS, update the state with the new ID from the response
+                if (response.os_id && !dadosProcessados.id) {
+                    setOrdemServico(prev => ({ ...prev, id: response.os_id }));
                 }
-                return !ordemServico[campo];
-            });
-            const faltandoTotal = Array.from(new Set([...faltando, ...faltandoRequired]));
-            setFaltandoCampos(faltandoTotal); // <-- Salva os campos faltando para destacar
-            if (faltandoTotal.length > 0) {
-                toast.error("Preencha os campos obrigatórios: " + faltandoTotal.join(", "));
-                return;
-            }
-
-            try {
-                const response = await gravarOrdemServico(ordemServico);
-
-                if (response.status) {
-                    toast.success(response.mensagem || "Ordem de Serviço salva com sucesso!");
-                    // If creating a new OS, update the state with the new ID from the response
-                    if (response.os_id && !ordemServico.id) {
-                        setOrdemServico(prev => ({ ...prev, id: response.os_id }));
-                    }
-                    if (onFormSubmit) {
-                        onFormSubmit();
-                    }
-                } else {
-                    toast.error(response.mensagem || "Ocorreu um erro ao salvar a Ordem de Serviço.");
+                if (onFormSubmit) {
+                    onFormSubmit();
                 }
-            } catch (error) {
-                console.error("Erro ao salvar a Ordem de Serviço:", error);
-                toast.error(error.message || "Não foi possível conectar com o servidor.");
+            } else {
+                toast.error(response.mensagem || "Ocorreu um erro ao salvar a Ordem de Serviço.");
             }
-        };
+        } catch (error) {
+            console.error("Erro ao salvar a Ordem de Serviço:", error);
+            toast.error(error.message || "Não foi possível conectar com o servidor.");
+        }
+    };
 
     const resetForm = () => {
         setOrdemServico({
@@ -598,7 +640,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
             tipoTransporte: null,
             formaPagamento: null,
             arquivosAnexados: [],
-            etapa: 'Previsto',
+            etapa: 'PREVISTO',
             // Novos campos
             vendedor: null,
             diasPagamento: null,
@@ -815,7 +857,10 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             <Form.Control
                                 as="textarea"
                                 name="informacoesConfidenciais"
-                                style={{ height: '100px' }}
+                                style={{ 
+                                    height: '100px',
+                                    ...(faltandoCampos.includes('informacoesConfidenciais') ? { border: '2px solid red' } : {})
+                                }}
                                 value={ordemServico.informacoesConfidenciais || ''}
                                 onChange={handleInputChange}
                             />
@@ -1106,7 +1151,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
 
                 {/* Linha 8: Tipo de Transporte, Transporte e Pedido de Compras */}
                 <Row className="mb-3">
-                    <Col md={4}>
+                    <Col md={3}>
                         <Form.Group controlId="tipoTransporte">
                             <Form.Label>Tipo de Transporte</Form.Label>
                             <CaixaSelecaoPesquisavel
@@ -1120,20 +1165,22 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={4}>
+                    <Col md={3}>
                         <Form.Group controlId="transporteCifFob">
                             <Form.Label>Transporte</Form.Label>
-                            <Form.Control
-                                type="text"
+                            <Form.Select
                                 name="transporteCifFob"
                                 value={ordemServico.transporteCifFob || ''}
                                 onChange={handleInputChange}
-                                placeholder="CIF/FOB"
                                 style={faltandoCampos.includes('transporteCifFob') ? { border: '2px solid red' } : {}}
-                            />
+                            >
+                                <option value="">Selecione...</option>
+                                <option value="CIF">CIF</option>
+                                <option value="FOB">FOB</option>
+                            </Form.Select>
                         </Form.Group>
                     </Col>
-                    <Col md={4}>
+                    <Col md={3}>
                         <Form.Group controlId="pedidoCompras">
                             <Form.Label>Pedido de Compras</Form.Label>
                             <Form.Control
@@ -1141,6 +1188,19 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 name="pedidoCompras"
                                 value={ordemServico.pedidoCompras || ''}
                                 onChange={handleInputChange}
+                                style={faltandoCampos.includes('pedidoCompras') ? { border: '2px solid red' } : {}}
+                            />
+                        </Form.Group>
+                    </Col>
+                    <Col md={3}>
+                        <Form.Group controlId="comprovanteAprovacao">
+                            <Form.Label>Comprovante de Aprovação</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="comprovanteAprovacao"
+                                value={ordemServico.comprovanteAprovacao || ''}
+                                onChange={handleInputChange}
+                                style={faltandoCampos.includes('comprovanteAprovacao') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
