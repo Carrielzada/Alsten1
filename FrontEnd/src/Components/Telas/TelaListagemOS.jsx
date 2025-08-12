@@ -46,6 +46,13 @@ const TelaListagemOS = () => {
     const [clienteSelecionado, setClienteSelecionado] = useState(null);
     const [formDirty, setFormDirty] = useState(false);
     const [showConfirmCloseModal, setShowConfirmCloseModal] = useState(false);
+    
+    // Estados para paginação
+    const [paginaAtual, setPaginaAtual] = useState(1);
+    const [itensPorPagina, setItensPorPagina] = useState(25); // Usando 25 itens por página por padrão
+    const [totalPaginas, setTotalPaginas] = useState(1);
+    const [totalRegistros, setTotalRegistros] = useState(0);
+    const [termoBusca, setTermoBusca] = useState('');
 
     const [columns, setColumns] = useState([
         { title: 'Ações', width: 65 },
@@ -76,14 +83,23 @@ const TelaListagemOS = () => {
     };
 
     useEffect(() => {
-        fetchOrdensServico();
-    }, []);
+        // Iniciar com a primeira página e poucos itens para carregamento rápido
+        fetchOrdensServico(1, itensPorPagina, '');
+    }, [itensPorPagina]); // Dependência adicionada para recarregar quando o número de itens por página mudar
 
-    const fetchOrdensServico = async () => {
+    const fetchOrdensServico = async (pagina = paginaAtual, itens = itensPorPagina, termo = termoBusca) => {
         try {
             setLoading(true);
-            const data = await buscarTodasOrdensServico();
+            const data = await buscarTodasOrdensServico(pagina, itens, termo);
             setOrdensServico(data.listaOrdensServico || []);
+            
+            // Atualizar informações de paginação
+            if (data.paginacao) {
+                setPaginaAtual(data.paginacao.pagina);
+                setTotalPaginas(data.paginacao.totalPaginas);
+                setTotalRegistros(data.paginacao.totalRegistros);
+            }
+            
             setError(null);
         } catch (err) {
             setError(err.message);
@@ -265,7 +281,15 @@ const TelaListagemOS = () => {
         padding: '2px 4px'
     };
 
-    if (loading) return <Layout><p>Carregando ordens de serviço...</p></Layout>;
+    if (loading) return <Layout>
+         <div className="text-center my-5">
+             <div className="spinner-border text-primary" role="status">
+                 <span className="visually-hidden">Carregando...</span>
+             </div>
+             <p className="mt-2">Carregando ordens de serviço (página {paginaAtual})...</p>
+             <p className="text-muted small">Mostrando {itensPorPagina} registros por página para um equilíbrio entre desempenho e usabilidade</p>
+         </div>
+     </Layout>;
     if (error) return <Layout><p>Erro ao carregar ordens de serviço: {error}</p></Layout>;
 
     return (
@@ -326,15 +350,61 @@ const TelaListagemOS = () => {
                         color: #212529;
                     }
                 `}</style>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h2>
-                        <FaEdit className="me-2" />
-                        Listagem de Ordens de Serviço
-                    </h2>
-                    <button className="btn btn-primary" onClick={handleNovaOS}>
-                        <FaPlus className="me-2" />
-                        Nova OS
-                    </button>
+                <div className="mb-3">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h2>
+                            <FaEdit className="me-2" />
+                            Listagem de Ordens de Serviço
+                        </h2>
+                        <button className="btn btn-primary" onClick={handleNovaOS}>
+                            <FaPlus className="me-2" />
+                            Nova OS
+                        </button>
+                    </div>
+                    
+                    {/* Campo de busca */}
+                    <div className="row mb-3">
+                        <div className="col-md-6">
+                            <div className="input-group">
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    placeholder="Buscar por cliente, modelo ou número de série..."
+                                    value={termoBusca}
+                                    onChange={(e) => setTermoBusca(e.target.value)}
+                                    onKeyPress={(e) => {
+                                        if (e.key === 'Enter') {
+                                            fetchOrdensServico(1, itensPorPagina, termoBusca);
+                                        }
+                                    }}
+                                />
+                                <button 
+                                    className="btn btn-outline-secondary" 
+                                    type="button"
+                                    onClick={() => fetchOrdensServico(1, itensPorPagina, termoBusca)}
+                                >
+                                    Buscar
+                                </button>
+                                {termoBusca && (
+                                    <button 
+                                        className="btn btn-outline-secondary" 
+                                        type="button"
+                                        onClick={() => {
+                                            setTermoBusca('');
+                                            fetchOrdensServico(1, itensPorPagina, '');
+                                        }}
+                                    >
+                                        Limpar
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        <div className="col-md-6 text-end">
+                            <span className="text-muted">
+                                Total de registros: {totalRegistros}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="table-responsive">
@@ -439,6 +509,101 @@ const TelaListagemOS = () => {
                             )}
                         </tbody>
                     </table>
+                </div>
+                
+                {/* Controles de paginação */}
+                <div className="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        <span className="me-2">Itens por página:</span>
+                        <select 
+                            className="form-select form-select-sm d-inline-block" 
+                            style={{ width: 'auto' }}
+                            value={itensPorPagina}
+                            onChange={(e) => {
+                                const novoItensPorPagina = parseInt(e.target.value);
+                                setItensPorPagina(novoItensPorPagina);
+                                fetchOrdensServico(1, novoItensPorPagina, termoBusca);
+                            }}
+                        >
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    
+                    <div className="d-flex align-items-center">
+                        <span className="me-3">
+                            Mostrando {ordensServico.length} de {totalRegistros} registros
+                        </span>
+                        <nav aria-label="Navegação de página">
+                            <ul className="pagination mb-0">
+                                <li className={`page-item ${paginaAtual === 1 ? 'disabled' : ''}`}>
+                                    <button 
+                                        className="page-link" 
+                                        onClick={() => fetchOrdensServico(1)}
+                                        disabled={paginaAtual === 1}
+                                    >
+                                        Primeira
+                                    </button>
+                                </li>
+                                <li className={`page-item ${paginaAtual === 1 ? 'disabled' : ''}`}>
+                                    <button 
+                                        className="page-link" 
+                                        onClick={() => fetchOrdensServico(paginaAtual - 1)}
+                                        disabled={paginaAtual === 1}
+                                    >
+                                        Anterior
+                                    </button>
+                                </li>
+                                
+                                {/* Números de página */}
+                                {Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
+                                    // Lógica para mostrar páginas ao redor da página atual
+                                    let pageNum;
+                                    if (totalPaginas <= 5) {
+                                        pageNum = i + 1;
+                                    } else if (paginaAtual <= 3) {
+                                        pageNum = i + 1;
+                                    } else if (paginaAtual >= totalPaginas - 2) {
+                                        pageNum = totalPaginas - 4 + i;
+                                    } else {
+                                        pageNum = paginaAtual - 2 + i;
+                                    }
+                                    
+                                    return (
+                                        <li key={pageNum} className={`page-item ${pageNum === paginaAtual ? 'active' : ''}`}>
+                                            <button 
+                                                className="page-link" 
+                                                onClick={() => fetchOrdensServico(pageNum)}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+                                
+                                <li className={`page-item ${paginaAtual === totalPaginas ? 'disabled' : ''}`}>
+                                    <button 
+                                        className="page-link" 
+                                        onClick={() => fetchOrdensServico(paginaAtual + 1)}
+                                        disabled={paginaAtual === totalPaginas}
+                                    >
+                                        Próxima
+                                    </button>
+                                </li>
+                                <li className={`page-item ${paginaAtual === totalPaginas ? 'disabled' : ''}`}>
+                                    <button 
+                                        className="page-link" 
+                                        onClick={() => fetchOrdensServico(totalPaginas)}
+                                        disabled={paginaAtual === totalPaginas}
+                                    >
+                                        Última
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
 
                 {/* Modal de logs */}

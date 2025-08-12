@@ -47,22 +47,43 @@ function AppContent() {
   useEffect(() => {
     const usuarioSalvo = localStorage.getItem("usuarioLogado");
     if (usuarioSalvo) {
-      const usuario = JSON.parse(usuarioSalvo);
-      setUsuarioLogado(usuario);
+      try {
+        const usuario = JSON.parse(usuarioSalvo);
+        // Verificar se o token ainda é válido antes de considerar o usuário como logado
+        // Se não for possível verificar o token no frontend, pelo menos verificamos se os dados estão completos
+        if (usuario && usuario.token && usuario.id && usuario.role) {
+          setUsuarioLogado(usuario);
+        } else {
+          // Se os dados estiverem incompletos, limpar o localStorage
+          localStorage.removeItem("usuarioLogado");
+        }
+      } catch (error) {
+        // Se houver erro ao fazer parse do JSON, limpar o localStorage
+        console.error("Erro ao carregar dados do usuário:", error);
+        localStorage.removeItem("usuarioLogado");
+      }
     }
     setUsuarioCarregado(true);
   }, []);
 
   useEffect(() => {
+    // Só verificar o status do Bling se o usuário estiver logado
     if (usuarioLogado.logado) {
-      checkBlingAuthStatus().finally(() => setBlingChecked(true));
+      // Definir um pequeno atraso para garantir que o token do usuário seja processado primeiro
+      const timer = setTimeout(() => {
+        checkBlingAuthStatus().finally(() => setBlingChecked(true));
+      }, 500);
+      return () => clearTimeout(timer);
     } else {
-      setBlingChecked(false);
+      setBlingChecked(true); // Marcar como verificado mesmo quando não logado para não bloquear a renderização
     }
   }, [usuarioLogado.logado, checkBlingAuthStatus]);
 
+  // Mostrar tela de carregamento enquanto verifica o usuário
   if (!usuarioCarregado) return <div>Carregando...</div>;
-  if (usuarioLogado.logado && !blingChecked) return null;
+  
+  // Não bloquear a renderização se o usuário não estiver logado, mesmo que o Bling não tenha sido verificado
+  if (usuarioLogado.logado && !blingChecked) return <div>Verificando autenticação...</div>;
 
   const RotasProtegidasComLayout = () => (
     <LayoutModerno>
@@ -94,6 +115,7 @@ function AppContent() {
   return (
     <ContextoUsuarioLogado.Provider value={{ usuarioLogado, setUsuarioLogado }}>
       <BrowserRouter>
+        {/* O modal de autenticação do Bling só deve aparecer após o login no sistema */}
         {usuarioLogado.logado && !isBlingAuthenticated && (
           <BlingAuthModal
             show={true}
@@ -102,37 +124,46 @@ function AppContent() {
           />
         )}
         <Routes>
+          {/* Rotas públicas acessíveis sem login */}
           <Route path="/login" element={<TelaLogin />} />
           <Route path="/bling/success" element={<BlingSuccessPage />} />
-          {
-            usuarioLogado.logado ? (
-              // Se logado, verifica o role para direcionar
-              (usuarioLogado.role === 1 || usuarioLogado.role === 2) ? (
-                // Rotas de Admin/Técnico com o novo layout
-                <>
-                  <Route path="/" element={<Navigate to="/ordens-servico" />} />
-                  <Route path="/*" element={<ProtectedComponent allowedRoles={[1, 2]} usuarioLogado={usuarioLogado}><RotasProtegidasComLayout /></ProtectedComponent>} />
-                </>
-              ) : (usuarioLogado.role === 3 || usuarioLogado.role === 4) ? (
-                // Rotas de Cliente (podem ou não usar o mesmo layout, a definir)
-                // Por enquanto, mantendo separadas e simples
-                <>
-                  <Route path="/" element={<Navigate to="/home-cliente" />} />
-                  <Route path="/home-cliente" element={<ProtectedComponent allowedRoles={[3, 4]} usuarioLogado={usuarioLogado}><TelaHomeCliente /></ProtectedComponent>} />
-                  <Route path="/*" element={<Navigate to="/home-cliente" />} /> {/* Redireciona outras rotas para home-cliente */}
-                </>
-              ) : (
-                // Se tem role desconhecido, volta para login
-                <Route path="/*" element={<Navigate to="/login" />} />
-              )
-            ) : (
-              // Se não está logado, todas as rotas levam para login, exceto /login em si
-              <>
-                <Route path="/" element={<Navigate to="/login" />} />
-                <Route path="/*" element={<Navigate to="/login" />} />
-              </>
-            )
-          }
+          
+          {/* Rota raiz - redireciona para login se não estiver logado */}
+          <Route path="/" element={
+            usuarioLogado.logado ? 
+              (usuarioLogado.role === 1 || usuarioLogado.role === 2) ? 
+                <Navigate to="/ordens-servico" /> : 
+                <Navigate to="/home-cliente" />
+              : 
+              <Navigate to="/login" />
+          } />
+          
+          {/* Rotas protegidas para Admin/Técnico */}
+          {usuarioLogado.logado && (usuarioLogado.role === 1 || usuarioLogado.role === 2) && (
+            <Route path="/*" element={
+              <ProtectedComponent allowedRoles={[1, 2]} usuarioLogado={usuarioLogado}>
+                <RotasProtegidasComLayout />
+              </ProtectedComponent>
+            } />
+          )}
+          
+          {/* Rotas protegidas para Cliente */}
+          {usuarioLogado.logado && (usuarioLogado.role === 3 || usuarioLogado.role === 4) && (
+            <>
+              <Route path="/home-cliente" element={
+                <ProtectedComponent allowedRoles={[3, 4]} usuarioLogado={usuarioLogado}>
+                  <TelaHomeCliente />
+                </ProtectedComponent>
+              } />
+              {/* Redireciona outras rotas para home-cliente */}
+              <Route path="/*" element={<Navigate to="/home-cliente" />} />
+            </>
+          )}
+          
+          {/* Fallback - redireciona para login se nenhuma condição acima for atendida */}
+          {!usuarioLogado.logado && (
+            <Route path="/*" element={<Navigate to="/login" />} />
+          )}
         </Routes>
       </BrowserRouter>
     </ContextoUsuarioLogado.Provider>

@@ -1,0 +1,6 @@
+@echo off
+echo Iniciando atualizacao de campos faltantes...
+node atualizar_campos_faltantes.js
+echo.
+echo Pressione qualquer tecla para sair...
+pause > nul

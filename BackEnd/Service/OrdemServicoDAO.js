@@ -159,9 +159,25 @@ class OrdemServicoDAO {
         }
     }
 
-    async consultar(termoBusca) {
+    async consultar(termoBusca, pagina = 1, itensPorPagina = 25) { // Usando 25 itens por página por padrão
         const conexao = await conectar();
         try {
+            // Primeiro, vamos contar o total de registros para a paginação
+            const sqlCount = `
+                SELECT COUNT(*) as total
+                FROM ordem_servico os
+                LEFT JOIN modelo m ON os.modeloEquipamento = m.id OR os.modeloEquipamento = m.modelo
+                LEFT JOIN fabricante f ON os.fabricante = f.id OR os.fabricante = f.nome_fabricante
+                WHERE os.cliente LIKE ? OR m.modelo LIKE ? OR os.numeroSerie LIKE ?
+            `;
+            const parametrosCount = [`%${termoBusca}%`, `%${termoBusca}%`, `%${termoBusca}%`];
+            const [resultCount] = await conexao.query(sqlCount, parametrosCount);
+            const totalRegistros = resultCount[0].total;
+            
+            // Calcular o offset para a paginação
+            const offset = (pagina - 1) * itensPorPagina;
+            
+            // Consulta principal com LIMIT e OFFSET para paginação
             const sql = `
                 SELECT 
                     os.*,
@@ -190,8 +206,9 @@ class OrdemServicoDAO {
                 LEFT JOIN etapa_os eos ON os.etapa_id = eos.id
                 WHERE os.cliente LIKE ? OR m.modelo LIKE ? OR os.numeroSerie LIKE ?
                 ORDER BY os.dataCriacao DESC
+                LIMIT ? OFFSET ?
             `;
-            const parametros = [`%${termoBusca}%`, `%${termoBusca}%`, `%${termoBusca}%`];
+            const parametros = [`%${termoBusca}%`, `%${termoBusca}%`, `%${termoBusca}%`, itensPorPagina, offset];
             const [registros] = await conexao.query(sql, parametros);
 
             const listaOrdensServico = [];
@@ -267,7 +284,13 @@ class OrdemServicoDAO {
                 };
                 listaOrdensServico.push(os);
             }
-            return listaOrdensServico;
+            return {
+                listaOrdensServico,
+                totalRegistros: resultCount[0].total,
+                pagina: pagina,
+                itensPorPagina: itensPorPagina,
+                totalPaginas: Math.ceil(resultCount[0].total / itensPorPagina)
+            };
         } catch (error) {
             console.error("Erro ao consultar Ordens de Serviço:", error);
             throw error;

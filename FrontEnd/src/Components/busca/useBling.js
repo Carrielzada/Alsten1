@@ -28,6 +28,16 @@ export const useBling = () => {
     // Verifica o status da autenticação
     const checkAuthStatus = useCallback(async () => {
         try {
+            // Verificar se há um usuário logado no localStorage antes de fazer a requisição
+            const usuarioSalvo = localStorage.getItem("usuarioLogado");
+            if (!usuarioSalvo) {
+                // Se não houver usuário logado, não faz sentido verificar o status do Bling
+                setIsAuthenticated(false);
+                setTokenInfo(null);
+                setError(null);
+                return;
+            }
+            
             setIsLoading(true);
             const response = await blingApi.get('/bling/status');
             
@@ -37,6 +47,7 @@ export const useBling = () => {
                 setError(null);
             }
         } catch (err) {
+            console.error('Erro ao verificar status de autenticação do Bling:', err);
             setError(err.response?.data?.message || 'Erro ao verificar status de autenticação');
             setIsAuthenticated(false);
             setTokenInfo(null);

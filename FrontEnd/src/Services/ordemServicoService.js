@@ -19,8 +19,16 @@ export const gravarOrdemServico = (ordemServico) => {
     });
 };
 
-export const buscarTodasOrdensServico = () => {
-    return fetchAutenticado('/ordem-servico');
+export const buscarTodasOrdensServico = (pagina = 1, itensPorPagina = 25, termoBusca = '') => {
+    const params = new URLSearchParams();
+    params.append('pagina', pagina);
+    params.append('itensPorPagina', itensPorPagina);
+    
+    if (termoBusca) {
+        params.append('termo', termoBusca);
+    }
+    
+    return fetchAutenticado(`/ordem-servico?${params.toString()}`);
 };
 
 /**

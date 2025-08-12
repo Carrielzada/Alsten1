@@ -3,6 +3,7 @@ import OrdemServicoDAO from "../Service/OrdemServicoDAO.js";
 import OrdemServicoLogDAO from "../Service/OrdemServicoLogDAO.js";
 import upload from '../Service/uploadService.js'; // Importa o middleware de upload
 import { criarLock, verificarLock, removerLock } from '../Service/OrdemServicoLockService.js';
+import conectar from '../Service/conexao.js';
 
 class OrdemServicoCtrl {
     constructor() {
@@ -134,10 +135,21 @@ class OrdemServicoCtrl {
             const osDAO = new OrdemServicoDAO();
             try {
                 const termoBusca = req.query.termo || "";
-                const listaOrdensServico = await osDAO.consultar(termoBusca);
+                const pagina = parseInt(req.query.pagina) || 1;
+                const itensPorPagina = parseInt(req.query.itensPorPagina) || 25; // Usando 25 itens por página por padrão
+                
+                // Buscar os registros da página atual com informações de paginação
+                const resultado = await osDAO.consultar(termoBusca, pagina, itensPorPagina);
+                
                 res.status(200).json({
                     status: true,
-                    listaOrdensServico
+                    listaOrdensServico: resultado.listaOrdensServico,
+                    paginacao: {
+                        pagina: resultado.pagina,
+                        itensPorPagina: resultado.itensPorPagina,
+                        totalRegistros: resultado.totalRegistros,
+                        totalPaginas: resultado.totalPaginas
+                    }
                 });
             } catch (erro) {
                 res.status(500).json({
