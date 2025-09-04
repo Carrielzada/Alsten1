@@ -34,7 +34,7 @@ const ImagePreview = ({ arquivos, onVisualizar, onDownload, onRemover }) => {
   };
 
   const getImageUrl = (filename) => {
-    return `process.env.REACT_APP_API_URL + "/uploads/"${filename}`;
+    return `${process.env.REACT_APP_API_URL}/uploads/${filename}`;
   };
 
   if (!arquivos || arquivos.length === 0) {
