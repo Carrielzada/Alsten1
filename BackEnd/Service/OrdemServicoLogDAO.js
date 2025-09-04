@@ -6,10 +6,10 @@ class OrdemServicoLogDAO {
         try {
             const sql = `
                 INSERT INTO ordem_servico_log 
-                (ordem_servico_id, user_id, campo_alterado, valor_anterior, valor_novo, data_alteracao)
-                VALUES (?, ?, ?, ?, ?, NOW())
+                (ordem_servico_id, user_id, campo_alterado, valor_anterior, valor_novo, data_alteracao, descricao)
+                VALUES (?, ?, ?, ?, ?, NOW(), ?)
             `;
-            const valores = [os_id, usuario_id, campo_alterado, valor_antigo, valor_novo];
+            const valores = [os_id, usuario_id, campo_alterado, valor_antigo, valor_novo, descricao];
             await conexao.query(sql, valores);
             return true;
         } catch (error) {

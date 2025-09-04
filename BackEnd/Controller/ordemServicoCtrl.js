@@ -95,6 +95,27 @@ class OrdemServicoCtrl {
                         console.log('Dados novos para comparação:', os);
                         await this.registrarLogsAlteracoes(dadosAntigos, os, usuarioId, logDAO);
                     }
+                    // Registrar log de criação para novas OS
+                    else if (req.method === "POST") {
+                        const usuarioId = req.user?.id;
+                        const novaOsId = await osDAO.obterUltimoIdInserido();
+                        await logDAO.registrarLog(
+                            novaOsId,
+                            usuarioId,
+                            'criacao',
+                            null,
+                            null,
+                            `Ordem de Serviço criada por ${req.user?.nome || 'usuário'}`
+                        );
+                        await logDAO.registrarLog(
+                            os.id,
+                            usuarioId,
+                            'criacao',
+                            'N/A',
+                            'Nova OS criada',
+                            `Ordem de Serviço criada por ${req.user?.nome || 'Usuário'}`
+                        );
+                    }
 
                     if (osId) {
                         res.status(200).json({
