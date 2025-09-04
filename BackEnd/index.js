@@ -63,7 +63,7 @@ app.use(
     })
 );
 
-const whiteList = ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"];
+const whiteList = ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://og4o08cscgos0kgkkogk0k84.31.97.151.181.sslip.io"];
 const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || whiteList.indexOf(origin) !== -1) {
