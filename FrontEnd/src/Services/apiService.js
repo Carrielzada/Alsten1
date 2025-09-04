@@ -1,7 +1,7 @@
 import { getToken } from './authService'; // <-- IMPORTANDO SUA FUNÇÃO!
 import { toast } from 'react-toastify';
 
-const API_URL = 'http://localhost:4000';
+const API_URL = process.env.REACT_APP_API_URL;
 
 /**
  * Uma função genérica para fazer requisições autenticadas para a API.
