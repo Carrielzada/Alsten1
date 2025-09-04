@@ -1,5 +1,5 @@
 import conectar from "./conexao.js";
-import Urgencia from "../Model/Urgencia.js";
+import Urgencia from "../Model/urgencia.js";
 
 class UrgenciaDAO {
     async gravar(urgencia) {

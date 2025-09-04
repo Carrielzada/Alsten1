@@ -76,7 +76,7 @@ function verificarArquivosCriticos() {
         'package.json',
         'Service/conexao.js',
         'Service/urgenciaDAO.js',
-        'Model/Urgencia.js',
+        'Model/urgencia.js',
         'Routers/rotaUrgencia.js'
     ];
     
@@ -179,7 +179,7 @@ async function testarImportacoes() {
         console.log('✅ Importação de conexao.js: OK');
         
         // Testar importação do modelo
-        const { default: Urgencia } = await import('./Model/Urgencia.js');
+        const { default: Urgencia } = await import('./Model/urgencia.js');
         console.log('✅ Importação de Urgencia.js: OK');
         
         // Testar importação do DAO
