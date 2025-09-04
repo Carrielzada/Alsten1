@@ -1,5 +1,5 @@
 import UrgenciaModel from "../Model/urgencia.js"; // Modelo da urgência
-import UrgenciaDAO from "../Service/UrgenciaDAO.js"; // DAO correspondente
+import UrgenciaDAO from "../Service/urgenciaDAO.js"; // DAO correspondente
 
 export default class UrgenciaController {
   async obterTodos(req, res) {
