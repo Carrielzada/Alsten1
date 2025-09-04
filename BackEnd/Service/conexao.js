@@ -15,11 +15,11 @@ export default async function conectar() {
 
     try {
         const pool = mysql.createPool({
-            host: 'localhost',
-            port: 3307,
-            user: process.env.DB_USER,
-            password: process.env.DB_SENHA,
-            database: process.env.DB_NOME,
+            host: process.env.DB_HOST || 'localhost',
+            port: process.env.DB_PORT || 3306,
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_SENHA || '',
+            database: process.env.DB_NOME || 'alsten_os',
             connectionLimit: 50,
             maxIdle: 30,
             idleTimeout: 60000,
@@ -29,7 +29,7 @@ export default async function conectar() {
         });
 
         global.poolConexoes = pool;
-        console.log('Nova pool de conexões criada.');
+        console.log('Nova pool de conexões MySQL criada.');
         return await global.poolConexoes.getConnection();
     } catch (erro) {
         console.error('Erro ao criar pool de conexões:', erro.message);
