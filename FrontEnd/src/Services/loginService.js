@@ -1,4 +1,4 @@
-const urlBase = process.env.REACT_APP_API_URL + "/autenticacao";
+const urlBase = "/autenticacao";
 
 export async function login(email, password){
     const resposta = await fetch(urlBase + "/login", 
