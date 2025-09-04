@@ -180,7 +180,7 @@ async function testarImportacoes() {
         
         // Testar importação do modelo
         const { default: Urgencia } = await import('./Model/urgencia.js');
-        console.log('✅ Importação de Urgencia.js: OK');
+        console.log('✅ Importação de urgencia.js: OK');
         
         // Testar importação do DAO
         const { default: UrgenciaDAO } = await import('./Service/urgenciaDAO.js');
