@@ -10,7 +10,7 @@ const ListaArquivosAnexados = ({ arquivos, onRemoverArquivo }) => {
 
   const handleDownload = (nomeArquivo) => {
     // Assume que o backend serve os arquivos em /uploads na porta 4000
-    const url = `http://localhost:4000/uploads/${nomeArquivo}`;
+    const url = `process.env.REACT_APP_API_URL + "/uploads/"${nomeArquivo}`;
     window.open(url, '_blank');
   };
 

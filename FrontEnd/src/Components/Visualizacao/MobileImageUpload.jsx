@@ -45,7 +45,7 @@ const MobileImageUpload = ({
     };
 
     const getImageUrl = (filename) => {
-        return `http://localhost:4000/uploads/${filename}`;
+        return `process.env.REACT_APP_API_URL + "/uploads/"${filename}`;
     };
 
     const isImageFile = (filename) => {

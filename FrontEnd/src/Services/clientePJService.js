@@ -1,4 +1,4 @@
-const urlBase = "http://localhost:4000/clientepj"; 
+const urlBase = process.env.REACT_APP_API_URL + "/clientepj"; 
 // Função para gravar um novo ClientePJ
 export async function gravarClientePJ(clientePJ, token) {
     const resposta = await fetch(urlBase, {

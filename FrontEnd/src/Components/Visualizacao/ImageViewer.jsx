@@ -51,7 +51,7 @@ const ImageViewer = ({ images, currentIndex = 0, show, onHide, onRemove }) => {
   };
 
   const getImageUrl = (filename) => {
-    return `http://localhost:4000/uploads/${filename}`;
+    return `process.env.REACT_APP_API_URL + "/uploads/"${filename}`;
   };
 
   if (!images || images.length === 0) return null;

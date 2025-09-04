@@ -1,6 +1,6 @@
 import { getToken } from "./authService"; // Supondo que você tenha um authService para pegar o token
 
-const API_URL = "http://localhost:4000"; // Ou a URL do seu backend
+const API_URL = process.env.REACT_APP_API_URL; // Ou a URL do seu backend
 
 async function handleResponse(response) {
     const contentType = response.headers.get("content-type");
