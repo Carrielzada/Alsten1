@@ -46,17 +46,20 @@ const porta = 4000;
 
 const app = express();
 
+// Configuração de sessão otimizada para produção
 app.use(
     session({
         secret: process.env.CHAVE_SECRETA || 'sua_chave_secreta_padrao',
-        resave: true,
-        saveUninitialized: true,
+        resave: false, // Otimizado para produção
+        saveUninitialized: false, // Otimizado para produção
         cookie: {
-            httpOnly: false,
-            secure: false, 
-            sameSite: false,
-            maxAge: 1000 * 60 * 60 * 2,
+            httpOnly: true, // Mais seguro
+            secure: process.env.NODE_ENV === 'production', // HTTPS em produção
+            sameSite: 'lax', // Mais seguro
+            maxAge: 1000 * 60 * 60 * 2, // 2 horas
         },
+        // Em produção, considere usar Redis ou outro store
+        // store: new RedisStore({...}) 
     })
 );
 
@@ -136,7 +139,32 @@ app.get('/test-uploads', (req, res) => {
     }
 });
 
+// Health check endpoint para o Coolify
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+        version: '1.0.0'
+    });
+});
+
+// Endpoint de status mais detalhado
+app.get('/status', (req, res) => {
+    res.json({
+        status: 'running',
+        server: 'Alsten Backend API',
+        version: '1.0.0',
+        environment: process.env.NODE_ENV || 'development',
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        timestamp: new Date().toISOString()
+    });
+});
+
 app.listen(porta, host, () => {
     console.log(`Servidor escutando em http://${host}:${porta}`);
     console.log(`Uploads sendo servidos de: ${path.join(__dirname, '..', 'uploads')}`);
+    console.log(`Health check disponível em: http://${host}:${porta}/health`);
 });
