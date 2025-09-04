@@ -42,7 +42,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const host = '0.0.0.0';
-const porta = 4000;
+const porta = process.env.PORT || 4000;
 
 const app = express();
 
