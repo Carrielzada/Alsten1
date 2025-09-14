@@ -1,0 +1,36 @@
+[0;1;32m●[0m docker.service - Docker Application Container Engine
+     Loaded: loaded (]8;;file://srv986887/usr/lib/systemd/system/docker.service/usr/lib/systemd/system/docker.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Thu 2025-09-04 02:07:23 UTC; 49s ago
+TriggeredBy: [0;1;32m●[0m docker.socket
+       Docs: ]8;;https://docs.docker.comhttps://docs.docker.com]8;;
+   Main PID: 290222 (dockerd)
+      Tasks: 102
+     Memory: 48.8M (peak: 49.2M)
+        CPU: 1.307s
+     CGroup: /system.slice/docker.service
+             ├─[0;38;5;245m290222 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock[0m
+             ├─[0;38;5;245m290809 /usr/bin/docker-proxy -proto tcp -host-ip 0.0.0.0 -host-port 6001 -container-ip 10.0.1.3 -container-port 6001 -use-listen-fd[0m
+             ├─[0;38;5;245m290813 /usr/bin/docker-proxy -proto tcp -host-ip :: -host-port 6001 -container-ip fd88:59ca:dc6c::3 -container-port 6001 -use-listen-fd[0m
+             ├─[0;38;5;245m290818 /usr/bin/docker-proxy -proto tcp -host-ip 0.0.0.0 -host-port 6002 -container-ip 10.0.1.3 -container-port 6002 -use-listen-fd[0m
+             ├─[0;38;5;245m290824 /usr/bin/docker-proxy -proto tcp -host-ip :: -host-port 6002 -container-ip fd88:59ca:dc6c::3 -container-port 6002 -use-listen-fd[0m
+             ├─[0;38;5;245m290902 /usr/bin/docker-proxy -proto tcp -host-ip 0.0.0.0 -host-port 80 -container-ip 10.0.1.4 -container-port 80 -use-listen-fd[0m
+             ├─[0;38;5;245m290906 /usr/bin/docker-proxy -proto tcp -host-ip :: -host-port 80 -container-ip fd88:59ca:dc6c::4 -container-port 80 -use-listen-fd[0m
+             ├─[0;38;5;245m290912 /usr/bin/docker-proxy -proto tcp -host-ip 0.0.0.0 -host-port 443 -container-ip 10.0.1.4 -container-port 443 -use-listen-fd[0m
+             ├─[0;38;5;245m290917 /usr/bin/docker-proxy -proto tcp -host-ip :: -host-port 443 -container-ip fd88:59ca:dc6c::4 -container-port 443 -use-listen-fd[0m
+             ├─[0;38;5;245m290923 /usr/bin/docker-proxy -proto udp -host-ip 0.0.0.0 -host-port 443 -container-ip 10.0.1.4 -container-port 443 -use-listen-fd[0m
+             ├─[0;38;5;245m290929 /usr/bin/docker-proxy -proto udp -host-ip :: -host-port 443 -container-ip fd88:59ca:dc6c::4 -container-port 443 -use-listen-fd[0m
+             ├─[0;38;5;245m290938 /usr/bin/docker-proxy -proto tcp -host-ip 0.0.0.0 -host-port 8080 -container-ip 10.0.1.4 -container-port 8080 -use-listen-fd[0m
+             ├─[0;38;5;245m290946 /usr/bin/docker-proxy -proto tcp -host-ip :: -host-port 8080 -container-ip fd88:59ca:dc6c::4 -container-port 8080 -use-listen-fd[0m
+             ├─[0;38;5;245m290988 /usr/bin/docker-proxy -proto tcp -host-ip 0.0.0.0 -host-port 8000 -container-ip 10.0.1.6 -container-port 8080 -use-listen-fd[0m
+             └─[0;38;5;245m290992 /usr/bin/docker-proxy -proto tcp -host-ip :: -host-port 8000 -container-ip fd88:59ca:dc6c::6 -container-port 8080 -use-listen-fd[0m
+
+Sep 04 02:07:22 srv986887 dockerd[290222]: time="2025-09-04T02:07:22.890680828Z" level=info msg="No non-localhost DNS nameservers are left in resolv.conf. Using default external servers"
+Sep 04 02:07:22 srv986887 dockerd[290222]: time="2025-09-04T02:07:22.922235396Z" level=info msg="Skipping check for route to send NA, EMSGSIZE" eid=76c315198f465fae1b98950876b43edb756757eb5e28ff46f00a9478e21ba5c4 ep=coolify-redis net=coolify nid=5398762d5c57559d8f3be9f1454305f82bfeb6d74ac304ccee8ccef2cc26c1f4
+Sep 04 02:07:22 srv986887 dockerd[290222]: time="2025-09-04T02:07:22.944701747Z" level=info msg="Skipping check for route to send NA, EMSGSIZE" eid=12054fc4bfd2c60edb19e36d77add31240b0ac4a2e7efdc3e887e10addafec86 ep=coolify net=coolify nid=5398762d5c57559d8f3be9f1454305f82bfeb6d74ac304ccee8ccef2cc26c1f4
+Sep 04 02:07:23 srv986887 dockerd[290222]: time="2025-09-04T02:07:23.462542743Z" level=info msg="Loading containers: done."
+Sep 04 02:07:23 srv986887 dockerd[290222]: time="2025-09-04T02:07:23.521984527Z" level=info msg="Docker daemon" commit=249d679 containerd-snapshotter=false storage-driver=overlay2 version=28.4.0
+Sep 04 02:07:23 srv986887 dockerd[290222]: time="2025-09-04T02:07:23.522063325Z" level=info msg="Initializing buildkit"
+Sep 04 02:07:23 srv986887 dockerd[290222]: time="2025-09-04T02:07:23.589059919Z" level=info msg="Completed buildkit initialization"
+Sep 04 02:07:23 srv986887 dockerd[290222]: time="2025-09-04T02:07:23.642552530Z" level=info msg="Daemon has completed initialization"
+Sep 04 02:07:23 srv986887 dockerd[290222]: time="2025-09-04T02:07:23.642610837Z" level=info msg="API listen on /run/docker.sock"
+Sep 04 02:07:23 srv986887 systemd[1]: Started docker.service - Docker Application Container Engine.

@@ -6,7 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 
-// Ação mais importante: Carregar as variáveis de ambiente ANTES de tudo.
+// Carregar as variáveis de ambiente
 dotenv.config();
 
 // Importações de rotas existentes
@@ -50,29 +50,30 @@ const app = express();
 app.use(
     session({
         secret: process.env.CHAVE_SECRETA || 'sua_chave_secreta_padrao',
-        resave: false, // Otimizado para produção
-        saveUninitialized: false, // Otimizado para produção
+        resave: false,
+        saveUninitialized: false,
         cookie: {
-            httpOnly: true, // Mais seguro
-            secure: process.env.NODE_ENV === 'production', // HTTPS em produção
-            sameSite: 'lax', // Mais seguro
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
             maxAge: 1000 * 60 * 60 * 2, // 2 horas
         },
-        // Em produção, considere usar Redis ou outro store
-        // store: new RedisStore({...}) 
     })
 );
 
-const whiteList = ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://og4o08cscgos0kgkkogk0k84.31.97.151.181.sslip.io"];
+// CORS configurado para aceitar todas as origens temporariamente
+const whiteList = [
+    'http://localhost:3000', 
+    'http://localhost:3001', 
+    'http://localhost:5173',
+    'http://31.97.151.181:3000',
+    'http://31.97.151.181:3001',
+    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3000',
+];
+
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || whiteList.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
-    credentials: true,
+    origin: true,
+    credentials: true
 };
 
 app.use(cors(corsOptions));
@@ -82,64 +83,38 @@ app.use(express.json());
 
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
-// Log para verificar o caminho dos uploads
-const uploadsPath = path.join(__dirname, '..', 'uploads');
-console.log(`Servindo uploads de: ${uploadsPath}`);
-console.log(`Diretório existe: ${fs.existsSync(uploadsPath)}`);
-
 // Suas rotas continuam aqui...
 app.use('/users', rotaUsers);
 app.use('/autenticacao', rotaAutenticacao);
 app.use('/upload', verificarAutenticacao, rotaUpload);
 app.use('/modelo', verificarAutenticacao, rotaModelo);
 app.use('/pagamento', verificarAutenticacao, rotaPagamento);
-app.use("/urgencia", verificarAutenticacao, rotaUrgencia);
-app.use("/ordem-servico", verificarAutenticacao, rotaOrdemServico);
-app.use("/tipo-lacre", verificarAutenticacao, rotaTipoLacre);
-app.use("/tipo-analise", verificarAutenticacao, rotaTipoAnalise);
-app.use("/tipo-limpeza", verificarAutenticacao, rotaTipoLimpeza);
-app.use("/tipo-transporte", verificarAutenticacao, rotaTipoTransporte);
-app.use("/fabricante", verificarAutenticacao, rotaFabricante);
-app.use("/defeito-alegado", verificarAutenticacao, rotaDefeitoAlegado);
-app.use("/clientepj", verificarAutenticacao, rotaClientePJ);
-app.use("/logs", verificarAutenticacao, rotaLogs);
+app.use('/urgencia', verificarAutenticacao, rotaUrgencia);
+app.use('/ordem-servico', verificarAutenticacao, rotaOrdemServico);
+app.use('/tipo-lacre', verificarAutenticacao, rotaTipoLacre);
+app.use('/tipo-analise', verificarAutenticacao, rotaTipoAnalise);
+app.use('/tipo-limpeza', verificarAutenticacao, rotaTipoLimpeza);
+app.use('/tipo-transporte', verificarAutenticacao, rotaTipoTransporte);
+app.use('/fabricante', verificarAutenticacao, rotaFabricante);
+app.use('/defeito-alegado', verificarAutenticacao, rotaDefeitoAlegado);
+app.use('/clientepj', verificarAutenticacao, rotaClientePJ);
+app.use('/logs', verificarAutenticacao, rotaLogs);
 
 // Novas rotas para os novos recursos
-app.use("/dias-pagamento", verificarAutenticacao, rotaDiasPagamento);
-app.use("/checklist-item", verificarAutenticacao, rotaChecklistItem);
-app.use("/etapa-os", verificarAutenticacao, rotaEtapaOS);
-app.use("/servico-padrao", verificarAutenticacao, rotaServicoPadrao);
+app.use('/dias-pagamento', verificarAutenticacao, rotaDiasPagamento);
+app.use('/checklist-item', verificarAutenticacao, rotaChecklistItem);
+app.use('/etapa-os', verificarAutenticacao, rotaEtapaOS);
+app.use('/servico-padrao', verificarAutenticacao, rotaServicoPadrao);
 
-// Rotas do Bling (já corrigidas no passo anterior)
-app.use("/bling", blingRoutes);
-app.use("/bling/contatos", contatosRoutes);
+// Rotas do Bling
+app.use('/bling', blingRoutes);
+app.use('/bling/contatos', contatosRoutes);
 
 app.get('/', (_req, res) => {
     res.send('Servidor Alsten MVP rodando!');
 });
 
-// Rota de teste para verificar uploads
-app.get('/test-uploads', (req, res) => {
-    const uploadsPath = path.join(__dirname, '..', 'uploads');
-    
-    try {
-        const files = fs.readdirSync(uploadsPath);
-        res.json({
-            uploadsPath,
-            exists: fs.existsSync(uploadsPath),
-            files: files.slice(0, 10), // Mostra apenas os primeiros 10 arquivos
-            totalFiles: files.length
-        });
-    } catch (error) {
-        res.json({
-            error: error.message,
-            uploadsPath,
-            exists: fs.existsSync(uploadsPath)
-        });
-    }
-});
-
-// Health check endpoint para o Coolify
+// Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({
         status: 'healthy',
@@ -150,21 +125,7 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Endpoint de status mais detalhado
-app.get('/status', (req, res) => {
-    res.json({
-        status: 'running',
-        server: 'Alsten Backend API',
-        version: '1.0.0',
-        environment: process.env.NODE_ENV || 'development',
-        uptime: process.uptime(),
-        memory: process.memoryUsage(),
-        timestamp: new Date().toISOString()
-    });
-});
-
 app.listen(porta, host, () => {
     console.log(`Servidor escutando em http://${host}:${porta}`);
-    console.log(`Uploads sendo servidos de: ${path.join(__dirname, '..', 'uploads')}`);
     console.log(`Health check disponível em: http://${host}:${porta}/health`);
 });
