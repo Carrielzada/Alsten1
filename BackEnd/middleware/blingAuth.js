@@ -41,7 +41,8 @@ class BlingAuth {
             scope: permissions // <-- USANDO AS PERMISSÕES CORRETAS
         });
         // ===================== FIM DA CORREÇÃO ======================
-
+        console.log(params.toString())
+        console.log("🔗 Enviando redirect_uri para Bling:", this.redirectUri);
         return `https://bling.com.br/Api/v3/oauth/authorize?${params.toString()}`;
     }
 
