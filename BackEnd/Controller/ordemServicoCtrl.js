@@ -1,9 +1,7 @@
 import OrdemServico from "../Model/OrdemServico.js";
 import OrdemServicoDAO from "../Service/OrdemServicoDAO.js";
 import OrdemServicoLogDAO from "../Service/OrdemServicoLogDAO.js";
-import upload from '../Service/uploadService.js'; // Importa o middleware de upload
 import { criarLock, verificarLock, removerLock } from '../Service/OrdemServicoLockService.js';
-import conectar from '../Service/conexao.js';
 
 class OrdemServicoCtrl {
     constructor() {
@@ -35,7 +33,6 @@ class OrdemServicoCtrl {
                 valor, etapaId, comprovanteAprovacao, notaFiscal
             } = req.body;
 
-            // Para PUT, usar o ID da URL se não estiver no body
             const osId = req.method === "PUT" ? req.params.id : id;
 
             if (cliente && modeloEquipamento && defeitoAlegado) {
@@ -80,39 +77,25 @@ class OrdemServicoCtrl {
                 const logDAO = new OrdemServicoLogDAO();
                 
                 try {
-                    // Se for uma atualização, buscar dados antigos para comparação
                     let dadosAntigos = null;
                     if (req.method === "PUT" && osId) {
                         dadosAntigos = await osDAO.consultarPorId(osId);
                     }
 
-                    await osDAO.gravar(os);
+                    await osDAO.gravar(os); // Aqui o DAO já deve atribuir os.id = result.insertId
 
-                    // Registrar logs de auditoria para atualizações
                     if (req.method === "PUT" && dadosAntigos) {
                         const usuarioId = req.user?.id;
-                        console.log('Dados antigos para comparação:', dadosAntigos);
-                        console.log('Dados novos para comparação:', os);
                         await this.registrarLogsAlteracoes(dadosAntigos, os, usuarioId, logDAO);
                     }
-                    // Registrar log de criação para novas OS
                     else if (req.method === "POST") {
                         const usuarioId = req.user?.id;
-                        const novaOsId = await osDAO.obterUltimoIdInserido();
-                        await logDAO.registrarLog(
-                            novaOsId,
-                            usuarioId,
-                            'criacao',
-                            null,
-                            null,
-                            `Ordem de Serviço criada por ${req.user?.nome || 'usuário'}`
-                        );
                         await logDAO.registrarLog(
                             os.id,
                             usuarioId,
                             'criacao',
-                            'N/A',
-                            'Nova OS criada',
+                            null,
+                            null,
                             `Ordem de Serviço criada por ${req.user?.nome || 'Usuário'}`
                         );
                     }
@@ -157,9 +140,8 @@ class OrdemServicoCtrl {
             try {
                 const termoBusca = req.query.termo || "";
                 const pagina = parseInt(req.query.pagina) || 1;
-                const itensPorPagina = parseInt(req.query.itensPorPagina) || 25; // Usando 25 itens por página por padrão
+                const itensPorPagina = parseInt(req.query.itensPorPagina) || 25;
                 
-                // Buscar os registros da página atual com informações de paginação
                 const resultado = await osDAO.consultar(termoBusca, pagina, itensPorPagina);
                 
                 res.status(200).json({
@@ -259,7 +241,7 @@ class OrdemServicoCtrl {
                 res.status(200).json({
                     status: true,
                     mensagem: "Arquivo anexado com sucesso!",
-                    caminho: req.file.filename // Retorna o nome do arquivo no servidor
+                    caminho: req.file.filename 
                 });
             } else {
                 res.status(404).json({
@@ -321,13 +303,8 @@ class OrdemServicoCtrl {
         const osId = req.params.id;
         try {
             const logs = await logDAO.consultarLogsPorOsId(osId);
-            
-            res.status(200).json({
-                status: true,
-                logs: logs
-            });
+            res.status(200).json({ status: true, logs });
         } catch (error) {
-            console.error('Erro ao consultar logs:', error);
             res.status(500).json({
                 status: false,
                 mensagem: "Erro ao consultar logs da Ordem de Serviço: " + error.message,
@@ -335,15 +312,13 @@ class OrdemServicoCtrl {
         }
     }
 
-    // --- LOCK DE EDIÇÃO CONCORRENTE ---
     async criarLock(req, res) {
         const osId = req.params.id;
         const userId = req.user?.id;
         if (!userId) return res.status(401).json({ status: false, mensagem: 'Usuário não autenticado!' });
         const ok = criarLock(osId, userId);
-        if (ok) {
-            res.json({ status: true, mensagem: 'Lock adquirido com sucesso!' });
-        } else {
+        if (ok) res.json({ status: true, mensagem: 'Lock adquirido com sucesso!' });
+        else {
             const lock = verificarLock(osId);
             res.status(409).json({ status: false, mensagem: 'OS já está sendo editada por outro usuário!', lock });
         }
@@ -352,11 +327,8 @@ class OrdemServicoCtrl {
     async verificarLock(req, res) {
         const osId = req.params.id;
         const lock = verificarLock(osId);
-        if (!lock) {
-            res.json({ status: false, livre: true });
-        } else {
-            res.json({ status: true, livre: false, lock });
-        }
+        if (!lock) res.json({ status: false, livre: true });
+        else res.json({ status: true, livre: false, lock });
     }
 
     async removerLock(req, res) {
@@ -364,14 +336,10 @@ class OrdemServicoCtrl {
         const userId = req.user?.id;
         if (!userId) return res.status(401).json({ status: false, mensagem: 'Usuário não autenticado!' });
         const ok = removerLock(osId, userId);
-        if (ok) {
-            res.json({ status: true, mensagem: 'Lock removido com sucesso!' });
-        } else {
-            res.status(403).json({ status: false, mensagem: 'Você não possui o lock desta OS.' });
-        }
+        if (ok) res.json({ status: true, mensagem: 'Lock removido com sucesso!' });
+        else res.status(403).json({ status: false, mensagem: 'Você não possui o lock desta OS.' });
     }
 
-    // Método auxiliar para registrar logs de alterações
     async registrarLogsAlteracoes(dadosAntigos, dadosNovos, usuarioId, logDAO) {
         const camposParaMonitorar = [
             'cliente', 'modeloEquipamento', 'defeitoAlegado', 'numeroSerie', 
@@ -383,11 +351,9 @@ class OrdemServicoCtrl {
             const valorAntigo = dadosAntigos[campo];
             const valorNovo = dadosNovos[campo];
 
-            // Normalizar valores para comparação
             const valorAntigoNormalizado = this.normalizarValor(valorAntigo);
             const valorNovoNormalizado = this.normalizarValor(valorNovo);
 
-            // Só registrar se realmente houve mudança
             if (valorAntigoNormalizado !== valorNovoNormalizado) {
                 const valorAntigoStr = await this.extrairNomeDoValor(valorAntigo, campo);
                 const valorNovoStr = await this.extrairNomeDoValor(valorNovo, campo);
@@ -405,128 +371,29 @@ class OrdemServicoCtrl {
         }
     }
 
-    // Método auxiliar para normalizar valores para comparação
     normalizarValor(valor) {
         if (!valor) return null;
-        
-        // Se for objeto, extrair o ID
-        if (typeof valor === 'object' && valor !== null) {
-            return valor.id || valor.numeroDocumento || valor;
-        }
-        
-        // Se for primitivo, retornar como está
+        if (typeof valor === 'object' && valor !== null) return valor.id || valor.numeroDocumento || valor;
         return valor;
     }
 
-    // Método auxiliar para extrair nomes dos valores (agora assíncrono)
     async extrairNomeDoValor(valor, campo) {
-        // console.log(`=== EXTRAINDO NOME PARA CAMPO: ${campo} ===`);
-        // console.log(`Valor recebido:`, valor);
-        // console.log(`Tipo do valor:`, typeof valor);
-        
-        if (!valor) {
-            // console.log(`Valor é null/undefined, retornando N/A`);
-            return 'N/A';
-        }
-
-        // Se for objeto, extrai normalmente
+        if (!valor) return 'N/A';
         if (typeof valor === 'object') {
-            // console.log(`Valor é objeto, extraindo nome...`);
             switch (campo) {
-                case 'cliente':
-                    const nomeCliente = valor.nome || valor.numeroDocumento || valor.id || 'Cliente';
-                    // console.log(`Nome do cliente extraído: ${nomeCliente}`);
-                    return nomeCliente;
-                case 'modeloEquipamento':
-                    const nomeModelo = valor.modelo || valor.id || 'Modelo';
-                    // console.log(`Nome do modelo extraído: ${nomeModelo}`);
-                    return nomeModelo;
-                case 'fabricante':
-                    const nomeFabricante = valor.nome_fabricante || valor.id || 'Fabricante';
-                    // console.log(`Nome do fabricante extraído: ${nomeFabricante}`);
-                    return nomeFabricante;
-                case 'urgencia':
-                    const nomeUrgencia = valor.urgencia || valor.id || 'Urgência';
-                    // console.log(`Nome da urgência extraído: ${nomeUrgencia}`);
-                    return nomeUrgencia;
-                case 'tipoAnalise':
-                    const nomeTipoAnalise = valor.tipoAnalise || valor.id || 'Tipo de Análise';
-                    // console.log(`Nome do tipo de análise extraído: ${nomeTipoAnalise}`);
-                    return nomeTipoAnalise;
-                case 'tipoLacre':
-                    const nomeTipoLacre = valor.tipoLacre || valor.id || 'Tipo de Lacre';
-                    // console.log(`Nome do tipo de lacre extraído: ${nomeTipoLacre}`);
-                    return nomeTipoLacre;
-                case 'tipoLimpeza':
-                    const nomeTipoLimpeza = valor.tipoLimpeza || valor.id || 'Tipo de Limpeza';
-                    // console.log(`Nome do tipo de limpeza extraído: ${nomeTipoLimpeza}`);
-                    return nomeTipoLimpeza;
-                case 'tipoTransporte':
-                    const nomeTipoTransporte = valor.tipoTransporte || valor.id || 'Tipo de Transporte';
-                    // console.log(`Nome do tipo de transporte extraído: ${nomeTipoTransporte}`);
-                    return nomeTipoTransporte;
-                case 'formaPagamento':
-                    const nomeFormaPagamento = valor.pagamento || valor.id || 'Forma de Pagamento';
-                    // console.log(`Nome da forma de pagamento extraído: ${nomeFormaPagamento}`);
-                    return nomeFormaPagamento;
-                default:
-                    const nomeDefault = valor.id || JSON.stringify(valor);
-                    // console.log(`Nome padrão extraído: ${nomeDefault}`);
-                    return nomeDefault;
+                case 'cliente': return valor.nome || valor.numeroDocumento || valor.id || 'Cliente';
+                case 'modeloEquipamento': return valor.modelo || valor.id || 'Modelo';
+                case 'fabricante': return valor.nome_fabricante || valor.id || 'Fabricante';
+                case 'urgencia': return valor.urgencia || valor.id || 'Urgência';
+                case 'tipoAnalise': return valor.tipoAnalise || valor.id || 'Tipo de Análise';
+                case 'tipoLacre': return valor.tipoLacre || valor.id || 'Tipo de Lacre';
+                case 'tipoLimpeza': return valor.tipoLimpeza || valor.id || 'Tipo de Limpeza';
+                case 'tipoTransporte': return valor.tipoTransporte || valor.id || 'Tipo de Transporte';
+                case 'formaPagamento': return valor.pagamento || valor.id || 'Forma de Pagamento';
+                default: return valor.id || JSON.stringify(valor);
             }
         }
-
-        // Se for primitivo (ID), buscar no banco
-        // console.log(`Valor é primitivo (ID), buscando no banco...`);
-        switch (campo) {
-            case 'modeloEquipamento':
-                const nomeModelo = await this.buscarNomePorId('modelo', valor, 'modelo');
-                // console.log(`Nome do modelo buscado no banco: ${nomeModelo}`);
-                return nomeModelo;
-            case 'fabricante':
-                const nomeFabricante = await this.buscarNomePorId('fabricante', valor, 'nome_fabricante');
-                // console.log(`Nome do fabricante buscado no banco: ${nomeFabricante}`);
-                return nomeFabricante;
-            case 'urgencia':
-                const nomeUrgencia = await this.buscarNomePorId('urgencia', valor, 'urgencia');
-                // console.log(`Nome da urgência buscado no banco: ${nomeUrgencia}`);
-                return nomeUrgencia;
-            case 'tipoAnalise':
-                const nomeTipoAnalise = await this.buscarNomePorId('tipo_analise', valor, 'tipo_analise');
-                // console.log(`Nome do tipo de análise buscado no banco: ${nomeTipoAnalise}`);
-                return nomeTipoAnalise;
-            case 'tipoLacre':
-                const nomeTipoLacre = await this.buscarNomePorId('tipo_lacre', valor, 'tipo_lacre');
-                // console.log(`Nome do tipo de lacre buscado no banco: ${nomeTipoLacre}`);
-                return nomeTipoLacre;
-            case 'tipoLimpeza':
-                const nomeTipoLimpeza = await this.buscarNomePorId('tipo_limpeza', valor, 'tipo_limpeza');
-                // console.log(`Nome do tipo de limpeza buscado no banco: ${nomeTipoLimpeza}`);
-                return nomeTipoLimpeza;
-            case 'tipoTransporte':
-                const nomeTipoTransporte = await this.buscarNomePorId('tipo_transporte', valor, 'tipo_transporte');
-                // console.log(`Nome do tipo de transporte buscado no banco: ${nomeTipoTransporte}`);
-                return nomeTipoTransporte;
-            case 'formaPagamento':
-                const nomeFormaPagamento = await this.buscarNomePorId('pagamento', valor, 'pagamento');
-                // console.log(`Nome da forma de pagamento buscado no banco: ${nomeFormaPagamento}`);
-                return nomeFormaPagamento;
-            default:
-                // console.log(`Campo não mapeado, retornando valor como string: ${String(valor)}`);
-                return String(valor);
-        }
-    }
-
-    // Método auxiliar para buscar nome pelo ID em uma tabela
-    async buscarNomePorId(tabela, id, campoNome) {
-        const conectar = (await import('../Service/conexao.js')).default;
-        const conexao = await conectar();
-        const [rows] = await conexao.query(`SELECT \`${campoNome}\` FROM \`${tabela}\` WHERE id = ?`, [id]);
-        conexao.release();
-        if (rows.length > 0) {
-            return rows[0][campoNome];
-        }
-        return String(id);
+        return String(valor);
     }
 }
 
