@@ -70,6 +70,7 @@ const whiteList = [
     'http://31.97.151.181:3001',
     'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3000',
     'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3001',
+    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io',
     'http://og4o08cscgos0kgkkogk0k84.31.97.151.181.sslip.io', // 👈 FRONTEND ATUAL!
 ];
 
