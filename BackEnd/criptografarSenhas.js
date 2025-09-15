@@ -5,9 +5,6 @@ import conectar from './Service/conexao.js';
     const conexao = await conectar();
     const usuarios = [
         { email: 'admin@gmail.com', senha: 'admin123' },
-        { email: 'gerente@gmail.com', senha: 'gerente123' },
-        { email: 'cliente1@gmail.com', senha: 'cliente123' },
-        { email: 'usuario@gmail.com', senha: 'usuario123' },
     ];
 
     try {
