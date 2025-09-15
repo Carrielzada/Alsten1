@@ -61,7 +61,7 @@ app.use(
     })
 );
 
-// CORS configurado para aceitar todas as origens temporariamente
+// Lista de origens permitidas
 const whiteList = [
     'http://localhost:3000', 
     'http://localhost:3001', 
@@ -69,11 +69,22 @@ const whiteList = [
     'http://31.97.151.181:3000',
     'http://31.97.151.181:3001',
     'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3000',
+    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3001',
+    'http://og4o08cscgos0kgkkogk0k84.31.97.151.181.sslip.io', // 👈 FRONTEND ATUAL!
 ];
 
 const corsOptions = {
-    origin: true,
-    credentials: true
+    origin: function (origin, callback) {
+        // Permite requisições sem origin (ex: mobile, Postman, testes)
+        if (!origin) return callback(null, true);
+        if (whiteList.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error(`Origem não permitida: ${origin}`));
+        }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
