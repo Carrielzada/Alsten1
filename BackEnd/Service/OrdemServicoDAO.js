@@ -58,9 +58,9 @@ class OrdemServicoDAO {
             cliente, modeloEquipamento, numeroSerie, dataCriacao, defeitoAlegado, fabricante, etapa, arquivosAnexados,
             vendedor_id, dias_pagamento_id, data_entrega, data_aprovacao_orcamento, dias_reparo, data_equipamento_pronto,
             informacoes_confidenciais, checklist_items, agendado, possui_acessorio, tipo_transporte_texto, transporte_cif_fob,
-            pedido_compras, defeito_constatado, servico_realizar, valor, etapa_id, comprovante_aprovacao, nota_fiscal
+            pedido_compras, defeito_constatado, servico_realizar, valor, etapa_id, comprovante_aprovacao, nota_fiscal, comprovante
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const valores = [
         ordemServico.urgencia?.id || ordemServico.urgencia,
@@ -95,7 +95,8 @@ class OrdemServicoDAO {
         ordemServico.valor,
         ordemServico.etapaId?.id || ordemServico.etapaId,
         ordemServico.comprovanteAprovacao,
-        ordemServico.notaFiscal
+        ordemServico.notaFiscal,
+        ordemServico.comprovante
     ];
     const resultado = await conexao.query(sql, valores);
     ordemServico.id = resultado[0].insertId;
@@ -109,7 +110,7 @@ class OrdemServicoDAO {
                     etapa = ?, arquivosAnexados = ?, vendedor_id = ?, dias_pagamento_id = ?, data_entrega = ?,
                     data_aprovacao_orcamento = ?, dias_reparo = ?, data_equipamento_pronto = ?, informacoes_confidenciais = ?,
                     checklist_items = ?, agendado = ?, possui_acessorio = ?, tipo_transporte_texto = ?, transporte_cif_fob = ?,
-                    pedido_compras = ?, defeito_constatado = ?, servico_realizar = ?, valor = ?, etapa_id = ?, comprovante_aprovacao = ?, nota_fiscal = ?
+                    pedido_compras = ?, defeito_constatado = ?, servico_realizar = ?, valor = ?, etapa_id = ?, comprovante_aprovacao = ?, nota_fiscal = ?, comprovante = ?
                     WHERE id = ?
                 `;
                 const valores = [
@@ -145,6 +146,7 @@ class OrdemServicoDAO {
                     ordemServico.etapaId?.id || ordemServico.etapaId,
                     ordemServico.comprovanteAprovacao,
                     ordemServico.notaFiscal,
+                    ordemServico.comprovante,
                     ordemServico.id
                 ];
 
@@ -280,7 +282,8 @@ class OrdemServicoDAO {
                     servicoRealizar: registro.servico_realizar,
                     valor: registro.valor,
                     etapaId: registro.etapa_id ? { id: registro.etapa_id, nome: registro.etapa_nome } : null,
-                    notaFiscal: registro.nota_fiscal
+                    notaFiscal: registro.nota_fiscal,
+                    comprovante: registro.comprovante
                 };
                 listaOrdensServico.push(os);
             }
@@ -402,7 +405,8 @@ class OrdemServicoDAO {
                     servicoRealizar: registro.servico_realizar,
                     valor: registro.valor,
                     etapaId: registro.etapa_id ? { id: registro.etapa_id, nome: registro.etapa_nome } : null,
-                    notaFiscal: registro.nota_fiscal
+                    notaFiscal: registro.nota_fiscal,
+                    comprovante: registro.comprovante
                 };
                 return os;
             } else {

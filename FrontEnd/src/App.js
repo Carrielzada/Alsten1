@@ -7,6 +7,8 @@ import ProtectedComponent from "./ProtectedComponent";
 import TelaListagemOS from "./Components/Telas/TelaListagemOS";
 import TelaCadOrdemServico from "./Components/Telas/TelaCadOrdemServico";
 import TelaListagemLogsOS from "./Components/Telas/TelaListagemLogsOS";
+import TelaOSConcluidas from "./Components/Telas/TelaOSConcluidas";
+import TelaBoasVindas from "./Components/Telas/TelaBoasVindas";
 // Porque tem um espaço aqui?
 
 import FormUploadArquivo from "./Components/Telas/Formularios/FormUploadArquivo";
@@ -106,6 +108,8 @@ function AppContent() {
         <Route path="/cadastrar-ordem-servico" element={<TelaCadOrdemServico />} />
         <Route path="/cadastrar-ordem-servico/:id" element={<TelaCadOrdemServico />} />
         <Route path="/ordem-servico/:id/logs" element={<TelaListagemLogsOS />} />
+        <Route path="/os-concluidas" element={<TelaOSConcluidas />} />
+        <Route path="/boas-vindas" element={<TelaBoasVindas />} />
         {/* Adicionar outras rotas protegidas aqui */}
         <Route path="*" element={<Tela404 />} /> {/* Fallback para rotas não encontradas dentro do layout */}
       </Routes>
@@ -132,7 +136,7 @@ function AppContent() {
           <Route path="/" element={
             usuarioLogado.logado ? 
               (usuarioLogado.role === 1 || usuarioLogado.role === 2) ? 
-                <Navigate to="/ordens-servico" /> : 
+                <Navigate to="/boas-vindas" /> : 
                 <Navigate to="/home-cliente" />
               : 
               <Navigate to="/login" />

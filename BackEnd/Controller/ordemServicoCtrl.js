@@ -30,7 +30,7 @@ class OrdemServicoCtrl {
                 diasReparo, dataEquipamentoPronto, informacoesConfidenciais,
                 checklistItems, agendado, possuiAcessorio, tipoTransporteTexto,
                 transporteCifFob, pedidoCompras, defeitoConstatado, servicoRealizar,
-                valor, etapaId, comprovanteAprovacao, notaFiscal
+                valor, etapaId, comprovanteAprovacao, notaFiscal, comprovante
             } = req.body;
 
             const osId = req.method === "PUT" ? req.params.id : id;
@@ -70,7 +70,8 @@ class OrdemServicoCtrl {
                     valor,
                     etapaId,
                     comprovanteAprovacao,
-                    notaFiscal
+                    notaFiscal,
+                    comprovante
                 );
 
                 const osDAO = new OrdemServicoDAO();
