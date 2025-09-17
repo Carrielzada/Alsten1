@@ -765,7 +765,9 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             <Form.Label className="fw-semibold">ID da Ordem de Serviço</Form.Label>
                             <Form.Control
                                 type="text"
+                                name="id"
                                 value={ordemServico.id || ''}
+                                onChange={isAdmin ? handleInputChange : undefined}
                                 readOnly={!isAdmin}
                                 disabled={!isAdmin}
                                 className={!isAdmin ? 'bg-light' : ''}
