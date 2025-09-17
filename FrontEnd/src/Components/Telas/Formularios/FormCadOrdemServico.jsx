@@ -755,7 +755,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
 
                 {/* Seção 2: Cliente, Pagamento e Data de Entrega */}
                 <Row className="mb-4">
-                    <Col md={4} sm={12}>
+                    <Col md={5} sm={12}>
                         <Form.Group controlId="cliente">
                             <Form.Label className="fw-semibold">Cliente (Bling) *</Form.Label>
                             <div 
@@ -769,7 +769,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             </div>
                         </Form.Group>
                     </Col>
-                    <Col md={4} sm={12}>
+                    <Col md={3} sm={12}>
                         <Form.Group controlId="formaPagamento">
                             <Form.Label className="fw-semibold">Pagamento</Form.Label>
                             <CaixaSelecaoPesquisavel

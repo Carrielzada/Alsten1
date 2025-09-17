@@ -1,6 +1,7 @@
 /* Estilo base para o container do layout */
 .layout-moderno {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
@@ -42,4 +43,11 @@
 /* Estilo para o Conteudo Principal quando a barra está oculta */
 .conteudo-principal.sem-barra {
   margin-left: 0; /* Remove a margem esquerda */
+}
+
+/* Container principal que contém sidebar e conteúdo */
+.layout-main {
+  display: flex;
+  flex: 1;
+  position: relative;
 }

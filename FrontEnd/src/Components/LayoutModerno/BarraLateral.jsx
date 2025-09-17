@@ -24,6 +24,17 @@ const BarraLateral = ({ className }) => {
         { path: '/cadastrar-ordem-servico', label: 'Cadastrar ordem de serviço' },
       ],
     },
+    {
+      label: 'Admin',
+      icon: 'FaUserCog',
+      subItems: [
+        { path: '/admin/usuarios', label: 'Usuários do Sistema' },
+        { path: '/meu-perfil', label: 'Meu Perfil' },
+        { path: '/admin/configuracoes', label: 'Configurações' },
+        { path: '/admin/logs', label: 'Logs do Sistema' },
+        { path: '/admin/relatorios', label: 'Relatórios' },
+      ],
+    },
     // Adicionar mais itens de menu conforme necessário
   ];
 

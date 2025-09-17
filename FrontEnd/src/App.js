@@ -25,6 +25,7 @@ import TelaAdministracaoCadastros from "./Components/Telas/TelaAdministracaoCada
 import TelaAdministracaoUsuarios from "./Components/Telas/TelaAdministracaoUsuarios";
 import TelaCadServicoPadrao from "./Components/Telas/TelaCadServicoPadrao";
 import TelaRelatorioCompleto from "./Components/Telas/TelaRelatorioCompleto";
+import TelaPerfil from "./Components/Telas/TelaPerfil";
 
 // Novo Layout
 import LayoutModerno from "./Components/LayoutModerno/LayoutModerno";
@@ -111,7 +112,7 @@ function AppContent() {
         <Route path="/cadastros/servico-realizado" element={<TelaCadServicoPadrao />} />
         <Route path="/admin/cadastros" element={<TelaAdministracaoCadastros />} />
         <Route path="/admin/usuarios" element={<TelaAdministracaoUsuarios />} />
-        <Route path="/sua-conta" element={<div>Tela Sua Conta (Em construção)</div>} />
+        <Route path="/meu-perfil" element={<TelaPerfil />} />
         <Route path="/cadastrar-ordem-servico" element={<TelaCadOrdemServico />} />
         <Route path="/cadastrar-ordem-servico/:id" element={<TelaCadOrdemServico />} />
         <Route path="/ordem-servico/:id/logs" element={<TelaListagemLogsOS />} />

@@ -4,7 +4,6 @@ import Button from '../UI/Button';
 import { FaClipboardList, FaTools, FaFileAlt, FaUserCog, FaChartLine } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import LayoutModerno from '../LayoutModerno/LayoutModerno';
-import Breadcrumb from '../UI/Breadcrumb';
 
 const TelaBoasVindas = () => {
     const navigate = useNavigate();
@@ -50,7 +49,6 @@ const TelaBoasVindas = () => {
     return (
         <LayoutModerno>
             <div className="container-fluid px-4">
-                <Breadcrumb customItems={[{ title: 'Início' }]} />
                 <div className="py-3">
                 <Card className="shadow-sm mb-5">
                     <Card.Body className="text-center py-5">

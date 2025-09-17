@@ -142,3 +142,42 @@
 .modern-breadcrumb.compact .breadcrumb-current {
   font-size: 0.75rem;
 }
+
+/* Estilo para breadcrumb na navbar */
+.navbar .modern-breadcrumb {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  min-height: auto;
+}
+
+.navbar .breadcrumb-list {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.navbar .breadcrumb-link {
+  color: #6c757d;
+  padding: 0.25rem 0.5rem;
+}
+
+.navbar .breadcrumb-link:hover {
+  color: #495057;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.navbar .breadcrumb-current {
+  background: #495057;
+  color: white;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+}
+
+.navbar .breadcrumb-separator {
+  color: #adb5bd;
+  margin: 0 0.25rem;
+}

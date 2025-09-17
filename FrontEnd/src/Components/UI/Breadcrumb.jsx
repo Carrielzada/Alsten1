@@ -37,7 +37,11 @@ const Breadcrumb = ({ customItems = null, showHome = true }) => {
     
     // Outros
     '/ordens-servico': { title: 'Ordens de Serviço', parent: null },
-    '/minha-conta': { title: 'Minha Conta', parent: null },
+    '/os-concluidas': { title: 'OS Concluídas', parent: null },
+    '/boas-vindas': { title: 'Início', parent: null },
+    '/meu-perfil': { title: 'Meu Perfil', parent: null },
+    '/cadastrar-ordem-servico': { title: 'Nova OS', parent: null },
+    '/relatorio-completo': { title: 'Relatórios', parent: null },
   };
 
   // Se há itens customizados, usar eles
