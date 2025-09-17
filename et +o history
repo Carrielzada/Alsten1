@@ -1,0 +1,60 @@
+[33m246a841[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix: downgrade typescript to 4.9.5 for react-scripts compatibility
+[33m59fffbf[m fix: adicionar typescript como devDependency para evitar conflito no deploy
+[33m0b5e361[m Fix: Corrigir CORS e configurações para produção
+[33m3334da5[m fix: corrigir configuração MySQL 8.0
+[33mc1f1d3b[m fix: adicionar URL do FrontEnd na whitelist de CORS
+[33m9fd5c4d[m fix: login api
+[33m14c5c68[m fix: login service undefined
+[33m59fb9f8[m fix: adicionar arquivo .env para variáveis de ambiente
+[33m6fc72ed[m fix: corrigir URLs malformadas nos componentes
+[33m97024de[m fix: corrigir todas as URLs hardcoded para usar variáveis de ambiente
+[33meaa8566[m fix: corrigir URLs hardcoded para usar variáveis de ambiente
+[33m7362173[m fix: configurar URLs da API e Bling para produção
+[33m97a2c13[m fix: usar variável PORT do ambiente
+[33mb0bba4c[m fix: otimizações para produção e health check
+[33m7ff9c82[m fix: removendo arquivo de teste de imports
+[33m282b772[m feat: adicionando arquivos para testar imports
+[33m947354b[m feat: adicionando arquivos para deploy
+[33mfdd6688[m fix: corrigir case sensitivity UrgenciaDAO.js
+[33m19cd817[m fix: corrigir case sensitivity no import UrgenciaDAO
+[33mcf8a371[m fix: adicionando arquivos de deploy e criando banco de dados completo
+[33me35dd8d[m feat: script integração dados bling e OS.
+[33mdd0c888[m fix: campos obrigatorios por etapa
+[33mfa91749[m Merge branch 'main' of https://github.com/Carrielzada/Alsten1
+[33ma1b8193[m fix: campos vermelhos obrigatorios
+[33m4c682ef[m feat: adiciona funcionalidade de upload de imagens para ordem de serviço
+[33m5f849b1[m feat: Implementação de lock para ordem de serviço e validação de campos obrigatórios por etapa
+[33m367b4a4[m fix: urgencia na tabela
+[33m7be3a9b[m fix: arrumado o estilo das telas de cadastro/tabelas
+[33m8be264e[m fix: pequena mudança no modal de cliente
+[33md6a7025[m feat: algumas outras colunas populadas na tabela
+[33m494117c[m fix: correção no estilo da tabela
+[33m2eb8aca[m feat: correção geral cadastro de ordem de serviço
+[33m23e9982[m fix: styling da tabela de ordens de serviço
+[33m8241582[m feat: implementado sistema de logs de alterações na ordem de serviço
+[33mbf40204[m fix: pesquisa de cliente no forms de os otimizada
+[33mfc2e99d[m fix: cadastro de os funcionando
+[33m71e4434[m fix: cadastro ordem serviço arrumado o estilo, cliente salva agora
+[33m327dfef[m feat: mockup serviço realizado na barra lateral
+[33mb23d02a[m feat: adicionado novo estilo para form cad serviço
+[33m3f5d34c[m fix: menu bugado arrumado
+[33mb2111a4[m fix: botão do menu
+[33m5e7cbc2[m fix: clientes no cadastro de os, não finalizado
+[33m25d499a[m feat: nova caixa de seleção no cadastro de os
+[33mf94b0df[m feat: cadastrar OS via frontend quase
+[33m827c0e1[m fix: arrumar backend OS, preparar frontend OS 1/2
+[33m85a8636[m Merge branch 'main' of https://github.com/Carrielzada/Alsten1
+[33m922c01b[m feat: Ordem de Servico - CRUD
+[33ma301f6e[m fix: limpando imports nao usados
+[33m7b7b8a7[m fix: arrumar frontend geral
+[33md321177[m fix: remover barra branca
+[33m383cbc7[m feat: defeito alegado e alterar senha funcionando
+[33m4a94fc8[m feat: alterar senha, defeito alegado e cliente pj
+[33m6d8baf4[m feat: implemented Limpeza and Transporte pages
+[33m5ba1d10[m feat: renaming imports
+[33m9566c4e[m feat: embalei
+[33m2f92995[m feat: working backend and db only
+[33m51fb55a[m feat: backend 1/2 complete
+[33m2bf59d5[m feat: adicionar outras telas
+[33m6d23928[m feat: hello world!
+[33m3b39e0f[m Initial commit
