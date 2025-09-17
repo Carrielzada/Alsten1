@@ -244,7 +244,7 @@ const TelaAdministracaoUsuarios = () => {
                     </Card.Header>
                     <Card.Body>
                         <Row>
-                            <Col md={6}>
+                            <Col xs={12} md={6}>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Buscar usuários</Form.Label>
                                     <InputGroup>
@@ -261,7 +261,7 @@ const TelaAdministracaoUsuarios = () => {
                                     </InputGroup>
                                 </Form.Group>
                             </Col>
-                            <Col md={4}>
+                            <Col xs={12} sm={8} md={4}>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Filtrar por nível</Form.Label>
                                     <Form.Select
@@ -278,7 +278,7 @@ const TelaAdministracaoUsuarios = () => {
                                     </Form.Select>
                                 </Form.Group>
                             </Col>
-                            <Col md={2} className="d-flex align-items-end">
+                            <Col xs={12} sm={4} md={2} className="d-flex align-items-end">
                                 <Button
                                     variant="outline-secondary"
                                     onClick={limparFiltros}
@@ -294,8 +294,8 @@ const TelaAdministracaoUsuarios = () => {
 
                 {/* Estatísticas */}
                 <Row className="mb-4">
-                    <Col md={3}>
-                        <Card className="border-primary">
+                    <Col xs={12} sm={4} md={4}>
+                        <Card className="border-primary mb-3 mb-sm-0">
                             <Card.Body className="text-center">
                                 <FaUser size={24} className="text-primary mb-2" />
                                 <h4 className="fw-bold text-primary">{usuarios.length}</h4>
@@ -303,8 +303,8 @@ const TelaAdministracaoUsuarios = () => {
                             </Card.Body>
                         </Card>
                     </Col>
-                    <Col md={3}>
-                        <Card className="border-danger">
+                    <Col xs={12} sm={4} md={4}>
+                        <Card className="border-danger mb-3 mb-sm-0">
                             <Card.Body className="text-center">
                                 <FaUserShield size={24} className="text-danger mb-2" />
                                 <h4 className="fw-bold text-danger">
@@ -314,8 +314,8 @@ const TelaAdministracaoUsuarios = () => {
                             </Card.Body>
                         </Card>
                     </Col>
-                    <Col md={3}>
-                        <Card className="border-success">
+                    <Col xs={12} sm={4} md={4}>
+                        <Card className="border-success mb-3 mb-sm-0">
                             <Card.Body className="text-center">
                                 <FaFilter size={24} className="text-success mb-2" />
                                 <h4 className="fw-bold text-success">{usuariosFiltrados.length}</h4>

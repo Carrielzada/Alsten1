@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import "./TelaLogin.css";
 import { ContextoUsuarioLogado } from "../../App";
 import { login } from "../../Services/loginService";
@@ -21,6 +21,13 @@ export default function TelaLogin() {
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+
+  // Se o usuário já estiver logado, redirecionar para boas-vindas
+  useEffect(() => {
+    if (contexto.usuarioLogado?.logado) {
+      navigate("/boas-vindas");
+    }
+  }, [contexto.usuarioLogado, navigate]);
 
 function realizarLogin(evento) {
     evento.preventDefault();

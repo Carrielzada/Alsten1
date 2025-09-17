@@ -138,12 +138,8 @@ function AppContent() {
           <Route path="/login" element={<TelaLogin />} />
           <Route path="/bling/success" element={<BlingSuccessPage />} />
           
-          {/* Rota raiz - redireciona para login se não estiver logado */}
-          <Route path="/" element={
-            usuarioLogado.logado ? 
-              <Navigate to="/boas-vindas" /> : 
-              <Navigate to="/login" />
-          } />
+          {/* Rota raiz - redireciona sempre para login */}
+          <Route path="/" element={<Navigate to="/login" />} />
           
           {/* Rotas protegidas para todos os usuários logados */}
           {usuarioLogado.logado && (

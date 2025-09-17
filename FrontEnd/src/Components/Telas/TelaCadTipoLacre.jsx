@@ -2,27 +2,38 @@ import React, { useState, useEffect } from 'react';
 import CardModerno from '../LayoutModerno/CardModerno';
 import { Form, Table, Container, Row, Col, Alert } from 'react-bootstrap';
 import Button from '../UI/Button';
-import { FaEdit, FaTrash } from 'react-icons/fa';
-import { buscarTiposLacre, adicionarTipoLacre, atualizarTipoLacre, excluirTipoLacre } from '../../Services/tipoLacreService.js'; // Caminho corrigido e real
-
-// Fim dos mocks removidos
+import { FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
+import { buscarTiposLacre, adicionarTipoLacre, atualizarTipoLacre, excluirTipoLacre } from '../../Services/tipoLacreService.js';
+import { useToast } from '../../hooks/useToast';
 
 const TelaCadTipoLacre = () => {
+  const toast = useToast();
   const [tiposLacre, setTiposLacre] = useState([]);
   const [tipoLacreAtual, setTipoLacreAtual] = useState('');
   const [idAtual, setIdAtual] = useState(null);
   const [modoEdicao, setModoEdicao] = useState(false);
   const [termoBusca, setTermoBusca] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState({ tipo: '', mensagem: '' });
 
   const carregarTiposLacre = async (termo = '') => {
     try {
-      // Ajuste para o formato de resposta da API real
+      setLoading(true);
       const resposta = await buscarTiposLacre(termo);
       setTiposLacre(resposta.listaTiposLacre || []); 
+      
+      if (termo && termo.trim()) {
+        toast.success(`${resposta.listaTiposLacre?.length || 0} tipos de lacre encontrados para "${termo}"`);
+      }
     } catch (error) {
-      setFeedback({ tipo: 'danger', mensagem: `Erro ao carregar tipos de lacre: ${error.message}` });
+      console.error('Erro ao carregar tipos de lacre:', error);
+      const errorMsg = `Erro ao carregar tipos de lacre: ${error.message}`;
+      setFeedback({ tipo: 'danger', mensagem: errorMsg });
+      toast.error(errorMsg);
       setTiposLacre([]);
+    } finally {
+      setLoading(false);
     }
   };
 

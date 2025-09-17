@@ -16,7 +16,6 @@ const TelaCadModeloEquipamento = () => {
   const [termoBusca, setTermoBusca] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState({ tipo: '', mensagem: '' });
 
 
     const carregarModelo = async (termo = '') => {
@@ -31,7 +30,6 @@ const TelaCadModeloEquipamento = () => {
       } catch (error) {
         console.error('Erro ao carregar modelos:', error);
         const errorMsg = `Erro ao carregar modelos: ${error.message}`;
-        setFeedback({ tipo: 'danger', mensagem: errorMsg });
         toast.error(errorMsg);
         setModelo([]);
       } finally {
@@ -84,7 +82,6 @@ const TelaCadModeloEquipamento = () => {
       console.error('Erro ao salvar modelo:', error);
       const errorMsg = `Erro ao salvar modelo: ${error.message}`;
       toast.error(errorMsg);
-      setFeedback({ tipo: 'danger', mensagem: errorMsg });
     } finally {
       setSaving(false);
     }
@@ -93,8 +90,7 @@ const TelaCadModeloEquipamento = () => {
   const handleEditar = (modelo) => {
     setModoEdicao(true);
     setIdAtual(modelo.id);
-    setModeloAtual(modelo.modelo); 
-    setFeedback({ tipo: '', mensagem: '' });
+    setModeloAtual(modelo.modelo);
   };
 
   const handleExcluir = async (id, nomeModelo) => {
@@ -108,7 +104,6 @@ const TelaCadModeloEquipamento = () => {
         console.error('Erro ao excluir modelo:', error);
         const errorMsg = `Erro ao excluir modelo: ${error.message}`;
         toast.error(errorMsg);
-        setFeedback({ tipo: 'danger', mensagem: errorMsg });
       }
     }
   };
@@ -117,7 +112,6 @@ const TelaCadModeloEquipamento = () => {
     setModeloAtual('');
     setIdAtual(null);
     setModoEdicao(false);
-    setFeedback({ tipo: '', mensagem: '' });
   };
 
   return (
@@ -125,7 +119,6 @@ const TelaCadModeloEquipamento = () => {
         <Row className="justify-content-center">
           <Col md={12} lg={11}>
             <CardModerno titulo="Cadastro de Modelos de Equipamento">
-              {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
                   <Form.Label htmlFor="modelo">Modelo de equipamento</Form.Label>
@@ -176,18 +169,18 @@ const TelaCadModeloEquipamento = () => {
             <CardModerno titulo="Formas de Modelo Cadastradas">
               <Form onSubmit={handleBuscar} className="mb-3">
                 <Row className="align-items-end">
-                  <Col xs={12} md={9}>
-                    <Form.Group className="mb-2">
+                  <Col xs={12} sm={8} md={9}>
+                    <Form.Group className="mb-2 mb-sm-0">
                       <Form.Control
                         type="text"
                         value={termoBusca}
                         onChange={handleBuscaChange}
-                        placeholder="Buscar por modelos de equipamentos..."
+                        placeholder="Buscar modelos de equipamentos..."
                         size="lg"
                       />
                     </Form.Group>
                   </Col>
-                  <Col xs={12} md={3}>
+                  <Col xs={12} sm={4} md={3}>
                     <Button 
                       variant="primary" 
                       type="submit" 
@@ -217,9 +210,9 @@ const TelaCadModeloEquipamento = () => {
                 <Table striped bordered hover responsive size="sm">
                   <thead>
                     <tr>
-                      <th>ID</th>
+                      <th style={{ width: '60px' }}>ID</th>
                       <th>Modelo de Equipamento</th>
-                      <th style={{ width: '120px' }}>Ações</th>
+                      <th className="text-center" style={{ width: '100px' }}>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -227,23 +220,27 @@ const TelaCadModeloEquipamento = () => {
                       <tr key={modelo.id}>
                         <td>{modelo.id}</td>
                         <td>{modelo.modelo}</td>
-                        <td>
-                          <Button 
-                            variant="warning" 
-                            onClick={() => handleEditar(modelo)} 
-                            className="btn-icon"
-                            title="Editar"
-                          >
-                            <FaEdit />
-                          </Button>
-                          <Button 
-                            variant="danger" 
-                            onClick={() => handleExcluir(modelo.id, modelo.modelo)} 
-                            className="btn-icon"
-                            title="Excluir"
-                          >
-                            <FaTrash />
-                          </Button>
+                        <td className="text-center">
+                          <div className="d-flex gap-1 justify-content-center">
+                            <Button 
+                              variant="warning" 
+                              onClick={() => handleEditar(modelo)} 
+                              className="btn-icon"
+                              size="sm"
+                              title="Editar"
+                            >
+                              <FaEdit />
+                            </Button>
+                            <Button 
+                              variant="danger" 
+                              onClick={() => handleExcluir(modelo.id, modelo.modelo)} 
+                              className="btn-icon"
+                              size="sm"
+                              title="Excluir"
+                            >
+                              <FaTrash />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}

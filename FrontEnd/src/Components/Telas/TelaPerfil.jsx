@@ -1,15 +1,15 @@
 import React, { useState, useContext } from 'react';
-import { Card, Form, Row, Col, Alert, Tabs, Tab } from 'react-bootstrap';
+import { Card, Form, Row, Col, Tabs, Tab } from 'react-bootstrap';
 import { FaUser, FaLock, FaSave, FaTimes, FaEdit } from 'react-icons/fa';
 // Layout será fornecido pelo LayoutModerno no App.js - não importar aqui
 import Button from '../UI/Button';
 import { ContextoUsuarioLogado } from '../../App';
 import { atualizarMeuPerfil, alterarSenha } from '../../Services/usersService';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useToast } from '../../hooks/useToast';
 
 const TelaPerfil = () => {
     const { usuarioLogado, setUsuarioLogado } = useContext(ContextoUsuarioLogado);
+    const toast = useToast();
     const [activeTab, setActiveTab] = useState('dados');
     
     // Estados para dados pessoais
@@ -28,8 +28,6 @@ const TelaPerfil = () => {
     });
     const [carregandoSenha, setCarregandoSenha] = useState(false);
     
-    // Feedback states
-    const [feedback, setFeedback] = useState({ tipo: '', mensagem: '' });
 
     // Handlers para dados pessoais
     const handleDadosChange = (e) => {
@@ -42,7 +40,7 @@ const TelaPerfil = () => {
 
     const handleSalvarDados = async () => {
         if (!dadosPessoais.nome.trim() || !dadosPessoais.email.trim()) {
-            setFeedback({ tipo: 'warning', mensagem: 'Nome e email são obrigatórios.' });
+            toast.warning('Nome e email são obrigatórios.');
             return;
         }
 
@@ -70,13 +68,9 @@ const TelaPerfil = () => {
 
             setEditandoDados(false);
             toast.success('Dados atualizados com sucesso!');
-            setFeedback({ tipo: '', mensagem: '' });
         } catch (error) {
             console.error('Erro ao atualizar dados:', error);
-            setFeedback({ 
-                tipo: 'danger', 
-                mensagem: error.message || 'Erro ao atualizar dados. Tente novamente.' 
-            });
+            toast.error(error.message || 'Erro ao atualizar dados. Tente novamente.');
         } finally {
             setCarregandoDados(false);
         }
@@ -88,7 +82,6 @@ const TelaPerfil = () => {
             email: usuarioLogado.email || ''
         });
         setEditandoDados(false);
-        setFeedback({ tipo: '', mensagem: '' });
     };
 
     // Handlers para alteração de senha
@@ -102,17 +95,17 @@ const TelaPerfil = () => {
 
     const handleAlterarSenha = async () => {
         if (!dadosSenha.senhaAtual || !dadosSenha.novaSenha || !dadosSenha.confirmarSenha) {
-            setFeedback({ tipo: 'warning', mensagem: 'Todos os campos de senha são obrigatórios.' });
+            toast.warning('Todos os campos de senha são obrigatórios.');
             return;
         }
 
         if (dadosSenha.novaSenha !== dadosSenha.confirmarSenha) {
-            setFeedback({ tipo: 'warning', mensagem: 'A nova senha e a confirmação não conferem.' });
+            toast.warning('A nova senha e a confirmação não conferem.');
             return;
         }
 
         if (dadosSenha.novaSenha.length < 6) {
-            setFeedback({ tipo: 'warning', mensagem: 'A nova senha deve ter pelo menos 6 caracteres.' });
+            toast.warning('A nova senha deve ter pelo menos 6 caracteres.');
             return;
         }
 
@@ -132,13 +125,9 @@ const TelaPerfil = () => {
             });
 
             toast.success('Senha alterada com sucesso!');
-            setFeedback({ tipo: '', mensagem: '' });
         } catch (error) {
             console.error('Erro ao alterar senha:', error);
-            setFeedback({ 
-                tipo: 'danger', 
-                mensagem: error.message || 'Erro ao alterar senha. Verifique a senha atual e tente novamente.' 
-            });
+            toast.error(error.message || 'Erro ao alterar senha. Verifique a senha atual e tente novamente.');
         } finally {
             setCarregandoSenha(false);
         }
@@ -162,18 +151,13 @@ const TelaPerfil = () => {
             <div className="container-fluid px-4">
                 
                 <Row className="justify-content-center">
-                    <Col lg={8} xl={6}>
+                    <Col xs={12} md={10} lg={8} xl={6}>
                         <Card className="shadow-sm">
                             <Card.Header className="bg-primary text-white d-flex align-items-center">
                                 <FaUser className="me-2" />
                                 <h5 className="mb-0">Meu Perfil</h5>
                             </Card.Header>
                             <Card.Body>
-                                {feedback.mensagem && (
-                                    <Alert variant={feedback.tipo} className="mb-3">
-                                        {feedback.mensagem}
-                                    </Alert>
-                                )}
 
                                 <Tabs 
                                     activeKey={activeTab} 
@@ -184,7 +168,7 @@ const TelaPerfil = () => {
                                         <div className="pt-3">
                                             <Form>
                                                 <Row>
-                                                    <Col md={6}>
+                                                    <Col xs={12} md={6}>
                                                         <Form.Group className="mb-3">
                                                             <Form.Label className="fw-semibold">Nome Completo</Form.Label>
                                                             <Form.Control
@@ -197,7 +181,7 @@ const TelaPerfil = () => {
                                                             />
                                                         </Form.Group>
                                                     </Col>
-                                                    <Col md={6}>
+                                                    <Col xs={12} md={6}>
                                                         <Form.Group className="mb-3">
                                                             <Form.Label className="fw-semibold">Email</Form.Label>
                                                             <Form.Control
@@ -275,7 +259,7 @@ const TelaPerfil = () => {
                                                 </Form.Group>
 
                                                 <Row>
-                                                    <Col md={6}>
+                                                    <Col xs={12} sm={6}>
                                                         <Form.Group className="mb-3">
                                                             <Form.Label className="fw-semibold">Nova Senha *</Form.Label>
                                                             <Form.Control
@@ -291,7 +275,7 @@ const TelaPerfil = () => {
                                                             </Form.Text>
                                                         </Form.Group>
                                                     </Col>
-                                                    <Col md={6}>
+                                                    <Col xs={12} sm={6}>
                                                         <Form.Group className="mb-3">
                                                             <Form.Label className="fw-semibold">Confirmar Nova Senha *</Form.Label>
                                                             <Form.Control
@@ -324,13 +308,6 @@ const TelaPerfil = () => {
                     </Col>
                 </Row>
             </div>
-            
-            <ToastContainer 
-                position="top-right" 
-                autoClose={3000} 
-                hideProgressBar={false}
-                theme="colored" 
-            />
         </>
     );
 };

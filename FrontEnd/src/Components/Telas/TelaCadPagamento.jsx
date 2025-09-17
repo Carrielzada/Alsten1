@@ -16,7 +16,6 @@ const TelaCadPagamento = () => {
   const [termoBusca, setTermoBusca] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState({ tipo: '', mensagem: '' });
 
 
     const carregarPagamento = async (termo = '') => {
@@ -31,7 +30,6 @@ const TelaCadPagamento = () => {
       } catch (error) {
         console.error('Erro ao carregar pagamentos:', error);
         const errorMsg = `Erro ao carregar formas de pagamento: ${error.message}`;
-        setFeedback({ tipo: 'danger', mensagem: errorMsg });
         toast.error(errorMsg);
         setPagamento([]);
       } finally {
@@ -84,7 +82,6 @@ const TelaCadPagamento = () => {
       console.error('Erro ao salvar pagamento:', error);
       const errorMsg = `Erro ao salvar forma de pagamento: ${error.message}`;
       toast.error(errorMsg);
-      setFeedback({ tipo: 'danger', mensagem: errorMsg });
     } finally {
       setSaving(false);
     }
@@ -93,8 +90,7 @@ const TelaCadPagamento = () => {
   const handleEditar = (pagamento) => {
     setModoEdicao(true);
     setIdAtual(pagamento.id);
-    setPagamentoAtual(pagamento.pagamento); 
-    setFeedback({ tipo: '', mensagem: '' });
+    setPagamentoAtual(pagamento.pagamento);
   };
 
   const handleExcluir = async (id, nomePagamento) => {
@@ -108,7 +104,6 @@ const TelaCadPagamento = () => {
         console.error('Erro ao excluir pagamento:', error);
         const errorMsg = `Erro ao excluir forma de pagamento: ${error.message}`;
         toast.error(errorMsg);
-        setFeedback({ tipo: 'danger', mensagem: errorMsg });
       }
     }
   };
@@ -117,7 +112,6 @@ const TelaCadPagamento = () => {
     setPagamentoAtual('');
     setIdAtual(null);
     setModoEdicao(false);
-    setFeedback({ tipo: '', mensagem: '' });
   };
 
   return (
@@ -125,7 +119,6 @@ const TelaCadPagamento = () => {
         <Row className="justify-content-center">
           <Col md={12} lg={11}>
             <CardModerno titulo="Cadastro de Formas de Pagamento">
-              {feedback.mensagem && <Alert variant={feedback.tipo}>{feedback.mensagem}</Alert>}
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
                   <Form.Label htmlFor="pagamento">Formas de Pagamento</Form.Label>
@@ -165,18 +158,18 @@ const TelaCadPagamento = () => {
             <CardModerno titulo="Formas de Pagamento Cadastradas">
               <Form onSubmit={handleBuscar} className="mb-3">
                 <Row className="align-items-end">
-                  <Col xs={12} md={9}>
-                    <Form.Group className="mb-2">
+                  <Col xs={12} sm={8} md={9}>
+                    <Form.Group className="mb-2 mb-sm-0">
                       <Form.Control
                         type="text"
                         value={termoBusca}
                         onChange={handleBuscaChange}
-                        placeholder="Buscar por formas de pagamento..."
+                        placeholder="Buscar formas de pagamento..."
                         size="lg"
                       />
                     </Form.Group>
                   </Col>
-                  <Col xs={12} md={3}>
+                  <Col xs={12} sm={4} md={3}>
                     <Button 
                       variant="primary" 
                       type="submit" 
@@ -206,9 +199,9 @@ const TelaCadPagamento = () => {
                 <Table striped bordered hover responsive size="sm">
                   <thead>
                     <tr>
-                      <th>ID</th>
+                      <th style={{ width: '60px' }}>ID</th>
                       <th>Forma de Pagamento</th>
-                      <th style={{ width: '120px' }}>Ações</th>
+                      <th className="text-center" style={{ width: '100px' }}>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -216,23 +209,27 @@ const TelaCadPagamento = () => {
                       <tr key={pagamento.id}>
                         <td>{pagamento.id}</td>
                         <td>{pagamento.pagamento}</td>
-                        <td>
-                          <Button 
-                            variant="warning" 
-                            onClick={() => handleEditar(pagamento)} 
-                            className="btn-icon"
-                            title="Editar"
-                          >
-                            <FaEdit />
-                          </Button>
-                          <Button 
-                            variant="danger" 
-                            onClick={() => handleExcluir(pagamento.id, pagamento.pagamento)}
-                            className="btn-icon"
-                            title="Excluir"
-                          >
-                            <FaTrash />
-                          </Button>
+                        <td className="text-center">
+                          <div className="d-flex gap-1 justify-content-center">
+                            <Button 
+                              variant="warning" 
+                              onClick={() => handleEditar(pagamento)} 
+                              className="btn-icon"
+                              size="sm"
+                              title="Editar"
+                            >
+                              <FaEdit />
+                            </Button>
+                            <Button 
+                              variant="danger" 
+                              onClick={() => handleExcluir(pagamento.id, pagamento.pagamento)}
+                              className="btn-icon"
+                              size="sm"
+                              title="Excluir"
+                            >
+                              <FaTrash />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}

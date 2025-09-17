@@ -147,7 +147,7 @@ const TelaAdministracaoCadastros = () => {
                         </h4>
                         <Row>
                             {cadastrosPrincipais.map((cadastro, index) => (
-                                <Col lg={4} md={6} className="mb-4" key={index}>
+                                <Col xl={4} lg={6} md={8} sm={10} xs={12} className="mb-4 mx-auto" key={index}>
                                     <CardCadastro {...cadastro} />
                                 </Col>
                             ))}
@@ -164,7 +164,7 @@ const TelaAdministracaoCadastros = () => {
                         </h4>
                         <Row>
                             {cadastrosGerais.map((cadastro, index) => (
-                                <Col lg={3} md={4} sm={6} className="mb-4" key={index}>
+                                <Col xl={3} lg={4} md={6} sm={6} xs={12} className="mb-4" key={index}>
                                     <CardCadastro {...cadastro} />
                                 </Col>
                             ))}
@@ -185,7 +185,7 @@ const TelaAdministracaoCadastros = () => {
                             </Alert>
                             <Row>
                                 {cadastrosAdmin.map((cadastro, index) => (
-                                    <Col lg={3} md={4} sm={6} className="mb-4" key={index}>
+                                    <Col xl={3} lg={4} md={6} sm={8} xs={12} className="mb-4 mx-auto" key={index}>
                                         <CardCadastro {...cadastro} />
                                     </Col>
                                 ))}
