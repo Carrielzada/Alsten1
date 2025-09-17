@@ -222,13 +222,23 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         const carregarDadosCadastrais = async () => {
             try {
                 setLoadingFormData(true);
-                const token = localStorage.getItem('token');
-                const usuarioLogado = localStorage.getItem('usuarioLogado');
+                const usuarioLogadoStr = localStorage.getItem('usuarioLogado');
+                let usuarioLogado = null;
+                let token = null;
+                
+                if (usuarioLogadoStr) {
+                    try {
+                        usuarioLogado = JSON.parse(usuarioLogadoStr);
+                        token = usuarioLogado?.token;
+                    } catch (error) {
+                        console.error('Erro ao fazer parse do usuário logado:', error);
+                    }
+                }
                 
                 console.log("Token encontrado:", !!token);
                 console.log("Usuário logado encontrado:", !!usuarioLogado);
                 
-                if (!token && !usuarioLogado) {
+                if (!token || !usuarioLogado) {
                     toast.error("Você precisa estar logado para acessar esta página.");
                     setTimeout(() => {
                         window.location.href = '/';
@@ -368,11 +378,15 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     useEffect(() => {
         // Verificar se o usuário é admin
         const checkAdminStatus = () => {
-            const token = localStorage.getItem('token');
-            if (token) {
+            const usuarioLogadoStr = localStorage.getItem('usuarioLogado');
+            if (usuarioLogadoStr) {
                 try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    setIsAdmin(payload.role === 1); // Role 1 = Admin
+                    const usuarioLogado = JSON.parse(usuarioLogadoStr);
+                    const token = usuarioLogado?.token;
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        setIsAdmin(payload.role === 1); // Role 1 = Admin
+                    }
                 } catch (error) {
                     console.error('Erro ao decodificar token:', error);
                 }
@@ -384,21 +398,25 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     // 📦 Definir vendedor automaticamente baseado no usuário logado (se não for edição)
     useEffect(() => {
         if (!modoEdicao && vendedores.length > 0 && !ordemServico.vendedor) {
-            const token = localStorage.getItem('token');
-            if (token) {
+            const usuarioLogadoStr = localStorage.getItem('usuarioLogado');
+            if (usuarioLogadoStr) {
                 try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    const usuarioLogadoId = payload.id;
-                    
-                    // Encontrar o usuário logado na lista de vendedores
-                    const vendedorLogado = vendedores.find(vendedor => vendedor.id === usuarioLogadoId);
-                    
-                    if (vendedorLogado) {
-                        console.log('Definindo vendedor automaticamente:', vendedorLogado);
-                        setOrdemServico(prevState => ({
-                            ...prevState,
-                            vendedor: vendedorLogado
-                        }));
+                    const usuarioLogado = JSON.parse(usuarioLogadoStr);
+                    const token = usuarioLogado?.token;
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        const usuarioLogadoId = payload.id;
+                        
+                        // Encontrar o usuário logado na lista de vendedores
+                        const vendedorLogado = vendedores.find(vendedor => vendedor.id === usuarioLogadoId);
+                        
+                        if (vendedorLogado) {
+                            console.log('Definindo vendedor automaticamente:', vendedorLogado);
+                            setOrdemServico(prevState => ({
+                                ...prevState,
+                                vendedor: vendedorLogado
+                            }));
+                        }
                     }
                 } catch (error) {
                     console.error('Erro ao decodificar token para definir vendedor:', error);

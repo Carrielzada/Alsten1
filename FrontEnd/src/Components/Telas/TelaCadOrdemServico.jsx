@@ -51,7 +51,7 @@ const TelaCadOrdemServico = () => {
         
         fetchData();
         return () => { ignore = true; };
-    }, [id, executeAsync, toast]);
+    }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         // Ao desmontar, libera o lock se foi adquirido
