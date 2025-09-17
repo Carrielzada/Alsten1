@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Row, Col } from 'react-bootstrap';
 import Button from '../UI/Button';
+import DashboardStats from '../UI/DashboardStats';
 import { FaClipboardList, FaTools, FaFileAlt, FaUserCog, FaChartLine } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 // Layout será fornecido pelo LayoutModerno no App.js - não importar aqui
@@ -31,11 +32,11 @@ const TelaBoasVindas = () => {
             rota: '/cadastrar-ordem-servico'
         },
         {
-            titulo: 'Administrar Cadastros',
-            descricao: 'Mantenha atualizados os cadastros de clientes (integrado com Bling), modelos de equipamentos, tipos de serviço e fornecedores.',
+            titulo: 'Gerenciar Cadastros',
+            descricao: 'Acesse a central de cadastros organizada por categorias: clientes, equipamentos, processos técnicos e configurações comerciais.',
             icone: <FaUserCog size={40} className="mb-3 text-info" />,
-            botao: 'Acessar Cadastros',
-            rota: '/cadastros/clientes'
+            botao: 'Central de Cadastros',
+            rota: '/cadastros'
         },
         {
             titulo: 'Relatórios Completos',
@@ -69,7 +70,9 @@ const TelaBoasVindas = () => {
                     </Card.Body>
                 </Card>
 
-                <h2 className="text-center mb-4">Principais Funcionalidades</h2>
+                <DashboardStats />
+
+                <h2 className="text-center mb-4 mt-5">Principais Funcionalidades</h2>
                 
                 <Row>
                     {funcionalidades.map((item, index) => (

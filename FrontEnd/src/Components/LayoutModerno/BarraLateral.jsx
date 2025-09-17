@@ -12,7 +12,26 @@ const BarraLateral = ({ className }) => {
     { path: '/boas-vindas', label: 'Início', icon: 'FaHome' },
     { path: '/ordens-servico', label: 'Ordens de Serviço', icon: 'FaBoxOpen' },
     { path: '/os-concluidas', label: 'OS Concluídas', icon: 'FaCheckCircle' },
-    { path: '/cadastros', label: 'Cadastros', icon: 'FaCog' },
+    {
+      path: '/cadastros',
+      label: 'Cadastros',
+      icon: 'FaCog',
+      subItems: [
+        { path: '/cadastros', label: '📋 Central de Cadastros' },
+        { path: '/cadastrar-ordem-servico', label: '➕ Nova Ordem de Serviço' },
+        { path: '/cadastros/clientes', label: '👥 Clientes' },
+        { path: '/cadastros/modelo-equipamento', label: '⚙️ Modelos de Equipamento' },
+        { path: '/cadastros/fabricante', label: '🏭 Fabricantes' },
+        { path: '/cadastros/defeito-alegado', label: '⚠️ Defeitos Alegados' },
+        { path: '/cadastros/tipo-analise', label: '🔬 Tipos de Análise' },
+        { path: '/cadastros/tipo-lacre', label: '🔧 Tipos de Lacre' },
+        { path: '/cadastros/tipo-limpeza', label: '🧹 Tipos de Limpeza' },
+        { path: '/cadastros/tipo-transporte', label: '🚛 Tipos de Transporte' },
+        { path: '/cadastros/servico-realizado', label: '🛠️ Serviços Padrão' },
+        { path: '/cadastros/pagamento', label: '💳 Formas de Pagamento' },
+        { path: '/cadastros/urgencia', label: '🚨 Níveis de Urgência' },
+      ],
+    },
   ];
 
   // Menu administrativo (apenas para Admin - role 1)
