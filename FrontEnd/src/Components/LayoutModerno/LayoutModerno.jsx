@@ -24,6 +24,7 @@ const LayoutModerno = ({ children }) => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleBarra = () => {

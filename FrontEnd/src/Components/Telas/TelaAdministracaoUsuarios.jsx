@@ -43,6 +43,7 @@ const TelaAdministracaoUsuarios = () => {
     useEffect(() => {
         // Aplicar filtros
         aplicarFiltros();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [usuarios, filtros]);
 
     const carregarDados = async () => {

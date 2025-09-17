@@ -38,9 +38,10 @@ const TelaCadUrgencia = () => {
     }
   };
 
-  useEffect(() => {
-    carregarUrgencia();
-  }, []);
+    useEffect(() => {
+        carregarUrgencia();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
   const handleChange = (e) => {
     setUrgenciaAtual(e.target.value);

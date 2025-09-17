@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { getBlingSuccessUrl, getEnvironmentInfo } from '../../utils/urlUtils';
+import { getEnvironmentInfo } from '../../utils/urlUtils';
 
 // Configuração base do axios para a API do Bling
 const blingApi = axios.create({

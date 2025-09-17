@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CardModerno from '../LayoutModerno/CardModerno';
 import { Form, Table, Container, Row, Col, Alert } from 'react-bootstrap';
 import Button from '../UI/Button';
-import { FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import { buscarTiposLacre, adicionarTipoLacre, atualizarTipoLacre, excluirTipoLacre } from '../../Services/tipoLacreService.js';
 import { useToast } from '../../hooks/useToast';
 
@@ -13,8 +13,8 @@ const TelaCadTipoLacre = () => {
   const [idAtual, setIdAtual] = useState(null);
   const [modoEdicao, setModoEdicao] = useState(false);
   const [termoBusca, setTermoBusca] = useState('');
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState({ tipo: '', mensagem: '' });
 
   const carregarTiposLacre = async (termo = '') => {
@@ -39,6 +39,7 @@ const TelaCadTipoLacre = () => {
 
   useEffect(() => {
     carregarTiposLacre();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (e) => {

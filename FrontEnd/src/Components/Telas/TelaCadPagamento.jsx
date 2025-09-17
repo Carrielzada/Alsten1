@@ -38,9 +38,10 @@ const TelaCadPagamento = () => {
     };
 
 
-  useEffect(() => {
-    carregarPagamento();
-  }, []);
+    useEffect(() => {
+        carregarPagamento();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
   const handleChange = (e) => {
     setPagamentoAtual(e.target.value);

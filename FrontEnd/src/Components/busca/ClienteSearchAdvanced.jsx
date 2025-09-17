@@ -8,6 +8,7 @@ import './ClienteSearchAdvanced.css';
 
 const ClienteSearchAdvanced = ({ onClienteSelect, selectedCliente = null }) => {
     const { isAuthenticated, authenticate, isLoading: authLoading } = useBling();
+    // eslint-disable-next-line no-unused-vars
     const { fetchContatos, isLoading } = useBlingContatos();
 
     const [searchTerm, setSearchTerm] = useState('');

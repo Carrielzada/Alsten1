@@ -49,6 +49,7 @@ const TelaOSConcluidas = () => {
 
     useEffect(() => {
         fetchOrdensServico();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [paginaAtual, itensPorPagina]);
 
     const fetchOrdensServico = async () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Resizable } from 'react-resizable';
-import { buscarTodasOrdensServico, consultarOrdemServicoPorId } from '../../Services/ordemServicoService';
+import { buscarTodasOrdensServico } from '../../Services/ordemServicoService';
 // Layout será fornecido pelo LayoutModerno - não importar aqui
 import { Modal as BootstrapModal, Badge, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope, FaSearch, FaTimes } from 'react-icons/fa';
@@ -46,6 +46,7 @@ const TelaListagemOS = () => {
     const [error, setError] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showLogsModal, setShowLogsModal] = useState(false);
+    // eslint-disable-next-line no-unused-vars
     const [ordemServicoEmEdicao, setOrdemServicoEmEdicao] = useState(null);
     const [osIdParaLogs, setOsIdParaLogs] = useState(null);
     const [showClienteModal, setShowClienteModal] = useState(false);
@@ -91,6 +92,7 @@ const TelaListagemOS = () => {
     useEffect(() => {
         // Iniciar com a primeira página e poucos itens para carregamento rápido
         fetchOrdensServico(1, itensPorPagina, '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [itensPorPagina]); // Dependência adicionada para recarregar quando o número de itens por página mudar
 
     const fetchOrdensServico = async (pagina = paginaAtual, itens = itensPorPagina, termo = termoBusca) => {

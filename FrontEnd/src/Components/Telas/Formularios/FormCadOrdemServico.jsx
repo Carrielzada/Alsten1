@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Form, Row, Col, Container } from "react-bootstrap";
-import { FaSave, FaTimes, FaPaperclip, FaEye, FaVial, FaPrint, FaFilePdf, FaDownload } from "react-icons/fa";
+import { FaSave, FaTimes, FaPaperclip, FaEye, FaVial } from "react-icons/fa";
 import Button from '../../UI/Button'; // Nosso Button moderno que substitui o Bootstrap
 import CaixaSelecaoPesquisavel from '../../busca/CaixaSelecaoPesquisavel';
 import { buscarFabricantes } from '../../../Services/fabricanteService';
@@ -545,6 +545,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                 markDirty();
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ordemServico.dataAprovacaoOrcamento, ordemServico.diasReparo]);
 
     const handleInputChange = (e) => {
@@ -833,6 +834,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     };
 
     // Funções para geração de PDF
+    // eslint-disable-next-line no-unused-vars
     const gerarPDF = async (opcoes = {}) => {
         if (!ordemServico.id) {
             toast.warn('Salve a OS primeiro para gerar o PDF.');
