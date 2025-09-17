@@ -1,3 +1,375 @@
+/* CSS para FormCadOrdemServico.jsx */
+
+.form-cad-os {
+  max-width: 1000px !important;
+}
+
+/* Seção de comprovante com hover effects */
+.comprovante-section {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.comprovante-upload {
+  flex: 1;
+  min-width: 280px;
+}
+
+.comprovante-preview {
+  flex: 1;
+  min-width: 280px;
+  text-align: center;
+}
+
+.image-preview-container {
+  position: relative;
+  display: inline-block;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.image-preview-container:hover {
+  border-color: #dc3545;
+}
+
+.image-preview {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+.image-preview-container:hover .image-preview {
+  filter: sepia(100%) hue-rotate(-50deg) saturate(6) brightness(0.8);
+  transform: scale(0.95);
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(220, 53, 69, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-preview-container:hover .image-overlay {
+  opacity: 1;
+}
+
+.overlay-button {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc3545;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.overlay-button:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+/* Anexos com hover effects avançados */
+.anexo-item {
+  position: relative;
+  display: inline-block;
+  margin: 5px;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.anexo-preview {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+.anexo-item:hover .anexo-preview {
+  filter: blur(2px);
+}
+
+.anexo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.anexo-item:hover .anexo-overlay {
+  opacity: 1;
+}
+
+.anexo-action-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.anexo-action-btn:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.anexo-action-btn.view {
+  color: #0d6efd;
+}
+
+.anexo-action-btn.download {
+  color: #198754;
+}
+
+.anexo-action-btn.delete {
+  color: #dc3545;
+}
+
+/* Campo de valor com formatação */
+.valor-input {
+  text-align: right;
+  font-weight: bold;
+  color: #198754;
+}
+
+/* Responsividade melhorada */
+@media (max-width: 768px) {
+  .form-cad-os {
+    max-width: 100% !important;
+    padding: 15px !important;
+  }
+  
+  .comprovante-section {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .comprovante-upload,
+  .comprovante-preview {
+    min-width: 100%;
+    text-align: center;
+  }
+  
+  .image-preview {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+@media (max-width: 576px) {
+  .form-cad-os {
+    padding: 10px !important;
+  }
+  
+  .image-preview {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .anexo-preview {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+/* Melhorias nos botões de ação */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.test-button {
+  background: linear-gradient(45deg, #6f42c1, #e83e8c);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.test-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(111, 66, 193, 0.4);
+}
+
+.test-button:active {
+  transform: scale(0.95);
+}
+
+/* Tooltip para botão de teste */
+.test-button::after {
+  content: 'Teste de Validação';
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.test-button:hover::after {
+  opacity: 1;
+}
+
+/* Seções do formulário */
+.form-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.form-section-title {
+  color: #495057;
+  font-weight: 600;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Campo de nota fiscal menor */
+.nota-fiscal-small {
+  max-width: 300px;
+}
+
+/* Melhoria no campo de transporte */
+.transporte-select {
+  font-weight: 500;
+}
+
+.transporte-select option {
+  padding: 8px;
+}
+
+/* Cliente search melhorado */
+.cliente-search-clear {
+  transition: all 0.3s ease;
+}
+
+.cliente-selected {
+  background-color: #d4edda !important;
+  border-color: #c3e6cb !important;
+}
+
+/* Estilos para ícones de arquivo */
+.file-icon-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.file-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.file-name {
+  font-size: 10px;
+  color: #6c757d;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* Melhorias adicionais para anexos */
+.anexos-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.anexo-item {
+  border: 1px solid #dee2e6;
+  background: white;
+}
+
+.anexo-item:hover {
+  border-color: #adb5bd;
+}
+
+/* Estilos para preview de arquivo */
+.file-preview-container {
+  text-align: center;
+  padding: 20px;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.file-icon-large {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.file-name-large {
+  font-weight: 500;
+  color: #495057;
+  word-break: break-word;
+  margin-bottom: 10px;
+}
+
+.upload-area {
+  position: relative;
+}
+
 /* Formulário Responsivo para Mobile/Tablet */
 .form-cad-os {
     padding: 15px;

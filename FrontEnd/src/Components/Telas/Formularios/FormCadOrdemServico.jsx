@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Form, Row, Col, Button, Container } from "react-bootstrap";
-import { FaSave, FaTimes, FaPaperclip, FaPlus, FaUpload } from "react-icons/fa";
+import { FaSave, FaTimes, FaPaperclip, FaEye, FaVial } from "react-icons/fa";
 import CaixaSelecaoPesquisavel from '../../busca/CaixaSelecaoPesquisavel';
 import { buscarFabricantes } from '../../../Services/fabricanteService';
 import { buscarModelo } from '../../../Services/modeloService';
@@ -12,17 +12,16 @@ import { buscarTiposLacre } from '../../../Services/tipoLacreService';
 import { buscarTiposLimpeza } from '../../../Services/tipoLimpezaService';
 import { buscarTiposTransporte } from '../../../Services/tipoTransporteService';
 import { buscarPagamento } from '../../../Services/pagamentoService';
-import { gravarOrdemServico, anexarArquivo, anexarComprovante, removerArquivo } from '../../../Services/ordemServicoService';
+import { gravarOrdemServico, anexarArquivo, removerArquivo } from '../../../Services/ordemServicoService';
 import diasPagamentoService from '../../../Services/diasPagamentoService';
 import checklistItemService from '../../../Services/checklistItemService';
 import etapaOSService from '../../../Services/etapaOSService';
 import servicoPadraoService from '../../../Services/servicoPadraoService';
 import { buscarDefeitosAlegados } from '../../../Services/defeitoAlegadoService';
 import { consultarUsuarios } from '../../../Services/usersService';
-import ListaArquivosAnexados from '../../Visualizacao/ListaArquivosAnexados';
-import MobileImageUpload from '../../Visualizacao/MobileImageUpload';
-import ComprovanteUpload from '../../Visualizacao/ComprovanteUpload';
-import ClienteSelector from '../../busca/ClienteSelector';
+import CampoValor from './CampoValor';
+import ComprovanteUploadMelhorado from './ComprovanteUploadMelhorado';
+import AnexoViewer from './AnexoViewer';
 import ClienteSearchAdvanced from '../../busca/ClienteSearchAdvanced';
 import '../../busca/ClienteSelector.css';
 import './FormCadOrdemServico.css';
@@ -181,7 +180,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         etapaId: null,
         comprovanteAprovacao: '',
         notaFiscal: '',
-        comprovante: ''
+        comprovante: '',
+        observacoesAdicionais: ''
     });
     const [dirty, setDirty] = useState(false);
     const [faltandoCampos, setFaltandoCampos] = useState([]);
@@ -204,6 +204,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     const [formasPagamento, setFormasPagamento] = useState([]);
     const [arquivoParaUpload, setArquivoParaUpload] = useState(null);
     const [comprovanteFile, setComprovanteFile] = useState(null);
+    const [comprovantePreview, setComprovantePreview] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false); // Para controlar se pode editar o ID
     
     // Novos estados para os novos campos
@@ -344,6 +345,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                 notaFiscal: ordemServicoEmEdicao.notaFiscal ?? '',
                 comprovanteAprovacao: ordemServicoEmEdicao.comprovanteAprovacao ?? '',
                 comprovante: ordemServicoEmEdicao.comprovante ?? '',
+                observacoesAdicionais: ordemServicoEmEdicao.observacoesAdicionais ?? '',
                 // Garante que checklistItems seja sempre array
                 checklistItems: Array.isArray(ordemServicoEmEdicao.checklistItems)
                   ? ordemServicoEmEdicao.checklistItems
@@ -529,54 +531,35 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         }
     };
     
-    const handleComprovanteSelect = async (file) => {
+    const handleComprovanteChange = (e) => {
         markDirty();
-        setComprovanteFile(file);
-        
-        if (ordemServico.id && file) {
-            try {
-                const response = await anexarComprovante(ordemServico.id, file);
-                if (response.status) {
-                    toast.success("Comprovante anexado com sucesso!");
-                    setOrdemServico(prevState => ({
-                        ...prevState,
-                        comprovante: response.caminho
-                    }));
-                } else {
-                    toast.error(response.mensagem);
-                }
-            } catch (error) {
-                console.error("Erro ao anexar comprovante:", error);
-                toast.error("Erro ao anexar o comprovante.");
+        const file = e.target.files[0];
+        if (file) {
+            // Validar se é uma imagem
+            if (!file.type.startsWith('image/')) {
+                toast.error('Por favor, selecione apenas arquivos de imagem.');
+                e.target.value = '';
+                return;
             }
-        }
-    };
-    
-    const handleComprovanteRemove = async () => {
-        markDirty();
-        if (ordemServico.id && ordemServico.comprovanteAprovacao) {
-            try {
-                const sucesso = await removerArquivo(ordemServico.id, ordemServico.comprovanteAprovacao);
-                if (sucesso) {
-                    toast.success("Comprovante removido com sucesso!");
-                    setOrdemServico(prevState => ({
-                        ...prevState,
-                        comprovanteAprovacao: ''
-                    }));
-                    setComprovanteFile(null);
-                } else {
-                    toast.error("Falha ao remover o comprovante.");
-                }
-            } catch (error) {
-                console.error("Erro ao remover comprovante:", error);
-                toast.error("Erro ao remover o comprovante.");
+            // Validar tamanho (máximo 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('A imagem deve ter no máximo 5MB.');
+                e.target.value = '';
+                return;
             }
-        } else {
+            setComprovanteFile(file);
+            
+            // Criar preview da imagem
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setComprovantePreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+            
             setOrdemServico(prevState => ({
                 ...prevState,
-                comprovanteAprovacao: ''
+                comprovanteAprovacao: file
             }));
-            setComprovanteFile(null);
         }
     };
 
@@ -597,21 +580,6 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         }
     };
 
-    // Função de teste para o sistema de anexos
-    const testarAnexos = () => {
-        console.log('=== TESTE DE ANEXOS ===');
-        console.log('ID da OS:', ordemServico.id);
-        console.log('Arquivos anexados:', ordemServico.arquivosAnexados);
-        console.log('Arquivo para upload:', arquivoParaUpload);
-        
-        if (!ordemServico.id) {
-            toast.warning("Salve a OS primeiro para testar anexos");
-        } else if (!arquivoParaUpload) {
-            toast.warning("Selecione um arquivo para testar");
-        } else {
-            toast.info("Clique em 'Anexar' para testar o upload");
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -725,38 +693,11 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
             etapaId: null,
             comprovanteAprovacao: '',
             notaFiscal: '',
-            comprovante: ''
+            comprovante: '',
+            observacoesAdicionais: ''
         });
     };
 
-    // Função para formatar valor como moeda
-    const formatarValor = (valor) => {
-        if (!valor) return '';
-        // Remove tudo que não é número
-        const numeros = valor.toString().replace(/\D/g, '');
-        // Converte para número e divide por 100 para ter centavos
-        const valorNumerico = parseInt(numeros) / 100;
-        // Formata como moeda brasileira
-        return valorNumerico.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    };
-
-    const handleValorChange = (e) => {
-        const { value } = e.target;
-        // Remove tudo que não é número
-        const numeros = value.replace(/\D/g, '');
-        // Permite valor 0
-        let valorNumerico = 0;
-        if (numeros.length > 0) {
-            valorNumerico = parseInt(numeros, 10) / 100;
-        }
-        setOrdemServico(prevState => ({
-            ...prevState,
-            valor: valorNumerico
-        }));
-    };
 
     // Função utilitária para garantir o formato yyyy-MM-dd para inputs de data
     function toInputDateString(date) {
@@ -768,35 +709,36 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     }
 
     return (
-        <Container className="p-3 bg-white border rounded shadow-sm mx-auto form-cad-os" style={{ maxWidth: "800px" }}>
+        <Container className="p-3 bg-white border rounded shadow-sm mx-auto form-cad-os">
             <Form onSubmit={handleSubmit} className="small">
-                <h5 className="mb-3 text-center fw-bold">
+                <h5 className="mb-3 text-center fw-bold text-primary">
                     {modoEdicao ? 'Editar Ordem de Serviço' : 'Cadastro de Ordem de Serviço'}
                 </h5>
                 <hr />
 
-                {/* Linha 1: ID da OS e Vendedor */}
-                <Row className="mb-3">
-                    <Col md={6}>
+                {/* Seção 1: ID da Ordem de Serviço e Vendedor */}
+                <Row className="mb-4">
+                    <Col md={6} sm={12}>
                         <Form.Group controlId="id">
-                            <Form.Label>ID da Ordem de Serviço</Form.Label>
+                            <Form.Label className="fw-semibold">ID da Ordem de Serviço</Form.Label>
                             <Form.Control
                                 type="text"
                                 value={ordemServico.id || ''}
                                 readOnly={!isAdmin}
                                 disabled={!isAdmin}
                                 className={!isAdmin ? 'bg-light' : ''}
+                                size="sm"
                             />
                             {!isAdmin && (
                                 <Form.Text className="text-muted">
-                                    Apenas administradores podem alterar o ID
+                                    <small>Apenas administradores podem alterar o ID</small>
                                 </Form.Text>
                             )}
                         </Form.Group>
                     </Col>
-                    <Col md={6}>
+                    <Col md={6} sm={12}>
                         <Form.Group controlId="vendedor">
-                            <Form.Label>Vendedor</Form.Label>
+                            <Form.Label className="fw-semibold">Vendedor</Form.Label>
                             <CaixaSelecaoPesquisavel
                                 dados={vendedores}
                                 campoChave="id"
@@ -810,12 +752,15 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Col>
                 </Row>
 
-                {/* Linha 2: Cliente e Pagamento */}
-                <Row className="mb-3">
-                    <Col md={6}>
+                {/* Seção 2: Cliente, Pagamento e Data de Entrega */}
+                <Row className="mb-4">
+                    <Col md={4} sm={12}>
                         <Form.Group controlId="cliente">
-                            <Form.Label>Cliente *</Form.Label>
-                            <div style={faltandoCampos.includes('cliente') ? { border: '2px solid red', borderRadius: 4, padding: 2 } : {}}>
+                            <Form.Label className="fw-semibold">Cliente (Bling) *</Form.Label>
+                            <div 
+                                className={`cliente-search-container ${ordemServico.cliente ? 'cliente-selected' : ''}`}
+                                style={faltandoCampos.includes('cliente') ? { border: '2px solid red', borderRadius: 4, padding: 2 } : {}}
+                            >
                                 <ClienteSearchAdvanced
                                     onClienteSelect={handleClienteSelect}
                                     selectedCliente={ordemServico.cliente}
@@ -823,9 +768,9 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             </div>
                         </Form.Group>
                     </Col>
-                    <Col md={6}>
+                    <Col md={4} sm={12}>
                         <Form.Group controlId="formaPagamento">
-                            <Form.Label>Pagamento</Form.Label>
+                            <Form.Label className="fw-semibold">Pagamento</Form.Label>
                             <CaixaSelecaoPesquisavel
                                 dados={formasPagamento}
                                 campoChave="id"
@@ -837,29 +782,26 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             />
                         </Form.Group>
                     </Col>
-                </Row>
-
-                {/* Linha 3: Data de Entrega */}
-                <Row className="mb-3">
-                    <Col md={12} sm={12} xs={12}>
+                    <Col md={4} sm={12}>
                         <Form.Group controlId="dataEntrega">
-                            <Form.Label>Data de Entrega</Form.Label>
+                            <Form.Label className="fw-semibold">Data de Entrega</Form.Label>
                             <Form.Control
                                 type="date"
                                 name="dataEntrega"
                                 value={toInputDateString(ordemServico.dataEntrega)}
                                 onChange={handleInputChange}
+                                size="sm"
                                 style={faltandoCampos.includes('dataEntrega') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
                 </Row>
 
-                {/* Linha 4: Modelo de Equipamento, Número de Série e Fabricante */}
-                <Row className="mb-3">
-                    <Col md={4}>
+                {/* Seção 3: Modelo de Equipamento, Número de Série e Fabricante */}
+                <Row className="mb-4">
+                    <Col md={4} sm={12}>
                         <Form.Group controlId="modeloEquipamento">
-                            <Form.Label>Modelo do Equipamento</Form.Label>
+                            <Form.Label className="fw-semibold">Modelo de Equipamento *</Form.Label>
                             <CaixaSelecaoPesquisavel
                                 dados={modelos}
                                 campoChave="id"
@@ -871,21 +813,23 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={4}>
+                    <Col md={4} sm={12}>
                         <Form.Group controlId="numeroSerie">
-                            <Form.Label>Número de Série</Form.Label>
+                            <Form.Label className="fw-semibold">Número de Série</Form.Label>
                             <Form.Control
                                 type="text"
                                 name="numeroSerie"
                                 value={ordemServico.numeroSerie || ''}
                                 onChange={handleInputChange}
+                                size="sm"
+                                placeholder="Ex: ABC123456"
                                 style={faltandoCampos.includes('numeroSerie') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={4}>
+                    <Col md={4} sm={12}>
                         <Form.Group controlId="fabricante">
-                            <Form.Label>Fabricante</Form.Label>
+                            <Form.Label className="fw-semibold">Fabricante</Form.Label>
                             <CaixaSelecaoPesquisavel
                                 dados={fabricantes}
                                 campoChave="id"
@@ -899,45 +843,85 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Col>
                 </Row>
 
-                {/* Linha 5: Defeito Alegado e Informações Confidenciais */}
-                <Row className="mb-3">
-                    <Col md={6}>
+                {/* Seção 4: Defeito Alegado e Informações Confidenciais */}
+                <Row className="mb-4">
+                    <Col md={6} sm={12}>
                         <Form.Group controlId="defeitoAlegado">
-                            <Form.Label>Defeito Alegado e Considerações</Form.Label>
+                            <Form.Label className="fw-semibold">Defeito Alegado e Considerações *</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 name="defeitoAlegado"
                                 value={ordemServico.defeitoAlegado || ''}
                                 onChange={handleInputChange}
-                                style={{
-                                    height: '100px',
-                                    ...(faltandoCampos.includes('defeitoAlegado') ? { border: '2px solid red' } : {})
-                                }}
+                                rows={4}
+                                placeholder="Descreva o defeito alegado pelo cliente..."
+                                style={faltandoCampos.includes('defeitoAlegado') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={6}>
+                    <Col md={6} sm={12}>
                         <Form.Group controlId="informacoesConfidenciais">
-                            <Form.Label>Informações Confidenciais</Form.Label>
+                            <Form.Label className="fw-semibold">Informações Confidenciais</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 name="informacoesConfidenciais"
-                                style={{ 
-                                    height: '100px',
-                                    ...(faltandoCampos.includes('informacoesConfidenciais') ? { border: '2px solid red' } : {})
-                                }}
+                                rows={4}
+                                placeholder="Informações internas ou observações confidenciais..."
                                 value={ordemServico.informacoesConfidenciais || ''}
                                 onChange={handleInputChange}
+                                style={faltandoCampos.includes('informacoesConfidenciais') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
                 </Row>
 
-                {/* Linha 6: Nível de Urgência, Tipo de Lacre e Tipo de Análise */}
-                <Row className="mb-3">
-                    <Col md={4}>
+                {/* Seção 5: Transporte e Valor */}
+                <Row className="mb-4">
+                    <Col md={3} sm={6} xs={12}>
+                        <Form.Group controlId="transporte">
+                            <Form.Label className="fw-semibold">Transporte *</Form.Label>
+                            <Form.Select
+                                name="transporteCifFob"
+                                value={ordemServico.transporteCifFob || ''}
+                                onChange={handleInputChange}
+                                style={faltandoCampos.includes('transporteCifFob') ? { border: '2px solid red' } : {}}
+                            >
+                                <option value="">Selecione...</option>
+                                <option value="FOB">FOB</option>
+                                <option value="CIF">CIF</option>
+                            </Form.Select>
+                        </Form.Group>
+                    </Col>
+                    <Col md={3} sm={6} xs={12}>
+                        <CampoValor
+                            label="Valor *"
+                            name="valor"
+                            value={ordemServico.valor || ''}
+                            onChange={handleInputChange}
+                            error={faltandoCampos.includes('valor')}
+                        />
+                    </Col>
+                    <Col md={6} xs={12}>
+                        <ComprovanteUploadMelhorado
+                            label="Comprovante de Aprovação"
+                            comprovanteFile={comprovanteFile}
+                            comprovantePreview={comprovantePreview}
+                            onFileChange={handleComprovanteChange}
+                            onRemove={() => {
+                                setComprovanteFile(null);
+                                setComprovantePreview(null);
+                                setOrdemServico({...ordemServico, comprovanteAprovacao: null});
+                            }}
+                            error={faltandoCampos.includes('comprovanteAprovacao')}
+                        />
+                    </Col>
+                </Row>
+
+                {/* Seção 6: Nível de Urgência, Tipo de Lacre e Tipo de Análise */}
+                <Row className="mb-4">
+                    <Col md={4} sm={6} xs={12}>
                         <Form.Group controlId="urgencia">
-                            <Form.Label>Nível de Urgência</Form.Label>
+                            <Form.Label className="fw-semibold">Nível de Urgência</Form.Label>
                             <CaixaSelecaoPesquisavel
                                 dados={urgencias}
                                 campoChave="id"
@@ -949,9 +933,9 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={4}>
+                    <Col md={4} sm={6} xs={12}>
                         <Form.Group controlId="tipoLacre">
-                            <Form.Label>Tipo de Lacre</Form.Label>
+                            <Form.Label className="fw-semibold">Tipo de Lacre</Form.Label>
                             <CaixaSelecaoPesquisavel
                                 dados={tiposLacre}
                                 campoChave="id"
@@ -963,9 +947,9 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={4}>
+                    <Col md={4} sm={12} xs={12}>
                         <Form.Group controlId="tipoAnalise">
-                            <Form.Label>Tipo de Análise</Form.Label>
+                            <Form.Label className="fw-semibold">Tipo de Análise</Form.Label>
                             <CaixaSelecaoPesquisavel
                                 dados={tiposAnalise}
                                 campoChave="id"
@@ -979,10 +963,10 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Col>
                 </Row>
 
-                <Row className="mb-3">
-                    <Col md={6}>
+                <Row className="mb-4">
+                    <Col md={6} sm={12}>
                         <Form.Group controlId="tipoLimpeza">
-                            <Form.Label>Tipo de Limpeza</Form.Label>
+                            <Form.Label className="fw-semibold">Tipo de Limpeza</Form.Label>
                             <CaixaSelecaoPesquisavel
                                 dados={tiposLimpeza}
                                 campoChave="id"
@@ -994,9 +978,9 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={6}>
+                    <Col md={6} sm={12}>
                         <Form.Group controlId="tipoTransporte">
-                            <Form.Label>Tipo de Transporte</Form.Label>
+                            <Form.Label className="fw-semibold">Tipo de Transporte</Form.Label>
                             <CaixaSelecaoPesquisavel
                                 dados={tiposTransporte}
                                 campoChave="id"
@@ -1123,39 +1107,25 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Col>
                 </Row>
 
-                {/* Linha 10: Dias para o Reparo, Valor e Situação/Etapa */}
-                <Row className="mb-3">
-                    <Col md={4} sm={12} xs={12}>
+                {/* Seção 7: Dias para o Reparo e Situação/Etapa */}
+                <Row className="mb-4">
+                    <Col md={4} sm={6} xs={12}>
                         <Form.Group controlId="diasReparo">
-                            <Form.Label>Dias para o Reparo</Form.Label>
+                            <Form.Label className="fw-semibold">Dias para o Reparo</Form.Label>
                             <Form.Control
                                 type="text"
                                 name="diasReparo"
                                 value={ordemServico.diasReparo || ''}
                                 onChange={handleInputChange}
                                 placeholder="Ex: 5"
+                                size="sm"
                                 style={faltandoCampos.includes('diasReparo') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={4} sm={12} xs={12}>
-                        <Form.Group controlId="valor">
-                            <Form.Label>Valor</Form.Label>
-                            <Form.Control
-                                type="number"
-                                name="valor"
-                                value={ordemServico.valor === 0 || ordemServico.valor ? ordemServico.valor : ''}
-                                onChange={handleInputChange}
-                                step="0.01"
-                                min="0"
-                                placeholder="0,00"
-                                style={faltandoCampos.includes('valor') ? { border: '2px solid red' } : {}}
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col md={4} sm={12} xs={12}>
+                    <Col md={4} sm={6} xs={12}>
                         <Form.Group controlId="etapaId">
-                            <Form.Label>Situação/Etapa</Form.Label>
+                            <Form.Label className="fw-semibold">Situação/Etapa</Form.Label>
                             <CaixaSelecaoPesquisavel
                                 dados={etapasOS}
                                 campoChave="id"
@@ -1166,6 +1136,9 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 style={faltandoCampos.includes('etapaId') ? { border: '2px solid red' } : {}}
                             />
                         </Form.Group>
+                    </Col>
+                    <Col md={4} sm={12} xs={12}>
+                        {/* Espaço reservado para futura expansão */}
                     </Col>
                 </Row>
 
@@ -1276,18 +1249,16 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                         </Form.Group>
                     </Col>
                     <Col md={3}>
-                        <Form.Group controlId="comprovanteAprovacao">
-                            <Form.Label>Comprovante de Aprovação</Form.Label>
-                            <ComprovanteUpload
-                                arquivo={ordemServico.comprovanteAprovacao}
-                                onFileSelect={handleComprovanteSelect}
-                                onFileRemove={handleComprovanteRemove}
-                                disabled={!ordemServico.id}
-                                style={faltandoCampos.includes('comprovanteAprovacao') ? { border: '2px solid red' } : {}}
+                        <Form.Group controlId="notaFiscalAdicional">
+                            <Form.Label>Observações Adicionais</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                name="observacoesAdicionais"
+                                value={ordemServico.observacoesAdicionais || ''}
+                                onChange={handleInputChange}
+                                rows={2}
+                                placeholder="Observações adicionais sobre o transporte..."
                             />
-                            {!ordemServico.id && (
-                                <small className="text-muted d-block mt-1">Salve a OS primeiro para anexar o comprovante.</small>
-                            )}
                         </Form.Group>
                     </Col>
                 </Row>
@@ -1418,84 +1389,58 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                 {ordemServico.arquivosAnexados.length > 0 && (
                     <Row className="mb-3">
                         <Col>
-                            <ListaArquivosAnexados
-                                arquivos={ordemServico.arquivosAnexados}
-                                onRemoverArquivo={handleRemoverArquivo}
-                            />
+                            <h6 className="mb-3">
+                                <FaEye className="me-2" />
+                                Arquivos Anexados ({ordemServico.arquivosAnexados.length})
+                            </h6>
+                            <div className="d-flex flex-wrap gap-3">
+                                {ordemServico.arquivosAnexados.map((arquivo, index) => (
+                                    <AnexoViewer
+                                        key={index}
+                                        arquivo={arquivo}
+                                        onRemover={() => handleRemoverArquivo(arquivo)}
+                                        ordemServicoId={ordemServico.id}
+                                    />
+                                ))}
+                            </div>
                         </Col>
                     </Row>
                 )}
                 
-                {/* Botões de Ação */}
-                <Row className="mb-3">
-                    <Col md={8} className="d-flex align-items-center">
-                        <Button 
-                            type="submit" 
-                            variant="primary" 
-                            size="md"
-                            className="px-4 py-2 me-3"
-                        >
-                            <FaSave className="me-2" />
-                            {modoEdicao ? 'Atualizar OS' : 'Salvar Ordem de Serviço'}
-                        </Button>
-                    </Col>
-                    </Row>
-                )}
-
-                {/* Botão Salvar */}
-                <Row className="mb-3">
-                    <Col className="d-flex justify-content-center">
+                {/* Botões de Ação Otimizados */}
+                <Row className="mt-4 mb-3">
+                    <Col className="d-flex justify-content-center align-items-center gap-3 flex-wrap">
                         <Button 
                             type="submit" 
                             variant="primary" 
                             size="lg"
-                            className="px-4"
+                            className="px-4 py-2"
                         >
-                            <FaSave />
-                            Salvar OS
+                            <FaSave className="me-2" />
+                            {modoEdicao ? 'Atualizar OS' : 'Salvar Ordem de Serviço'}
                         </Button>
-                    </Col>
-                </Row>
-
-                <Row className="mt-3 d-flex justify-content-center">
-                    <Col xs="auto">
+                        
                         <Button
                             variant="outline-info"
-                            size="sm"
-                            className="px-2 me-2"
-                            onClick={testarValidacao}
-                        >
-                            Testar
->>>>>>> 153f7dff68df0911d789a58d52adf343f27db289
-                        </Button>
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={resetForm}
-                            className="px-3"
-                            title="Limpar formulário"
-                        >
-                            <FaTimes /> Limpar
-                        </Button>
-                    </Col>
-                    <Col md={4} className="text-end">
-                        <Button
-                            variant="outline-info"
-                            size="sm"
-                            className="me-2"
+                            size="md"
                             onClick={testarValidacao}
                             title="Verificar campos obrigatórios"
                         >
+                            <FaVial className="me-2" />
                             Validar Campos
                         </Button>
-                        <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={testarAnexos}
-                            title="Testar sistema de anexos"
-                        >
-                            Testar Anexos
-                        </Button>
+                        
+                        {!modoEdicao && (
+                            <Button
+                                variant="outline-danger"
+                                size="md"
+                                onClick={resetForm}
+                                title="Limpar formulário"
+                            >
+                                <FaTimes className="me-2" />
+                                Limpar
+                            </Button>
+                        )}
                     </Col>
                 </Row>
             </Form>

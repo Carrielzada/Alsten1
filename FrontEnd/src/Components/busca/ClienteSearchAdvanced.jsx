@@ -53,6 +53,9 @@ const ClienteSearchAdvanced = ({ onClienteSelect, selectedCliente = null }) => {
 
     const handleClienteSelect = (cliente) => {
         onClienteSelect(cliente);
+        // Limpar campo de pesquisa após seleção para evitar confusão
+        setSearchTerm('');
+        setSearchResults([]);
     };
 
     const handleViewDetails = (cliente) => {
