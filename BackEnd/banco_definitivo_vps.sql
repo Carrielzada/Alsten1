@@ -1,8 +1,9 @@
 -- =====================================================
--- SCRIPT COMPLETO PARA CRIAR O BANCO DE DADOS ALSTEN_OS
+-- BANCO DE DADOS ALSTEN_OS - VERSÃO DEFINITIVA VPS
 -- =====================================================
--- Este arquivo contém todos os comandos SQL necessários para
--- criar o banco de dados desde o início, mantendo os dados básicos
+-- Este arquivo foi criado baseado na estrutura REAL da VPS
+-- Data: 2025-01-17
+-- Todas as tabelas e estruturas conferidas diretamente no MySQL da VPS
 -- =====================================================
 
 -- Criar e usar o banco de dados
@@ -16,35 +17,45 @@ USE alsten_os;
 -- Tabela de papéis (roles)
 DROP TABLE IF EXISTS roles;
 CREATE TABLE roles (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100) NOT NULL
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
 ) COMMENT = 'Níveis de acesso dos usuários';
 
 -- Inserção de papéis
 INSERT INTO roles (id, name) VALUES
-  (1, 'Admin'),
-  (2, 'Diretoria'),
-  (3, 'PCM'),
-  (4, 'Comercial'),
-  (5, 'Logística'),
-  (6, 'Técnico');
+    (1, 'Admin'),
+    (2, 'Diretoria'),
+    (3, 'PCM'),
+    (4, 'Comercial'),
+    (5, 'Logística'),
+    (6, 'Técnico');
 
 -- Tabela de usuários
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nome VARCHAR(255) DEFAULT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
-  role_id INT DEFAULT NULL,
-  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (role_id) REFERENCES roles(id)
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) DEFAULT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role_id INT DEFAULT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (role_id) REFERENCES roles(id)
 ) COMMENT = 'Usuários cadastrados no sistema, com vínculo à role';
 
 -- Inserir usuário administrador padrão
 INSERT INTO users (id, nome, email, password, role_id) VALUES
 (1, 'Admin', 'admin@gmail.com', 'admin123', 1);
+
+-- Tabela de tokens de autenticação
+DROP TABLE IF EXISTS tbl_token;
+CREATE TABLE tbl_token (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    access_token TEXT NOT NULL,
+    refresh_token TEXT NOT NULL,
+    expires_in INT NOT NULL,
+    obtained_at DATETIME NOT NULL
+) COMMENT = 'Tokens de autenticação OAuth/API';
 
 -- =====================================================
 -- TABELAS AUXILIARES DO SISTEMA
@@ -187,6 +198,14 @@ CREATE TABLE defeito_alegado_padrao (
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabela de defeitos alegados personalizados
+DROP TABLE IF EXISTS defeito_alegado;
+CREATE TABLE defeito_alegado (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(50) NOT NULL,
+    defeito VARCHAR(500) NOT NULL
+) COMMENT = 'Defeitos personalizados específicos para cada OS';
+
 -- Tabela de serviços padrão
 DROP TABLE IF EXISTS servico_padrao;
 CREATE TABLE servico_padrao (
@@ -195,6 +214,14 @@ CREATE TABLE servico_padrao (
     servico TEXT NOT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Tabela de serviços realizados personalizados
+DROP TABLE IF EXISTS servico_realizado;
+CREATE TABLE servico_realizado (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(50) NOT NULL,
+    servico_realizado VARCHAR(500) NOT NULL
+) COMMENT = 'Serviços personalizados executados em cada OS';
 
 -- Tabela de dias de pagamento
 DROP TABLE IF EXISTS dias_pagamento;
@@ -213,6 +240,13 @@ CREATE TABLE checklist_item (
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabela de tipos de checklist
+DROP TABLE IF EXISTS checklist;
+CREATE TABLE checklist (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    checklist VARCHAR(50) NOT NULL
+) COMMENT = 'Tipos de checklist disponíveis';
+
 -- Tabela de etapas da OS
 DROP TABLE IF EXISTS etapa_os;
 CREATE TABLE etapa_os (
@@ -222,24 +256,24 @@ CREATE TABLE etapa_os (
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabela principal de ordem de serviço
+-- Tabela principal de ordem de serviço (ESTRUTURA EXATA DA VPS)
 DROP TABLE IF EXISTS ordem_servico;
 CREATE TABLE ordem_servico (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    cliente VARCHAR(18) NOT NULL, -- CNPJ do cliente
-    modeloEquipamento INT,
-    defeitoAlegado TEXT NOT NULL,
-    numeroSerie VARCHAR(100),
-    fabricante INT,
     urgencia_id INT,
     tipo_analise_id INT,
     tipo_lacre_id INT,
     tipo_limpeza_id INT,
     tipo_transporte_id INT,
     pagamento_id INT,
-    etapa VARCHAR(50) DEFAULT 'Previsto',
-    dataCriacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    arquivosAnexados JSON,
+    cliente VARCHAR(255), -- ID do cliente na API do Bling
+    modeloEquipamento VARCHAR(255), -- Nome/ID do modelo
+    numeroSerie VARCHAR(255),
+    dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    defeitoAlegado VARCHAR(255),
+    fabricante VARCHAR(255), -- Nome do fabricante
+    etapa VARCHAR(255),
+    arquivosAnexados VARCHAR(255),
     vendedor_id INT,
     dias_pagamento_id INT,
     data_entrega DATE,
@@ -248,9 +282,9 @@ CREATE TABLE ordem_servico (
     data_equipamento_pronto DATE,
     informacoes_confidenciais TEXT,
     checklist_items JSON, -- Array de IDs dos itens do checklist
-    agendado BOOLEAN DEFAULT FALSE,
-    possui_acessorio BOOLEAN DEFAULT FALSE,
-    tipo_transporte_texto VARCHAR(100), -- Campo de texto para tipo de transporte
+    agendado TINYINT(1) DEFAULT 0,
+    possui_acessorio TINYINT(1) DEFAULT 0,
+    tipo_transporte_texto VARCHAR(100),
     transporte_cif_fob ENUM('CIF', 'FOB'),
     pedido_compras VARCHAR(100),
     defeito_constatado TEXT,
@@ -258,10 +292,9 @@ CREATE TABLE ordem_servico (
     valor DECIMAL(10,2) DEFAULT 0.00,
     etapa_id INT,
     comprovante_aprovacao VARCHAR(255),
+    nota_fiscal VARCHAR(50),
     
     -- Foreign Keys
-    FOREIGN KEY (modeloEquipamento) REFERENCES modelo(id),
-    FOREIGN KEY (fabricante) REFERENCES fabricante(id),
     FOREIGN KEY (urgencia_id) REFERENCES urgencia(id),
     FOREIGN KEY (tipo_analise_id) REFERENCES tipo_analise(id),
     FOREIGN KEY (tipo_lacre_id) REFERENCES tipo_lacre(id),
@@ -271,7 +304,7 @@ CREATE TABLE ordem_servico (
     FOREIGN KEY (vendedor_id) REFERENCES users(id),
     FOREIGN KEY (dias_pagamento_id) REFERENCES dias_pagamento(id),
     FOREIGN KEY (etapa_id) REFERENCES etapa_os(id)
-);
+) COMMENT = 'Tabela principal de ordens de serviço - estrutura baseada na VPS';
 
 -- Tabela de logs de ordem de serviço
 DROP TABLE IF EXISTS ordem_servico_log;
@@ -336,6 +369,14 @@ INSERT INTO checklist_item (item) VALUES
 ('Lacrado'),
 ('Etiquetado');
 
+-- Inserir tipos de checklist (baseado nos dados da VPS)
+INSERT INTO checklist (checklist) VALUES 
+('Drive'),
+('Básico'),
+('Completo'),
+('Especial'),
+('Personalizado');
+
 -- Inserir etapas da OS
 INSERT INTO etapa_os (nome, descricao) VALUES 
 ('PREVISTO', 'O responsável pela logística inclui a OS nessa etapa quando o cliente envia um equipamento para reparo'),
@@ -364,8 +405,6 @@ SHOW TABLES;
 SELECT 'Contagem de registros:' as status;
 SELECT 'users' as tabela, COUNT(*) as total FROM users UNION ALL
 SELECT 'roles' as tabela, COUNT(*) as total FROM roles UNION ALL
-SELECT 'cliente_pf' as tabela, COUNT(*) as total FROM cliente_pf UNION ALL
-SELECT 'cliente_pj' as tabela, COUNT(*) as total FROM cliente_pj UNION ALL
 SELECT 'fabricante' as tabela, COUNT(*) as total FROM fabricante UNION ALL
 SELECT 'modelo' as tabela, COUNT(*) as total FROM modelo UNION ALL
 SELECT 'urgencia' as tabela, COUNT(*) as total FROM urgencia UNION ALL
@@ -376,13 +415,18 @@ SELECT 'tipo_transporte' as tabela, COUNT(*) as total FROM tipo_transporte UNION
 SELECT 'pagamento' as tabela, COUNT(*) as total FROM pagamento UNION ALL
 SELECT 'etapa_os' as tabela, COUNT(*) as total FROM etapa_os UNION ALL
 SELECT 'checklist_item' as tabela, COUNT(*) as total FROM checklist_item UNION ALL
+SELECT 'checklist' as tabela, COUNT(*) as total FROM checklist UNION ALL
 SELECT 'dias_pagamento' as tabela, COUNT(*) as total FROM dias_pagamento UNION ALL
 SELECT 'defeito_alegado_padrao' as tabela, COUNT(*) as total FROM defeito_alegado_padrao UNION ALL
 SELECT 'servico_padrao' as tabela, COUNT(*) as total FROM servico_padrao;
 
 -- =====================================================
--- SCRIPT CONCLUÍDO COM SUCESSO!
+-- BANCO DEFINITIVO CRIADO COM SUCESSO!
 -- =====================================================
--- O banco de dados alsten_os foi criado com todas as tabelas
--- e dados básicos necessários para o funcionamento do sistema.
+-- Este arquivo contém EXATAMENTE a estrutura da VPS
+-- - Todas as tabelas existentes na VPS estão aqui
+-- - Removidas tabelas cliente_pf/cliente_pj (usar API Bling)
+-- - Estrutura ordem_servico idêntica à VPS
+-- - Campos nota_fiscal e comprovante_aprovacao incluídos
+-- - Tabelas novas: checklist, defeito_alegado, servico_realizado, tbl_token
 -- =====================================================

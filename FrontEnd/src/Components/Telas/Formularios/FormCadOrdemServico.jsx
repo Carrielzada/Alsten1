@@ -27,22 +27,106 @@ import ClienteSearchAdvanced from '../../busca/ClienteSearchAdvanced';
 import '../../busca/ClienteSelector.css';
 import './FormCadOrdemServico.css';
 
-// Mapeamento dos campos obrigatórios por etapa (usando nomes exatos do banco de dados)
+// Mapeamento dos campos obrigatórios por etapa (baseado nas regras detalhadas do usuário)
 const obrigatoriosPorEtapa = {
-    "PREVISTO": ["cliente", "modeloEquipamento", "defeitoAlegado"],
-    "RECEBIDO": ["numeroSerie", "arquivosAnexados", "fabricante", "dataEntrega"],
-    "EM ANÁLISE": ["tipoAnalise", "checklistItems", "tipoLimpeza", "defeitoConstatado", "servicoRealizar", "diasReparo", "informacoesConfidenciais"],
+    // PREVISTO: nome do cliente, modelo do equipamento, fabricante e defeito alegado
+    "PREVISTO": ["cliente", "modeloEquipamento", "fabricante", "defeitoAlegado"],
+    
+    // RECEBIDO: fotos do equipamento anexadas (arquivosAnexados)
+    "RECEBIDO": ["arquivosAnexados"],
+    
+    // EM ANÁLISE: tipo de análise, checklist, tipo de limpeza, defeito constatado, serviço a ser realizado e os dias para reparo
+    "EM ANÁLISE": ["tipoAnalise", "checklistItems", "tipoLimpeza", "defeitoConstatado", "servicoRealizar", "diasReparo"],
+    
+    // ANALISADO: Setor comercial segue com orçamento (valor)
     "ANALISADO": ["valor"],
-    "AGUARDANDO APROVAÇÃO": ["pedidoCompras", "comprovanteAprovacao", "tipoTransporte", "transporteCifFob"],
-    "PRÉ-APROVADO": [],
-    "APROVADO": [],
+    
+    // AGUARDANDO APROVAÇÃO: Comprovante obrigatório + informações comerciais
+    "AGUARDANDO APROVAÇÃO": ["comprovanteAprovacao"],
+    
+    // PRÉ-APROVADO: Comprovante obrigatório (aprovação com pendência)
+    "PRÉ-APROVADO": ["comprovanteAprovacao"],
+    
+    // APROVADO: Comprovante obrigatório (aprovação sem pendência)
+    "APROVADO": ["comprovanteAprovacao"],
+    
+    // REPROVADO: Comprovante obrigatório (reprovação)
     "REPROVADO": ["comprovanteAprovacao"],
-    "AGUARDANDO INFORMAÇÃO": ["comprovanteAprovacao", "pedidoCompras"],
+    
+    // AGUARDANDO INFORMAÇÃO: Para cobrar pedido ou pagamento
+    "AGUARDANDO INFORMAÇÃO": [],
+    
+    // SEM CUSTO: Não é necessário anexo de comprovante
     "SEM CUSTO": [],
+    
+    // EXPEDIÇÃO: Técnico finalizou reparo e comercial finalizou negociação
     "EXPEDIÇÃO": [],
+    
+    // DESPACHO: Logística segue com retorno do equipamento
     "DESPACHO": [],
+    
+    // CONCLUÍDO: Logística conclui quando equipamento é enviado
     "CONCLUÍDO": [],
 };
+
+// Controle de acesso por nível de usuário (baseado nas roles do sistema)
+const acessoPorNivel = {
+    // Role 1 - Admin/Diretoria: Acesso total
+    1: {
+        etapasPermitidas: ["PREVISTO", "RECEBIDO", "EM ANÁLISE", "ANALISADO", "AGUARDANDO APROVAÇÃO", "PRÉ-APROVADO", "APROVADO", "REPROVADO", "AGUARDANDO INFORMAÇÃO", "SEM CUSTO", "EXPEDIÇÃO", "DESPACHO", "CONCLUÍDO"],
+        podeExcluir: true,
+        podeCriar: true,
+        podeEditarTudo: true
+    },
+    // Role 2 - Diretoria: Acesso total (mesmo que admin)
+    2: {
+        etapasPermitidas: ["PREVISTO", "RECEBIDO", "EM ANÁLISE", "ANALISADO", "AGUARDANDO APROVAÇÃO", "PRÉ-APROVADO", "APROVADO", "REPROVADO", "AGUARDANDO INFORMAÇÃO", "SEM CUSTO", "EXPEDIÇÃO", "DESPACHO", "CONCLUÍDO"],
+        podeExcluir: true,
+        podeCriar: true,
+        podeEditarTudo: true
+    },
+    // Role 3 - PCM: Todas as etapas exceto exclusão
+    3: {
+        etapasPermitidas: ["PREVISTO", "RECEBIDO", "EM ANÁLISE", "ANALISADO", "AGUARDANDO APROVAÇÃO", "PRÉ-APROVADO", "APROVADO", "REPROVADO", "AGUARDANDO INFORMAÇÃO", "SEM CUSTO", "EXPEDIÇÃO", "DESPACHO", "CONCLUÍDO"],
+        podeExcluir: false,
+        podeCriar: true,
+        podeEditarTudo: true
+    },
+    // Role 4 - Comercial: Todas as etapas exceto exclusão
+    4: {
+        etapasPermitidas: ["PREVISTO", "RECEBIDO", "EM ANÁLISE", "ANALISADO", "AGUARDANDO APROVAÇÃO", "PRÉ-APROVADO", "APROVADO", "REPROVADO", "AGUARDANDO INFORMAÇÃO", "SEM CUSTO", "EXPEDIÇÃO", "DESPACHO", "CONCLUÍDO"],
+        podeExcluir: false,
+        podeCriar: true,
+        podeEditarTudo: true
+    },
+    // Role 5 - Logística: OS de terceiro, previsto, recebido, expedição, despacho e concluído
+    5: {
+        etapasPermitidas: ["PREVISTO", "RECEBIDO", "EXPEDIÇÃO", "DESPACHO", "CONCLUÍDO"],
+        podeExcluir: false,
+        podeCriar: true, // Pode criar OS de terceiro
+        podeEditarTudo: false
+    },
+    // Role 6 - Técnico: Em análise, analisado, expedição e incluir OS de terceiro
+    6: {
+        etapasPermitidas: ["EM ANÁLISE", "ANALISADO", "EXPEDIÇÃO"],
+        podeExcluir: false,
+        podeCriar: true, // Pode criar OS de terceiro
+        podeEditarTudo: false
+    }
+};
+
+// Função para verificar se o usuário tem acesso a uma etapa
+function usuarioPodeAcessarEtapa(userRole, etapa) {
+    const acesso = acessoPorNivel[userRole];
+    if (!acesso) return false;
+    return acesso.etapasPermitidas.includes(etapa);
+}
+
+// Função para obter etapas permitidas para o usuário
+function getEtapasPermitidas(userRole) {
+    const acesso = acessoPorNivel[userRole];
+    return acesso ? acesso.etapasPermitidas : [];
+}
 
 // Lista ordenada das etapas conforme o fluxo do processo
 const ordemEtapas = [
@@ -209,6 +293,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     const [comprovanteFile, setComprovanteFile] = useState(null);
     const [comprovantePreview, setComprovantePreview] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false); // Para controlar se pode editar o ID
+    const [userRole, setUserRole] = useState(null); // Nível de acesso do usuário
+    const [etapasPermitidas, setEtapasPermitidas] = useState([]); // Etapas que o usuário pode acessar
     
     // Novos estados para os novos campos
     const [vendedores, setVendedores] = useState([]);
@@ -354,8 +440,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     }, [modoEdicao, ordemServicoEmEdicao]);
 
     useEffect(() => {
-        // Verificar se o usuário é admin
-        const checkAdminStatus = () => {
+        // Verificar nível do usuário e definir permissões
+        const checkUserPermissions = () => {
             const usuarioLogadoStr = localStorage.getItem('usuarioLogado');
             if (usuarioLogadoStr) {
                 try {
@@ -363,14 +449,20 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     const token = usuarioLogado?.token;
                     if (token) {
                         const payload = JSON.parse(atob(token.split('.')[1]));
-                        setIsAdmin(payload.role === 1); // Role 1 = Admin
+                        const role = payload.role;
+                        
+                        setUserRole(role);
+                        setIsAdmin(role === 1 || role === 2); // Admin ou Diretoria
+                        setEtapasPermitidas(getEtapasPermitidas(role));
+                        
+                        console.log('Usuário logado - Role:', role, 'Etapas permitidas:', getEtapasPermitidas(role));
                     }
                 } catch (error) {
                     console.error('Erro ao decodificar token:', error);
                 }
             }
         };
-        checkAdminStatus();
+        checkUserPermissions();
     }, []);
 
     // 📦 Definir vendedor automaticamente baseado no usuário logado (se não for edição)
@@ -1191,9 +1283,18 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Col>
                     <Col md={4} sm={6} xs={12}>
                         <Form.Group controlId="etapaId">
-                            <Form.Label className="fw-semibold">Situação/Etapa</Form.Label>
+                            <Form.Label className="fw-semibold">
+                                Situação/Etapa
+                                {userRole && (
+                                    <small className="text-muted ms-2">
+                                        (Nível: {userRole === 1 ? 'Admin' : userRole === 2 ? 'Diretoria' : userRole === 3 ? 'PCM' : userRole === 4 ? 'Comercial' : userRole === 5 ? 'Logística' : userRole === 6 ? 'Técnico' : 'Usuário'})
+                                    </small>
+                                )}
+                            </Form.Label>
                             <CaixaSelecaoPesquisavel
-                                dados={etapasOS}
+                                dados={etapasOS.filter(etapa => 
+                                    userRole ? usuarioPodeAcessarEtapa(userRole, etapa.nome) : true
+                                )}
                                 campoChave="id"
                                 campoExibir="nome"
                                 valorSelecionado={ordemServico.etapaId?.id || ''}
@@ -1201,6 +1302,11 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 name="etapaId"
                                 style={faltandoCampos.includes('etapaId') ? { border: '2px solid red' } : {}}
                             />
+                            {userRole && etapasPermitidas.length > 0 && (
+                                <Form.Text className="text-muted">
+                                    <small>Etapas disponíveis: {etapasPermitidas.join(', ')}</small>
+                                </Form.Text>
+                            )}
                         </Form.Group>
                     </Col>
                     <Col md={4} sm={12} xs={12}>
@@ -1469,8 +1575,22 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                     <AnexoViewer
                                         key={index}
                                         arquivo={arquivo}
-                                        onRemover={() => handleRemoverArquivo(arquivo)}
-                                        ordemServicoId={ordemServico.id}
+                                        onDelete={() => handleRemoverArquivo(arquivo)}
+                                        onView={(arq) => {
+                                            // Abrir arquivo em nova aba
+                                            const url = `${process.env.REACT_APP_API_URL}/uploads/${arq}`;
+                                            window.open(url, '_blank');
+                                        }}
+                                        onDownload={(arq) => {
+                                            // Download do arquivo
+                                            const url = `${process.env.REACT_APP_API_URL}/uploads/${arq}`;
+                                            const link = document.createElement('a');
+                                            link.href = url;
+                                            link.download = arq;
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        }}
                                     />
                                 ))}
                             </div>

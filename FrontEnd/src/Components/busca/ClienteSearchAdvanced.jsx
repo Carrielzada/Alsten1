@@ -105,33 +105,69 @@ const ClienteSearchAdvanced = ({ onClienteSelect, selectedCliente = null }) => {
         </div>
     );
 
-    if (!isAuthenticated) {
-        return (
-            <div className="cliente-search-advanced auth-required">
-                <div className="auth-message">
-                    <FaUser className="icon" />
-                    <span>É necessário fazer login no Bling para buscar clientes.</span>
-                </div>
-                <button onClick={authenticate} disabled={authLoading} className="btn-auth">
-                    {authLoading ? 'Carregando...' : 'Fazer Login no Bling'}
-                </button>
-                <ToastContainer position="top-right" autoClose={3000} hideProgressBar theme="colored" />
-            </div>
-        );
-    }
+    // CORREÇÃO: Sempre mostrar a interface, mas indicar quando não autenticado
+    // if (!isAuthenticated) {
+    //     return (
+    //         <div className="cliente-search-advanced auth-required">
+    //             <div className="auth-message">
+    //                 <FaUser className="icon" />
+    //                 <span>É necessário fazer login no Bling para buscar clientes.</span>
+    //             </div>
+    //             <button onClick={authenticate} disabled={authLoading} className="btn-auth">
+    //                 {authLoading ? 'Carregando...' : 'Fazer Login no Bling'}
+    //             </button>
+    //             <ToastContainer position="top-right" autoClose={3000} hideProgressBar theme="colored" />
+    //         </div>
+    //     );
+    // }
 
     return (
         <div className="cliente-search-advanced">
+            {/* Aviso de autenticação se necessário */}
+            {!isAuthenticated && (
+                <div className="auth-warning" style={{
+                    backgroundColor: '#fff3cd',
+                    border: '1px solid #ffeaa7',
+                    borderRadius: '4px',
+                    padding: '8px 12px',
+                    marginBottom: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '14px',
+                    color: '#856404'
+                }}>
+                    <FaUser style={{ fontSize: '16px' }} />
+                    <span>Para buscar clientes, é necessário fazer login no Bling:</span>
+                    <button 
+                        onClick={authenticate} 
+                        disabled={authLoading}
+                        style={{
+                            padding: '4px 8px',
+                            fontSize: '12px',
+                            borderRadius: '3px',
+                            border: '1px solid #f39c12',
+                            backgroundColor: '#f39c12',
+                            color: 'white',
+                            cursor: authLoading ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        {authLoading ? 'Carregando...' : 'Fazer Login'}
+                    </button>
+                </div>
+            )}
+            
             <div className="search-bar-row">
                 <div className="search-bar">
                     <FaSearch className="search-icon" />
                     <input
                         type="text"
-                        placeholder="Buscar clientes por nome, documento, e-mail..."
+                        placeholder={isAuthenticated ? "Buscar clientes por nome, documento, e-mail..." : "Faça login no Bling para buscar clientes"}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         className="search-input"
                         autoComplete="off"
+                        disabled={!isAuthenticated}
                     />
                     {searchTerm && (
                         <button className="clear-btn" onClick={() => setSearchTerm('')} title="Limpar busca">
