@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { Form, Row, Col, Container, FloatingLabel } from "react-bootstrap";
-import Button from '../UI/Button';
+import Button from '../../UI/Button';
 import { ContextoUsuarioLogado } from "../../../App";
 import { gravarClientePF, alterarClientePF } from "../../../Services/clientePFService";
 import { FaSave, FaTimes } from "react-icons/fa";

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Form, Container, Row, Col, FloatingLabel } from 'react-bootstrap';
 import { FaSave, FaTimes } from 'react-icons/fa';
-import Button from '../UI/Button';
+import Button from '../../UI/Button';
 
 const FormCadastroLacre = (props) => {
   const [validado, setValidado] = useState(false);

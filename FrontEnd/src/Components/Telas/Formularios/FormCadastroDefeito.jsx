@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Form, Container, Row, Col, FloatingLabel } from 'react-bootstrap';
-import Button from '../UI/Button';
+import Button from '../../UI/Button';
 import { FaSave, FaTimes } from 'react-icons/fa';
 
 const FormCadastroDefeito = (props) => {

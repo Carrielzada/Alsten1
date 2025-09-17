@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import Button from '../UI/Button';
+import Button from '../../UI/Button';
 
 const FormUploadArquivo = ({ osId, onUploadSuccess }) => { // Adicionado osId como prop
     const [arquivoSelecionado, setArquivoSelecionado] = useState(null);
