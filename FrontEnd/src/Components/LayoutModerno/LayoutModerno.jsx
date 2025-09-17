@@ -8,6 +8,8 @@ import Rodape from '../Templates2/Rodape';
 const LayoutModerno = ({ children }) => {
   const [mostrarBarra, setMostrarBarra] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Lógica do breadcrumb removida - agora fica apenas no cabeçalho
 
   // Detecta se é mobile e ajusta sidebar automaticamente
   useEffect(() => {
@@ -59,7 +61,7 @@ const LayoutModerno = ({ children }) => {
         <BarraLateral 
           className={`${!mostrarBarra ? 'hidden' : ''} ${isMobile ? 'mobile' : ''}`} 
         />
-        <ConteudoPrincipal mostrarBarra={mostrarBarra} isMobile={isMobile} showBreadcrumb={true}>
+        <ConteudoPrincipal mostrarBarra={mostrarBarra} isMobile={isMobile}>
           {children}
         </ConteudoPrincipal>
       </div>

@@ -1,8 +1,7 @@
 import React from 'react';
 import './ConteudoPrincipal.css';
-import Breadcrumb from '../UI/Breadcrumb';
 
-const ConteudoPrincipal = ({ children, mostrarBarra, isMobile = false, showBreadcrumb = true }) => {
+const ConteudoPrincipal = ({ children, mostrarBarra, isMobile = false }) => {
   // Em mobile, nunca aplicar margem esquerda
   const marginLeft = isMobile ? '0' : (mostrarBarra ? '260px' : '0');
   
@@ -11,11 +10,7 @@ const ConteudoPrincipal = ({ children, mostrarBarra, isMobile = false, showBread
       className={`conteudo-principal ${!mostrarBarra ? 'sem-barra' : ''} ${isMobile ? 'mobile' : ''}`}
       style={{ marginLeft }}
     >
-      {showBreadcrumb && (
-        <div className="breadcrumb-container">
-          <Breadcrumb compact={isMobile} />
-        </div>
-      )}
+      {/* Breadcrumb removido - agora fica apenas no cabeçalho (Menu) */}
       <div className="content-wrapper">
         {children}
       </div>
