@@ -4,6 +4,7 @@ import Button from '../UI/Button';
 // import DashboardStats from '../UI/DashboardStats'; // Comentado: dados mock
 import { FaClipboardList, FaTools, FaFileAlt, FaUserCog, FaChartLine } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import './TelaBoasVindas.css';
 // Layout será fornecido pelo LayoutModerno no App.js - não importar aqui
 
 const TelaBoasVindas = () => {
@@ -112,15 +113,6 @@ const TelaBoasVindas = () => {
                 </div>
             </div>
 
-            <style jsx>{`
-                .hover-card {
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
-                }
-                .hover-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-                }
-            `}</style>
         </>
     );
 };
