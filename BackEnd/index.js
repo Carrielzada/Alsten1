@@ -61,8 +61,8 @@ app.use(
     })
 );
 
-// Lista de origens permitidas
-const whiteList = [
+// Lista de origens permitidas (pode ser sobrescrita por Environment Variable)
+const defaultWhiteList = [
     'http://localhost:3000', 
     'http://localhost:3001', 
     'http://localhost:5173',
@@ -71,9 +71,15 @@ const whiteList = [
     'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3000',
     'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3001',
     'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io',
-    'http://og4o08cscgos0kgkkogk0k84.31.97.151.181.sslip.io', // 👈 FRONTEND ATUAL!
-    'http://alsten.online',
+    'http://og4o08cscgos0kgkkogk0k84.31.97.151.181.sslip.io', // FRONTEND ATUAL
+    'http://alsten.online', // DOMÍNIO PERSONALIZADO HTTP
+    'https://alsten.online', // DOMÍNIO PERSONALIZADO HTTPS
 ];
+
+// Usar Environment Variable se disponível, senão usar lista padrão
+const whiteList = process.env.CORS_ORIGIN ? 
+    process.env.CORS_ORIGIN.split(',').map(url => url.trim()) : 
+    defaultWhiteList;
 
 const corsOptions = {
     origin: function (origin, callback) {
