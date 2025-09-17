@@ -62,6 +62,19 @@ export async function consultarUsuarios() {
     return handleResponse(response);
 }
 
+// 📦 Nova função para consultar apenas vendedores/técnicos - acessível por PCM
+export async function consultarVendedores() {
+    const token = getToken();
+    const response = await fetch(`${API_URL}/users/vendedores`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+    });
+    return handleResponse(response);
+}
+
 export async function deletarUsuario(id) {
     const token = getToken();
     const response = await fetch(`${API_URL}/users/${id}`, {

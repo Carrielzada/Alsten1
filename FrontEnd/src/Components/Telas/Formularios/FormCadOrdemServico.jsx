@@ -19,7 +19,7 @@ import checklistItemService from '../../../Services/checklistItemService';
 import etapaOSService from '../../../Services/etapaOSService';
 import servicoPadraoService from '../../../Services/servicoPadraoService';
 import { buscarDefeitosAlegados } from '../../../Services/defeitoAlegadoService';
-import { consultarUsuarios } from '../../../Services/usersService';
+import { consultarVendedores } from '../../../Services/usersService';
 import CampoValor from './CampoValor';
 import ComprovanteUploadMelhorado from './ComprovanteUploadMelhorado';
 import AnexoViewer from './AnexoViewer';
@@ -262,7 +262,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     buscarTiposLimpeza(),
                     buscarTiposTransporte(),
                     buscarPagamento(),
-                    consultarUsuarios(),
+                    consultarVendedores(),
                     diasPagamentoService.buscarDiasPagamento(),
                     checklistItemService.buscarChecklistItems(),
                     etapaOSService.buscarEtapasOS(),
@@ -380,6 +380,32 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         };
         checkAdminStatus();
     }, []);
+
+    // 📦 Definir vendedor automaticamente baseado no usuário logado (se não for edição)
+    useEffect(() => {
+        if (!modoEdicao && vendedores.length > 0 && !ordemServico.vendedor) {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const usuarioLogadoId = payload.id;
+                    
+                    // Encontrar o usuário logado na lista de vendedores
+                    const vendedorLogado = vendedores.find(vendedor => vendedor.id === usuarioLogadoId);
+                    
+                    if (vendedorLogado) {
+                        console.log('Definindo vendedor automaticamente:', vendedorLogado);
+                        setOrdemServico(prevState => ({
+                            ...prevState,
+                            vendedor: vendedorLogado
+                        }));
+                    }
+                } catch (error) {
+                    console.error('Erro ao decodificar token para definir vendedor:', error);
+                }
+            }
+        }
+    }, [vendedores, modoEdicao, ordemServico.vendedor]);
 
     const handleInputChange = (e) => {
         markDirty();
@@ -758,16 +784,35 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Col>
                     <Col md={6} sm={12}>
                         <Form.Group controlId="vendedor">
-                            <Form.Label className="fw-semibold">Vendedor</Form.Label>
-                            <CaixaSelecaoPesquisavel
-                                dados={vendedores}
-                                campoChave="id"
-                                campoExibir="nome"
-                                valorSelecionado={ordemServico.vendedor?.id || ''}
-                                onChange={handleSelectChange}
-                                name="vendedor"
-                                style={faltandoCampos.includes('vendedor') ? { border: '2px solid red' } : {}}
-                            />
+                            <Form.Label className="fw-semibold">
+                                Vendedor/Técnico {!isAdmin && '(Automatico)'}
+                            </Form.Label>
+                            {isAdmin ? (
+                                <CaixaSelecaoPesquisavel
+                                    dados={vendedores}
+                                    campoChave="id"
+                                    campoExibir="nome"
+                                    valorSelecionado={ordemServico.vendedor?.id || ''}
+                                    onChange={handleSelectChange}
+                                    name="vendedor"
+                                    style={faltandoCampos.includes('vendedor') ? { border: '2px solid red' } : {}}
+                                />
+                            ) : (
+                                <Form.Control
+                                    type="text"
+                                    value={ordemServico.vendedor?.nome || 'Carregando...'}
+                                    readOnly
+                                    disabled
+                                    className="bg-light"
+                                    size="sm"
+                                    style={faltandoCampos.includes('vendedor') ? { border: '2px solid red' } : {}}
+                                />
+                            )}
+                            {!isAdmin && (
+                                <Form.Text className="text-muted">
+                                    <small>📄 Definido automaticamente pelo seu usuário logado</small>
+                                </Form.Text>
+                            )}
                         </Form.Group>
                     </Col>
                 </Row>
