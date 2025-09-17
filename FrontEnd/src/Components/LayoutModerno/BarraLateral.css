@@ -97,5 +97,59 @@
   border-left-color: #2980b9; /* Azul um pouco mais escuro para subitem ativo */
 }
 
-/* Adicionar media queries para responsividade se necessário */
+/* RESPONSIVIDADE MELHORADA */
+@media (max-width: 768px) {
+  .barra-lateral {
+    width: 100vw; /* Largura total em mobile */
+    transform: translateX(-100%); /* Oculta por padrão */
+    z-index: 1050; /* Acima do navbar */
+    background-color: rgba(44, 62, 80, 0.95); /* Semi-transparente */
+    backdrop-filter: blur(10px);
+  }
+  
+  .barra-lateral:not(.hidden) {
+    transform: translateX(0); /* Mostra ao remover .hidden */
+  }
+  
+  /* Overlay para fechar sidebar em mobile */
+  .barra-lateral::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  
+  .barra-lateral:not(.hidden)::before {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Melhorias de acessibilidade */
+.menu-link:focus {
+  outline: 2px solid #3498db;
+  outline-offset: 2px;
+}
+
+/* Animações suaves */
+.menu-link {
+  transition: all 0.2s ease-in-out;
+}
+
+.submenu-lista {
+  transition: max-height 0.2s ease-out, opacity 0.2s ease-out;
+  opacity: 0;
+}
+
+.menu-item:hover > .submenu-lista,
+.menu-item .submenu-lista.open {
+  opacity: 1;
+}
 
