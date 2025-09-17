@@ -6,6 +6,7 @@ import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { registrar } from "../../Services/usersService";
 import logoImage from "../../assets/imagens/logoalsten.png";
 import { useNavigate } from "react-router-dom";
+import Button from '../UI/Button';
 
 export default function TelaLogin() {
   const contexto = useContext(ContextoUsuarioLogado);
@@ -166,13 +167,13 @@ function realizarCadastro(evento) {
             <p>
               Bem-vindo! Faça parte do nosso sistema se cadastrando abaixo:
             </p>
-            <button
+            <Button
               className="btn transparent"
               id="sign-up-btn"
               onClick={() => setIsSignUpMode(true)}
             >
               Cadastre-se
-            </button>
+            </Button>
           </div>
           <img src="/log.svg" className="image" alt="Log in" />
         </div>
@@ -183,13 +184,13 @@ function realizarCadastro(evento) {
               Entre no sistema utilizando suas credenciais para acessar nossas
               funcionalidades.
             </p>
-            <button
+            <Button
               className="btn transparent"
               id="sign-in-btn"
               onClick={() => setIsSignUpMode(false)}
             >
               Entrar
-            </button>
+            </Button>
           </div>
           <img src="/register.svg" className="image" alt="Sign up" />
         </div>

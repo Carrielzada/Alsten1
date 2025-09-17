@@ -1,0 +1,210 @@
+/* ===== SISTEMA DE BOTÕES MODERNOS ALSTEN ===== */
+
+/* Base comum para todos os botões */
+.modern-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  /* Tamanho e espaçamento */
+  padding: 0.625rem 1.25rem; /* 10px 20px */
+  min-height: 2.5rem; /* 40px */
+  
+  /* Tipografia */
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  
+  /* Aparência */
+  border: none;
+  border-radius: 0.5rem; /* 8px */
+  cursor: pointer;
+  
+  /* Sombra sutil */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  /* Transições suaves */
+  transition: all 0.2s ease-in-out;
+  
+  /* Remove outline padrão */
+  outline: none;
+}
+
+/* Estados de hover e focus */
+.modern-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.modern-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modern-btn:focus-visible {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+.modern-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.modern-btn:disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== VARIAÇÕES DE COR ===== */
+
+/* Botão Primary - Azul discreto da marca */
+.modern-btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.modern-btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+/* Botão Success - Verde discreto para salvar */
+.modern-btn-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.modern-btn-success:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+/* Botão Danger - Vermelho discreto para excluir */
+.modern-btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.modern-btn-danger:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+/* Botão Secondary - Cinza neutro */
+.modern-btn-secondary {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: white;
+}
+
+.modern-btn-secondary:hover {
+  background: linear-gradient(135deg, #4b5563, #374151);
+}
+
+/* Botão Outline - Borda sem fundo */
+.modern-btn-outline {
+  background: transparent;
+  color: #374151;
+  border: 2px solid #d1d5db;
+  box-shadow: none;
+}
+
+.modern-btn-outline:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+/* Botão Ghost - Apenas texto */
+.modern-btn-ghost {
+  background: transparent;
+  color: #6b7280;
+  box-shadow: none;
+}
+
+.modern-btn-ghost:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* ===== TAMANHOS ===== */
+
+/* Botão pequeno */
+.modern-btn-sm {
+  padding: 0.5rem 1rem; /* 8px 16px */
+  min-height: 2rem; /* 32px */
+  font-size: 0.75rem; /* 12px */
+}
+
+/* Botão médio (padrão já definido) */
+.modern-btn-md {
+  padding: 0.625rem 1.25rem; /* 10px 20px */
+  min-height: 2.5rem; /* 40px */
+  font-size: 0.875rem; /* 14px */
+}
+
+/* Botão grande */
+.modern-btn-lg {
+  padding: 0.75rem 1.5rem; /* 12px 24px */
+  min-height: 3rem; /* 48px */
+  font-size: 1rem; /* 16px */
+}
+
+/* ===== BOTÃO APENAS COM ÍCONE ===== */
+.modern-btn-icon-only {
+  padding: 0.625rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-height: auto;
+}
+
+.modern-btn-icon-only.modern-btn-sm {
+  padding: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+.modern-btn-icon-only.modern-btn-lg {
+  padding: 0.75rem;
+  width: 3rem;
+  height: 3rem;
+}
+
+/* ===== BOTÃO COM LOADING ===== */
+.modern-btn-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.modern-btn-loading .btn-content {
+  opacity: 0;
+}
+
+.modern-btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 640px) {
+  .modern-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+  
+  .modern-btn-lg {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+  }
+}

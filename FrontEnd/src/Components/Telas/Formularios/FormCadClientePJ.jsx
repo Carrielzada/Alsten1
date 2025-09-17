@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Form, Row, Col, Button, Container, FloatingLabel } from "react-bootstrap";
+import { Form, Row, Col, Container, FloatingLabel } from "react-bootstrap";
+import Button from '../UI/Button';
 import { gravarClientePJ, alterarClientePJ } from "../../../Services/clientePJService";
 import { FaSave, FaTimes } from "react-icons/fa";
 

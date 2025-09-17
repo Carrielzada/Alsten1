@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Form, Row, Col, Button, Container } from "react-bootstrap";
+import { Form, Row, Col, Container } from "react-bootstrap";
 import { FaSave, FaTimes, FaPaperclip, FaEye, FaVial } from "react-icons/fa";
+import Button from '../../UI/Button'; // Nosso Button moderno que substitui o Bootstrap
 import CaixaSelecaoPesquisavel from '../../busca/CaixaSelecaoPesquisavel';
 import { buscarFabricantes } from '../../../Services/fabricanteService';
 import { buscarModelo } from '../../../Services/modeloService';
@@ -1048,6 +1049,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                     <Button 
                                         variant="outline-danger" 
                                         size="sm"
+                                        title="Remover imagem"
                                         onClick={() => {
                                             markDirty();
                                             setOrdemServico(prevState => ({
@@ -1373,7 +1375,12 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                         </Form.Group>
                     </Col>
                     <Col xs="auto">
-                        <Button variant="outline-secondary" onClick={handleAnexarArquivo} disabled={!ordemServico.id} size="sm">
+                        <Button 
+                            variant="outline-secondary" 
+                            onClick={handleAnexarArquivo} 
+                            disabled={!ordemServico.id} 
+                            size="sm"
+                        >
                             <FaPaperclip /> Anexar
                         </Button>
                     </Col>
@@ -1407,33 +1414,32 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Row>
                 )}
                 
-                {/* Botões de Ação Otimizados */}
+                {/* Botões de Ação Modernos */}
                 <Row className="mt-4 mb-3">
                     <Col className="d-flex justify-content-center align-items-center gap-3 flex-wrap">
                         <Button 
                             type="submit" 
-                            variant="primary" 
-                            size="lg"
-                            className="px-4 py-2"
+                            variant="success"
+                            size="md"
                         >
                             <FaSave className="me-2" />
-                            {modoEdicao ? 'Atualizar OS' : 'Salvar Ordem de Serviço'}
+                            {modoEdicao ? 'Atualizar OS' : 'Salvar OS'}
                         </Button>
                         
                         <Button
                             variant="outline-info"
-                            size="md"
+                            size="sm"
                             onClick={testarValidacao}
                             title="Verificar campos obrigatórios"
                         >
                             <FaVial className="me-2" />
-                            Validar Campos
+                            Validar
                         </Button>
                         
                         {!modoEdicao && (
                             <Button
                                 variant="outline-danger"
-                                size="md"
+                                size="sm"
                                 onClick={resetForm}
                                 title="Limpar formulário"
                             >

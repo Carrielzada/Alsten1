@@ -1,4 +1,5 @@
-import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import { Form, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import Button from '../UI/Button';
 import CardModerno from '../LayoutModerno/CardModerno';
 import { useState, useEffect} from "react";
 import { FaEdit, FaTrash } from 'react-icons/fa';

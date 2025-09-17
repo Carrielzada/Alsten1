@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { Form, Button, Container, Row, Col, FloatingLabel } from 'react-bootstrap';
+import { Form, Container, Row, Col, FloatingLabel } from 'react-bootstrap';
+import Button from '../UI/Button';
 import { FaSave, FaTimes } from 'react-icons/fa';
 
 const FormCadastroFabricante = (props) => {

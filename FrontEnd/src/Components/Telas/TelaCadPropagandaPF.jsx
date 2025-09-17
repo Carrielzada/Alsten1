@@ -1,4 +1,5 @@
-import { Button, Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
+import Button from '../UI/Button';
 import Pagina from "../Templates2/Pagina";
 import FormCadastroPropagandaPF from "./Formularios/FormCadastroPropagandaPF";
 import TabelaPropagandasPF from "./Tabelas/TabelaPropagandasPF";

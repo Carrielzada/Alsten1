@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CardModerno from '../LayoutModerno/CardModerno';
-import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import { Form, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import Button from '../UI/Button';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { buscarDefeitosAlegados, adicionarDefeitoAlegado, atualizarDefeitoAlegado, excluirDefeitoAlegado } from '../../Services/defeitoAlegadoService.js'; // Caminho corrigido e real
 

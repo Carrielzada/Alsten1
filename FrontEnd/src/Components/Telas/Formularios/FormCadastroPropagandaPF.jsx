@@ -1,4 +1,5 @@
-import { Button, FloatingLabel, Container, Row, Col, Form } from "react-bootstrap";
+import { FloatingLabel, Container, Row, Col, Form } from "react-bootstrap";
+import Button from '../UI/Button';
 import { useState, useContext, useEffect } from "react";
 import BarraBusca from "../../busca/BarraBusca";
 import InputMask from "react-input-mask";

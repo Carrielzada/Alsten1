@@ -1,7 +1,8 @@
         import { useState, useEffect } from 'react';
         import Pagina from "../Templates2/Pagina.jsx";
         import CardModerno from '../LayoutModerno/CardModerno.jsx';
-        import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+        import { Form, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+        import Button from '../UI/Button';
         import { FaEdit, FaTrash } from 'react-icons/fa';
         import { buscarTiposLimpeza, adicionarTipoLimpeza, atualizarTipoLimpeza, excluirTipoLimpeza } from '../../Services/tipoLimpezaService.js';
 

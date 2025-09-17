@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import CardModerno from '../LayoutModerno/CardModerno.jsx';
-import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import { Form, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import Button from '../UI/Button';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { buscarTiposTransporte, adicionarTipoTransporte, atualizarTipoTransporte, excluirTipoTransporte } from '../../Services/tipoTransporteService.js';
 

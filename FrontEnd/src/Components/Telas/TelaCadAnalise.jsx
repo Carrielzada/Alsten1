@@ -1,4 +1,5 @@
-import { Button, Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
+import Button from '../UI/Button';
 import Pagina from "../Templates2/Pagina.jsx";
 import FormCadTipoAnalise from "./Formularios/FormCadTipoAnalise.jsx";
 import TabelaTipoAnalise from "./Tabelas/TabelaTipoAnalise.jsx";

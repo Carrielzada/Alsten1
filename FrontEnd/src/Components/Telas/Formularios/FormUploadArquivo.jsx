@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Button from '../UI/Button';
 
 const FormUploadArquivo = ({ osId, onUploadSuccess }) => { // Adicionado osId como prop
     const [arquivoSelecionado, setArquivoSelecionado] = useState(null);
@@ -48,9 +49,13 @@ const FormUploadArquivo = ({ osId, onUploadSuccess }) => { // Adicionado osId co
         <div>
             <h3>Upload de Arquivo{osId ? ` para OS ID: ${osId}` : ''}</h3>
             <input type="file" onChange={handleSelecaoArquivo} />
-            <button onClick={handleUploadArquivo} disabled={!arquivoSelecionado}>
+            <Button 
+                variant="primary" 
+                onClick={handleUploadArquivo} 
+                disabled={!arquivoSelecionado}
+            >
                 Enviar Arquivo
-            </button>
+            </Button>
             {mensagemUpload && <p>{mensagemUpload}</p>}
             {arquivoSelecionado && (
                 <div>

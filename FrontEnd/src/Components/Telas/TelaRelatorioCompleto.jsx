@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Form, Button, Card, Row, Col, Badge, Spinner, InputGroup } from 'react-bootstrap';
+import { Table, Form, Card, Row, Col, Badge, Spinner, InputGroup } from 'react-bootstrap';
+import Button from '../UI/Button';
 import { FaSearch, FaFilter, FaEye, FaDownload, FaTimes, FaTable, FaFileExport } from 'react-icons/fa';
 import Layout from '../Templates2/Layout';
 import { buscarTodasOrdensServico } from '../../Services/ordemServicoService';

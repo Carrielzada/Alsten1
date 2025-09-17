@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import CardModerno from '../LayoutModerno/CardModerno';
-import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import { Form, Table, Container, Row, Col, Alert } from 'react-bootstrap';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import Button from '../UI/Button'; // Nosso Button moderno
 import { buscarModelo, atualizarModelo, excluirModelo, adicionarModelo } from "../../Services/modeloService.js";
 
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CardModerno from '../LayoutModerno/CardModerno';
-import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import { Form, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import Button from '../UI/Button'; // Nosso Button moderno
 import { buscarFabricantes, adicionarFabricante, atualizarFabricante, excluirFabricante } from '../../Services/fabricanteService.js'; // Caminho corrigido e real
 
 // Fim dos mocks removidos

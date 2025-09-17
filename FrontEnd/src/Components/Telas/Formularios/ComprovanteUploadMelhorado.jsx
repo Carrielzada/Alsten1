@@ -1,5 +1,6 @@
 import React from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Alert } from 'react-bootstrap';
+import Button from '../UI/Button';
 import { FaTimes, FaUpload } from 'react-icons/fa';
 
 const ComprovanteUploadMelhorado = ({ 

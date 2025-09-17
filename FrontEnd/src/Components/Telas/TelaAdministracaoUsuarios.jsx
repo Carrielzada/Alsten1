@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Container, Card, Row, Col, Table, Button, Modal, Alert, Badge, Form, InputGroup } from 'react-bootstrap';
+import { Container, Card, Row, Col, Table, Modal, Alert, Badge, Form, InputGroup } from 'react-bootstrap';
+import Button from '../UI/Button'; // Nosso Button moderno
 import { 
     FaUserShield, FaPlus, FaEdit, FaTrash, FaSearch, FaTimes, 
     FaUser, FaEnvelope, FaClock, FaFilter 

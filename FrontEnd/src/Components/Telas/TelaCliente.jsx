@@ -1,5 +1,6 @@
 import Pagina from "../Templates2/Pagina";
-import { Container, Modal, Button, Row, Col, Tabs, Tab } from "react-bootstrap";
+import { Container, Modal, Row, Col, Tabs, Tab } from "react-bootstrap";
+import Button from '../UI/Button';
 import { useContext, useEffect, useState, useRef } from "react";
 import { baixarArquivo, buscarComprovantes, baixarComprovante } from "../../Services/publicidadePJService";
 import { ContextoUsuarioLogado } from "../../App";

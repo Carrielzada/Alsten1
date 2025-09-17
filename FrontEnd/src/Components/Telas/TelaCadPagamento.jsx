@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import CardModerno from '../LayoutModerno/CardModerno';
-import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import { Form, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import Button from '../UI/Button';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { buscarPagamento, atualizarPagamento, excluirPagamento, adicionarPagamento } from "../../Services/pagamentoService.js";
 

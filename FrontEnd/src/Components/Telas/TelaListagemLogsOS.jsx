@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Badge } from 'react-bootstrap';
+import { Table, Modal, Badge } from 'react-bootstrap';
+import Button from '../UI/Button';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { buscarLogsOrdemServico } from '../../Services/ordemServicoService';

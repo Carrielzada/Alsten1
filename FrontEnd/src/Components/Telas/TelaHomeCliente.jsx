@@ -1,6 +1,7 @@
 import Pagina from "../Templates2/Pagina";
 import './TelaMenu.css';
 import { useContext, useState } from "react";
+import Button from '../UI/Button';
 import { ContextoUsuarioLogado } from "../../App";
 import { FaClipboardList, FaTasks, FaRegUser, FaRegLightbulb } from 'react-icons/fa';
 
@@ -31,7 +32,7 @@ export default function TelaMenu() {
                                     <p style={{ fontSize: '0.9rem' }}>
                                         Encontre todas as informações da sua publicidade na aba <strong>Dashboard</strong>.
                                     </p>
-                                    <button
+                                    <Button
                                         className="btn btn-outline-success mt-1"
                                         style={{
                                             fontSize: '0.8rem', // Tamanho do texto
@@ -43,7 +44,7 @@ export default function TelaMenu() {
                                         onClick={() => handleExibirImagem('/detalharPropaganda.png')}
                                     >
                                         Veja Como
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -56,7 +57,7 @@ export default function TelaMenu() {
                                     <p style={{ fontSize: '0.9rem' }}>
                                         Mande uma mensagem detalhada com sua solicitação.
                                     </p>
-                                    <button
+                                    <Button
                                         className="btn btn-outline-primary mt-1"
                                         style={{
                                             fontSize: '0.8rem', // Tamanho do texto
@@ -68,7 +69,7 @@ export default function TelaMenu() {
                                         onClick={() => handleExibirImagem('/enviarMensagem.png')}
                                     >
                                         Veja Como
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -81,7 +82,7 @@ export default function TelaMenu() {
                                     <p style={{ fontSize: '0.9rem' }}>
                                         Altere sua senha e acesse o ícone para sair do sistema.
                                     </p>
-                                    <button
+                                    <Button
                                         className="btn btn-outline-warning mt-1"
                                         style={{
                                             fontSize: '0.8rem', // Tamanho do texto
@@ -93,7 +94,7 @@ export default function TelaMenu() {
                                         onClick={() => handleExibirImagem('/alterarSenha.png')}
                                     >
                                         Veja Como
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -106,7 +107,7 @@ export default function TelaMenu() {
                                     <p style={{ fontSize: '0.9rem' }}>
                                         Aproveite os nossos serviços para alcançar seus objetivos.
                                     </p>
-                                    <button
+                                    <Button
                                         className="btn btn-outline-info mt-1"
                                         style={{
                                             fontSize: '0.8rem', // Tamanho do texto
@@ -118,7 +119,7 @@ export default function TelaMenu() {
                                         onClick={() => handleExibirImagem('/mensagemWhatsapp.png')}
                                     >
                                         Veja Como
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>

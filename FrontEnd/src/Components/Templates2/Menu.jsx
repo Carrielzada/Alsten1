@@ -4,13 +4,14 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
 import { Link, useNavigate } from "react-router-dom";
 // Certifique-se de ter 'react-icons' instalado: npm install react-icons
 import { FaSignOutAlt, FaBell, FaBars } from "react-icons/fa";
 import { ContextoUsuarioLogado } from "../../App"; // Ajuste o caminho se necessário
 import { alterarSenha } from "../../Services/usersService"; // Ajuste o caminho se necessário
 import logoImage from "../../assets/imagens/logoalsten.png"; // << AJUSTE O CAMINHO PARA SUA LOGO
+import Button from '../UI/Button'; // Nosso Button moderno
+import Breadcrumb from '../UI/Breadcrumb'; // Nosso Breadcrumb
 
 // Adicionamos 'toggleBarra' como propriedade (props)
 export default function Menu({ toggleBarra }) {
@@ -112,24 +113,7 @@ export default function Menu({ toggleBarra }) {
     // carregarMensagens();
   };
 
-  // Menu de cadastros
-  const cadastrosMVP = (
-    <NavDropdown title="Cadastros" id="cadastros-mvp-nav-dropdown">
-      <NavDropdown.Item as={Link} to="/cadastros/modelo-equipamento">
-        Modelos de Equipamentos
-      </NavDropdown.Item>
-      <NavDropdown.Item as={Link} to="/cadastros/pagamento">
-        Tipos de Pagamento
-      </NavDropdown.Item>
-      <NavDropdown.Item as={Link} to="/cadastros/urgencia">
-        Níveis de Urgência
-      </NavDropdown.Item>
-      <NavDropdown.Divider />
-      <NavDropdown.Item as={Link} to="/cadastros/usuarios">
-        Usuários
-      </NavDropdown.Item>
-    </NavDropdown>
-  );
+  // Breadcrumb será renderizado no lugar do dropdown
 
   return (
     <>
@@ -163,7 +147,6 @@ export default function Menu({ toggleBarra }) {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              {usuarioLogado.logado && cadastrosMVP}
               {usuarioLogado.logado && (
                 <Nav.Link as={Link} to="/ordens-servico">
                   Ordens de Serviço
