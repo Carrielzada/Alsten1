@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Form, Row, Col, Container } from "react-bootstrap";
@@ -217,8 +217,16 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     const [etapasOS, setEtapasOS] = useState([]);
     const [servicosPadrao, setServicosPadrao] = useState([]);
     const [defeitosPadrao, setDefeitosPadrao] = useState([]);
-
+    
+    // Controle para evitar múltiplas execuções
+    const dadosCarregados = useRef(false);
+    
     useEffect(() => {
+        // Se os dados já foram carregados, não executar novamente
+        if (dadosCarregados.current) {
+            console.log("Dados já carregados, pulando execução...");
+            return;
+        }
         const carregarDadosCadastrais = async () => {
             try {
                 setLoadingFormData(true);
@@ -235,9 +243,6 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     }
                 }
                 
-                console.log("Token encontrado:", !!token);
-                console.log("Usuário logado encontrado:", !!usuarioLogado);
-                
                 if (!token || !usuarioLogado) {
                     toast.error("Você precisa estar logado para acessar esta página.");
                     setTimeout(() => {
@@ -246,7 +251,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     return;
                 }
 
-                console.log("Iniciando carregamento de dados...");
+                console.log("Iniciando carregamento de dados cadastrais...");
 
                 const [
                     fabricantesData,
@@ -280,22 +285,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     buscarDefeitosAlegados()
                 ]);
 
-                console.log("Dados recebidos:", {
-                    fabricantesData,
-                    modelosData,
-                    urgenciasData,
-                    tiposAnaliseData,
-                    tiposLacreData,
-                    tiposLimpezaData,
-                    tiposTransporteData,
-                    pagamentosData,
-                    vendedoresData,
-                    diasPagamentoData,
-                    checklistItemsData,
-                    etapasOSData,
-                    servicosPadraoData,
-                    defeitosAlegadosData
-                });
+                // Dados carregados com sucesso
 
                 setFabricantes(fabricantesData.listaFabricantes);
                 setModelos(modelosData.listaModelos);
@@ -311,23 +301,11 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                 setEtapasOS(etapasOSData.listaEtapasOS || []);
                 setServicosPadrao(servicosPadraoData.listaServicosPadrao || []);
                 setDefeitosPadrao(defeitosAlegadosData.listaDefeitosAlegados || []); // Usando os mesmos dados por enquanto
+                
+                // Marcar como carregado para evitar nova execução
+                dadosCarregados.current = true;
 
-                console.log("Estados atualizados:", {
-                    fabricantes: fabricantesData.listaFabricantes,
-                    modelos: modelosData.listaModelos,
-                    urgencias: urgenciasData.listaUrgencias,
-                    tiposAnalise: tiposAnaliseData.listaTiposAnalise,
-                    tiposLacre: tiposLacreData.listaTiposLacre,
-                    tiposLimpeza: tiposLimpezaData.listaTiposLimpeza,
-                    tiposTransporte: tiposTransporteData.listaTiposTransporte,
-                    formasPagamento: pagamentosData.listaPagamentos,
-                    vendedores: vendedoresData.listaUsers || [],
-                    diasPagamento: diasPagamentoData.listaDiasPagamento || [],
-                    checklistItems: checklistItemsData.listaChecklistItems || [],
-                    etapasOS: etapasOSData.listaEtapasOS || [],
-                    servicosPadrao: servicosPadraoData.listaServicosPadrao || [],
-                    defeitosPadrao: defeitosAlegadosData.listaDefeitosAlegados || []
-                });
+                console.log("Dados cadastrais carregados com sucesso");
 
             } catch (error) {
                 console.error("Erro ao carregar dados dos cadastros:", error);

@@ -218,6 +218,12 @@ const TelaAdministracaoUsuarios = () => {
                                         variant="light"
                                         onClick={handleNovoUsuario}
                                         className="px-4"
+                                        style={{ 
+                                            backgroundColor: 'white', 
+                                            color: '#dc3545', 
+                                            border: '2px solid white',
+                                            fontWeight: '600'
+                                        }}
                                     >
                                         <FaPlus className="me-2" />
                                         Novo Usuário
@@ -292,38 +298,28 @@ const TelaAdministracaoUsuarios = () => {
                     </Card.Body>
                 </Card>
 
-                {/* Estatísticas */}
-                <Row className="mb-4">
-                    <Col xs={12} sm={4} md={4}>
-                        <Card className="border-primary mb-3 mb-sm-0">
-                            <Card.Body className="text-center">
-                                <FaUser size={24} className="text-primary mb-2" />
-                                <h4 className="fw-bold text-primary">{usuarios.length}</h4>
-                                <small className="text-muted">Total de Usuários</small>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col xs={12} sm={4} md={4}>
-                        <Card className="border-danger mb-3 mb-sm-0">
-                            <Card.Body className="text-center">
-                                <FaUserShield size={24} className="text-danger mb-2" />
-                                <h4 className="fw-bold text-danger">
-                                    {usuarios.filter(u => u.role_id === 1).length}
-                                </h4>
-                                <small className="text-muted">Administradores</small>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col xs={12} sm={4} md={4}>
-                        <Card className="border-success mb-3 mb-sm-0">
-                            <Card.Body className="text-center">
-                                <FaFilter size={24} className="text-success mb-2" />
-                                <h4 className="fw-bold text-success">{usuariosFiltrados.length}</h4>
-                                <small className="text-muted">Filtrados</small>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
+                {/* Estatísticas - Badges compactos */}
+                <div className="d-flex flex-wrap gap-3 mb-4 justify-content-center justify-content-md-start">
+                    <div className="d-flex align-items-center bg-primary bg-opacity-10 rounded-pill px-3 py-2">
+                        <FaUser size={16} className="text-primary me-2" />
+                        <span className="fw-semibold text-primary me-2">{usuarios.length}</span>
+                        <small className="text-muted">Total de Usuários</small>
+                    </div>
+                    
+                    <div className="d-flex align-items-center bg-danger bg-opacity-10 rounded-pill px-3 py-2">
+                        <FaUserShield size={16} className="text-danger me-2" />
+                        <span className="fw-semibold text-danger me-2">
+                            {usuarios.filter(u => u.role_id === 1).length}
+                        </span>
+                        <small className="text-muted">Administradores</small>
+                    </div>
+                    
+                    <div className="d-flex align-items-center bg-success bg-opacity-10 rounded-pill px-3 py-2">
+                        <FaFilter size={16} className="text-success me-2" />
+                        <span className="fw-semibold text-success me-2">{usuariosFiltrados.length}</span>
+                        <small className="text-muted">Filtrados</small>
+                    </div>
+                </div>
 
                 {/* Tabela de usuários */}
                 <Card>
