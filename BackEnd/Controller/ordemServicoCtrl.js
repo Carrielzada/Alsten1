@@ -10,6 +10,7 @@ class OrdemServicoCtrl {
         this.consultarPorId = this.consultarPorId.bind(this);
         this.excluir = this.excluir.bind(this);
         this.anexarArquivo = this.anexarArquivo.bind(this);
+        this.anexarComprovante = this.anexarComprovante.bind(this);
         this.removerArquivo = this.removerArquivo.bind(this);
         this.consultarLogs = this.consultarLogs.bind(this);
         this.registrarLogsAlteracoes = this.registrarLogsAlteracoes.bind(this);
@@ -30,7 +31,7 @@ class OrdemServicoCtrl {
                 diasReparo, dataEquipamentoPronto, informacoesConfidenciais,
                 checklistItems, agendado, possuiAcessorio, tipoTransporteTexto,
                 transporteCifFob, pedidoCompras, defeitoConstatado, servicoRealizar,
-                valor, etapaId, comprovanteAprovacao, notaFiscal
+                valor, etapaId, comprovanteAprovacao, notaFiscal, comprovante
             } = req.body;
 
             const osId = req.method === "PUT" ? req.params.id : id;
@@ -70,7 +71,8 @@ class OrdemServicoCtrl {
                     valor,
                     etapaId,
                     comprovanteAprovacao,
-                    notaFiscal
+                    notaFiscal,
+                    comprovante
                 );
 
                 const osDAO = new OrdemServicoDAO();
@@ -253,6 +255,50 @@ class OrdemServicoCtrl {
             res.status(500).json({
                 status: false,
                 mensagem: "Erro ao anexar arquivo: " + error.message,
+            });
+        }
+    }
+
+    async anexarComprovante(req, res) {
+        res.type("application/json");
+        const osDAO = new OrdemServicoDAO();
+        const osId = req.params.id;
+
+        if (!req.file) {
+            return res.status(400).json({
+                status: false,
+                mensagem: "Nenhum comprovante enviado."
+            });
+        }
+
+        // Validar se é uma imagem
+        const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedMimeTypes.includes(req.file.mimetype)) {
+            return res.status(400).json({
+                status: false,
+                mensagem: "Apenas imagens são permitidas como comprovante (JPG, PNG, GIF, WEBP)."
+            });
+        }
+
+        try {
+            const nomeArquivo = req.file.filename;
+            const sucesso = await osDAO.atualizarComprovante(osId, nomeArquivo);
+            if (sucesso) {
+                res.status(200).json({
+                    status: true,
+                    mensagem: "Comprovante anexado com sucesso!",
+                    caminho: nomeArquivo
+                });
+            } else {
+                res.status(404).json({
+                    status: false,
+                    mensagem: "Ordem de Serviço não encontrada para anexar o comprovante."
+                });
+            }
+        } catch (error) {
+            res.status(500).json({
+                status: false,
+                mensagem: "Erro ao anexar comprovante: " + error.message,
             });
         }
     }

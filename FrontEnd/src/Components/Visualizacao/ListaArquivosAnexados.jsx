@@ -113,19 +113,22 @@ const ListaArquivosAnexados = ({ arquivos, onRemoverArquivo }) => {
               </div>
               <div>
                 <Button
-                  variant="outline-primary"
+                  variant="light"
                   size="sm"
-                  className="me-1"
+                  className="me-1 p-1"
                   onClick={() => handleDownload(nomeArquivo)}
+                  title="Baixar arquivo"
                 >
-                  <FaDownload size={12} />
+                  <FaDownload size={14} />
                 </Button>
                 <Button
-                  variant="outline-danger"
+                  variant="light"
                   size="sm"
+                  className="p-1"
                   onClick={() => handleRemover(nomeArquivo)}
+                  title="Remover arquivo"
                 >
-                  <FaTrash size={12} />
+                  <FaTrash size={14} />
                 </Button>
               </div>
             </ListGroup.Item>

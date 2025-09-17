@@ -2,9 +2,10 @@ import { useState, useEffect, createContext } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Tela404 from "./Components/Telas/Tela404";
 import TelaLogin from "./Components/Telas/TelaLogin";
-import TelaHomeCliente from "./Components/Telas/TelaHomeCliente";
+import TelaBoasVindas from "./Components/Telas/TelaBoasVindas";
 import ProtectedComponent from "./ProtectedComponent";
 import TelaListagemOS from "./Components/Telas/TelaListagemOS";
+import TelaOSConcluidas from "./Components/Telas/TelaOSConcluidas";
 import TelaCadOrdemServico from "./Components/Telas/TelaCadOrdemServico";
 import TelaListagemLogsOS from "./Components/Telas/TelaListagemLogsOS";
 // Porque tem um espaço aqui?
@@ -21,6 +22,7 @@ import TelaCadFabricante from "./Components/Telas/TelaCadFabricante";
 import TelaCadDefeitoAlegado from "./Components/Telas/TelaCadDefeitoAlegado"; 
 import TelaCadClientePJ from "./Components/Telas/TelaCadClientePJ";
 import TelaCadServicoPadrao from "./Components/Telas/TelaCadServicoPadrao";
+import TelaRelatorioCompleto from "./Components/Telas/TelaRelatorioCompleto";
 
 // Novo Layout
 import LayoutModerno from "./Components/LayoutModerno/LayoutModerno";
@@ -88,7 +90,10 @@ function AppContent() {
   const RotasProtegidasComLayout = () => (
     <LayoutModerno>
       <Routes>
+        <Route path="/boas-vindas" element={<TelaBoasVindas />} />
         <Route path="/ordens-servico" element={<TelaListagemOS />} />
+        <Route path="/os-concluidas" element={<TelaOSConcluidas />} />
+        <Route path="/relatorio-completo" element={<TelaRelatorioCompleto />} />
         <Route path="/upload-teste" element={<FormUploadArquivo osId={null} onUploadSuccess={(filePath) => console.log("Upload Teste OK:", filePath)} />} />
         <Route path="/cadastros/modelo-equipamento" element={<TelaCadModeloEquipamento />} />
         <Route path="/cadastros/pagamento" element={<TelaCadPagamento />} />
@@ -131,33 +136,17 @@ function AppContent() {
           {/* Rota raiz - redireciona para login se não estiver logado */}
           <Route path="/" element={
             usuarioLogado.logado ? 
-              (usuarioLogado.role === 1 || usuarioLogado.role === 2) ? 
-                <Navigate to="/ordens-servico" /> : 
-                <Navigate to="/home-cliente" />
-              : 
+              <Navigate to="/boas-vindas" /> : 
               <Navigate to="/login" />
           } />
           
-          {/* Rotas protegidas para Admin/Técnico */}
-          {usuarioLogado.logado && (usuarioLogado.role === 1 || usuarioLogado.role === 2) && (
+          {/* Rotas protegidas para todos os usuários logados */}
+          {usuarioLogado.logado && (
             <Route path="/*" element={
-              <ProtectedComponent allowedRoles={[1, 2]} usuarioLogado={usuarioLogado}>
+              <ProtectedComponent allowedRoles={[1, 2, 3, 4, 5, 6]} usuarioLogado={usuarioLogado}>
                 <RotasProtegidasComLayout />
               </ProtectedComponent>
             } />
-          )}
-          
-          {/* Rotas protegidas para Cliente */}
-          {usuarioLogado.logado && (usuarioLogado.role === 3 || usuarioLogado.role === 4) && (
-            <>
-              <Route path="/home-cliente" element={
-                <ProtectedComponent allowedRoles={[3, 4]} usuarioLogado={usuarioLogado}>
-                  <TelaHomeCliente />
-                </ProtectedComponent>
-              } />
-              {/* Redireciona outras rotas para home-cliente */}
-              <Route path="/*" element={<Navigate to="/home-cliente" />} />
-            </>
           )}
           
           {/* Fallback - redireciona para login se nenhuma condição acima for atendida */}

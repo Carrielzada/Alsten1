@@ -1,7 +1,7 @@
 // BackEnd/Model/OrdemServico.js
 
 class OrdemServico {
-    constructor(id, cliente, modeloEquipamento, defeitoAlegado, numeroSerie, fabricante, urgencia, tipoAnalise, tipoLacre, tipoLimpeza, tipoTransporte, formaPagamento, arquivosAnexados = [], etapa = 'Previsto', dataCriacao = new Date(), vendedor = null, diasPagamento = null, dataEntrega = null, dataAprovacaoOrcamento = null, diasReparo = null, dataEquipamentoPronto = null, informacoesConfidenciais = '', checklistItems = [], agendado = false, possuiAcessorio = false, tipoTransporteTexto = '', transporteCifFob = null, pedidoCompras = '', defeitoConstatado = '', servicoRealizar = '', valor = 0.00, etapaId = null, comprovanteAprovacao = '', notaFiscal = '') {
+    constructor(id, cliente, modeloEquipamento, defeitoAlegado, numeroSerie, fabricante, urgencia, tipoAnalise, tipoLacre, tipoLimpeza, tipoTransporte, formaPagamento, arquivosAnexados = [], etapa = 'Previsto', dataCriacao = new Date(), vendedor = null, diasPagamento = null, dataEntrega = null, dataAprovacaoOrcamento = null, diasReparo = null, dataEquipamentoPronto = null, informacoesConfidenciais = '', checklistItems = [], agendado = false, possuiAcessorio = false, tipoTransporteTexto = '', transporteCifFob = null, pedidoCompras = '', defeitoConstatado = '', servicoRealizar = '', valor = 0.00, etapaId = null, comprovanteAprovacao = '', notaFiscal = '', comprovante = '') {
         this.id = id;
         this.cliente = cliente?.id ? cliente.id : cliente;
         this.modeloEquipamento = modeloEquipamento?.id ? modeloEquipamento.id : modeloEquipamento;
@@ -38,6 +38,7 @@ class OrdemServico {
         this.etapaId = etapaId?.id ? etapaId.id : etapaId;
         this.comprovanteAprovacao = comprovanteAprovacao;
         this.notaFiscal = notaFiscal;
+        this.comprovante = comprovante;
     }
 
     // Método para adicionar um arquivo à lista
@@ -121,7 +122,8 @@ class OrdemServico {
             valor: this.valor,
             etapaId: this.etapaId,
             comprovanteAprovacao: this.comprovanteAprovacao,
-            notaFiscal: this.notaFiscal
+            notaFiscal: this.notaFiscal,
+            comprovante: this.comprovante
         };
     }
 }

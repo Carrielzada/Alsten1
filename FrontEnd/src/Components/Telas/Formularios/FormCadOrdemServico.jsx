@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Form, Row, Col, Button, Container } from "react-bootstrap";
-import { FaSave, FaTimes, FaPaperclip } from "react-icons/fa";
+import { FaSave, FaTimes, FaPaperclip, FaPlus, FaUpload } from "react-icons/fa";
 import CaixaSelecaoPesquisavel from '../../busca/CaixaSelecaoPesquisavel';
 import { buscarFabricantes } from '../../../Services/fabricanteService';
 import { buscarModelo } from '../../../Services/modeloService';
@@ -12,7 +12,7 @@ import { buscarTiposLacre } from '../../../Services/tipoLacreService';
 import { buscarTiposLimpeza } from '../../../Services/tipoLimpezaService';
 import { buscarTiposTransporte } from '../../../Services/tipoTransporteService';
 import { buscarPagamento } from '../../../Services/pagamentoService';
-import { gravarOrdemServico, anexarArquivo, removerArquivo } from '../../../Services/ordemServicoService';
+import { gravarOrdemServico, anexarArquivo, anexarComprovante, removerArquivo } from '../../../Services/ordemServicoService';
 import diasPagamentoService from '../../../Services/diasPagamentoService';
 import checklistItemService from '../../../Services/checklistItemService';
 import etapaOSService from '../../../Services/etapaOSService';
@@ -21,6 +21,7 @@ import { buscarDefeitosAlegados } from '../../../Services/defeitoAlegadoService'
 import { consultarUsuarios } from '../../../Services/usersService';
 import ListaArquivosAnexados from '../../Visualizacao/ListaArquivosAnexados';
 import MobileImageUpload from '../../Visualizacao/MobileImageUpload';
+import ComprovanteUpload from '../../Visualizacao/ComprovanteUpload';
 import ClienteSelector from '../../busca/ClienteSelector';
 import ClienteSearchAdvanced from '../../busca/ClienteSearchAdvanced';
 import '../../busca/ClienteSelector.css';
@@ -179,7 +180,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         valor: '',
         etapaId: null,
         comprovanteAprovacao: '',
-        notaFiscal: ''
+        notaFiscal: '',
+        comprovante: ''
     });
     const [dirty, setDirty] = useState(false);
     const [faltandoCampos, setFaltandoCampos] = useState([]);
@@ -201,6 +203,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     const [tiposTransporte, setTiposTransporte] = useState([]);
     const [formasPagamento, setFormasPagamento] = useState([]);
     const [arquivoParaUpload, setArquivoParaUpload] = useState(null);
+    const [comprovanteFile, setComprovanteFile] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false); // Para controlar se pode editar o ID
     
     // Novos estados para os novos campos
@@ -524,6 +527,57 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
             toast.error("Erro ao remover o arquivo.");
         }
     };
+    
+    const handleComprovanteSelect = async (file) => {
+        markDirty();
+        setComprovanteFile(file);
+        
+        if (ordemServico.id && file) {
+            try {
+                const response = await anexarComprovante(ordemServico.id, file);
+                if (response.status) {
+                    toast.success("Comprovante anexado com sucesso!");
+                    setOrdemServico(prevState => ({
+                        ...prevState,
+                        comprovante: response.caminho
+                    }));
+                } else {
+                    toast.error(response.mensagem);
+                }
+            } catch (error) {
+                console.error("Erro ao anexar comprovante:", error);
+                toast.error("Erro ao anexar o comprovante.");
+            }
+        }
+    };
+    
+    const handleComprovanteRemove = async () => {
+        markDirty();
+        if (ordemServico.id && ordemServico.comprovanteAprovacao) {
+            try {
+                const sucesso = await removerArquivo(ordemServico.id, ordemServico.comprovanteAprovacao);
+                if (sucesso) {
+                    toast.success("Comprovante removido com sucesso!");
+                    setOrdemServico(prevState => ({
+                        ...prevState,
+                        comprovanteAprovacao: ''
+                    }));
+                    setComprovanteFile(null);
+                } else {
+                    toast.error("Falha ao remover o comprovante.");
+                }
+            } catch (error) {
+                console.error("Erro ao remover comprovante:", error);
+                toast.error("Erro ao remover o comprovante.");
+            }
+        } else {
+            setOrdemServico(prevState => ({
+                ...prevState,
+                comprovanteAprovacao: ''
+            }));
+            setComprovanteFile(null);
+        }
+    };
 
     // Função de teste para verificar validação
     const testarValidacao = () => {
@@ -660,7 +714,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
             valor: '',
             etapaId: null,
             comprovanteAprovacao: '',
-            notaFiscal: ''
+            notaFiscal: '',
+            comprovante: ''
         });
     };
 
@@ -945,57 +1000,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Col>
                 </Row>
 
-                <Row className="mb-3 align-items-end">
-                    <Col>
-                         <Form.Group controlId="arquivoInput">
-                            <Form.Label>Anexar Arquivos</Form.Label>
-                            <Form.Control
-                                type="file"
-                                name="arquivo"
-                                onChange={handleFileChange}
-                                style={faltandoCampos.includes('arquivosAnexados') ? { border: '2px solid red' } : {}}
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col xs="auto">
-                        <Button variant="outline-secondary" onClick={handleAnexarArquivo} disabled={!ordemServico.id} size="sm">
-                            <FaPaperclip className="me-1" /> Anexar
-                        </Button>
-                    </Col>
-                </Row>
-                 {ordemServico.id ? (
-                        <small className="text-muted d-block mb-2">Anexe um arquivo à OS salva.</small>
-                    ) : (
-                        <small className="text-muted d-block mb-2">Salve a OS primeiro para anexar arquivos.</small>
-                )}
 
-
-                {/* Componente Mobile para Upload de Imagens - TEMPORARIAMENTE COMENTADO */}
-                {/* 
-                <Row className="mb-3">
-                    <Col>
-                        <MobileImageUpload
-                            arquivos={ordemServico.arquivosAnexados}
-                            onFileSelect={handleAnexarArquivo}
-                            onFileRemove={handleRemoverArquivo}
-                            maxFiles={10}
-                            acceptedTypes="image/*"
-                        />
-                    </Col>
-                </Row>
-                */}
-
-                {/* Campo de anexos original */}
-                {ordemServico.arquivosAnexados.length > 0 && (
-                    <Row className="mb-2">
-                        <Col>
-                            <ListaArquivosAnexados
-                                arquivos={ordemServico.arquivosAnexados}
-                                onRemoverArquivo={handleRemoverArquivo}
-                            />
-                        </Col>
-                    </Row>
-                )}
 
                 {/* Novos campos adicionados */}
                 <Row className="mb-3">
@@ -1195,13 +1200,16 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     <Col md={3}>
                         <Form.Group controlId="comprovanteAprovacao">
                             <Form.Label>Comprovante de Aprovação</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="comprovanteAprovacao"
-                                value={ordemServico.comprovanteAprovacao || ''}
-                                onChange={handleInputChange}
+                            <ComprovanteUpload
+                                arquivo={ordemServico.comprovanteAprovacao}
+                                onFileSelect={handleComprovanteSelect}
+                                onFileRemove={handleComprovanteRemove}
+                                disabled={!ordemServico.id}
                                 style={faltandoCampos.includes('comprovanteAprovacao') ? { border: '2px solid red' } : {}}
                             />
+                            {!ordemServico.id && (
+                                <small className="text-muted d-block mt-1">Salve a OS primeiro para anexar o comprovante.</small>
+                            )}
                         </Form.Group>
                     </Col>
                 </Row>
@@ -1276,9 +1284,9 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Col>
                 </Row>
 
-                {/* Linha 11: Nota Fiscal e Botão Salvar */}
+                {/* Linha 11: Nota Fiscal */}
                 <Row className="mb-3">
-                    <Col md={6} sm={12} xs={12}>
+                    <Col md={12} sm={12} xs={12}>
                         <Form.Group controlId="notaFiscal">
                             <Form.Label>Nota Fiscal</Form.Label>
                             <Form.Control
@@ -1291,47 +1299,145 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={6} sm={12} xs={12} className="d-flex align-items-end">
-                        <Button 
-                            type="submit" 
-                            variant="primary" 
-                            size="lg"
-                            className="w-100"
-                        >
-                            Salvar Ordem de Serviço
-                        </Button>
+                </Row>
+                
+                {/* Campo Comprovante (UMA imagem) */}
+                <Row className="mb-3">
+                    <Col md={12}>
+                        <Form.Group controlId="comprovante">
+                            <Form.Label>Comprovante (Uma imagem apenas)</Form.Label>
+                            <div className="d-flex align-items-end">
+                                <Form.Control
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            // Validar se é uma imagem
+                                            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                                            if (validTypes.includes(file.type)) {
+                                                handleComprovanteSelect(file);
+                                            } else {
+                                                toast.error('Apenas imagens são permitidas no comprovante.');
+                                                e.target.value = '';
+                                            }
+                                        }
+                                    }}
+                                    className="me-2"
+                                    style={faltandoCampos.includes('comprovante') ? { border: '2px solid red' } : {}}
+                                />
+                                {ordemServico.comprovante && (
+                                    <Button 
+                                        variant="outline-danger" 
+                                        size="sm" 
+                                        onClick={() => {
+                                            setOrdemServico(prev => ({ ...prev, comprovante: '' }));
+                                            document.querySelector('#comprovante').value = '';
+                                        }}
+                                        title="Remover comprovante"
+                                    >
+                                        <FaTimes size={12} />
+                                    </Button>
+                                )}
+                            </div>
+                            {ordemServico.comprovante && (
+                                <small className="text-success d-block mt-1">
+                                    ✓ Comprovante anexado: {ordemServico.comprovante}
+                                </small>
+                            )}
+                            {!ordemServico.id && (
+                                <small className="text-muted d-block mt-1">Salve a OS primeiro para anexar o comprovante.</small>
+                            )}
+                        </Form.Group>
+                    </Col>
+                </Row>
+                
+                {/* Anexos Gerais (sem limite) */}
+                <Row className="mb-3">
+                    <Col md={12}>
+                        <Form.Group>
+                            <Form.Label>Anexos Gerais (Documentos, fotos, PDFs, etc.)</Form.Label>
+                            <div className="d-flex align-items-center mb-2">
+                                <Form.Control
+                                    id="arquivoInput"
+                                    type="file"
+                                    name="arquivo"
+                                    onChange={handleFileChange}
+                                    className="me-2"
+                                    accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.zip,.rar,.txt"
+                                    style={faltandoCampos.includes('arquivosAnexados') ? { border: '2px solid red' } : {}}
+                                />
+                                <Button 
+                                    variant="success" 
+                                    size="sm" 
+                                    onClick={handleAnexarArquivo} 
+                                    disabled={!ordemServico.id || !arquivoParaUpload}
+                                    title="Anexar arquivo selecionado"
+                                >
+                                    <FaUpload size={14} className="me-1" /> 
+                                    Anexar
+                                </Button>
+                            </div>
+                            {!ordemServico.id ? (
+                                <small className="text-muted">Salve a OS primeiro para anexar arquivos.</small>
+                            ) : (
+                                <small className="text-muted">Formatos aceitos: PDF, JPG, PNG, DOC, ZIP, etc.</small>
+                            )}
+                        </Form.Group>
                     </Col>
                 </Row>
 
-                <Row className="mt-3 d-flex justify-content-center">
-                    <Col xs="auto">
-                        <Button
-                            variant="info"
-                            size="sm"
-                            className="px-3 me-2"
-                            onClick={testarValidacao}
+                {/* Lista de arquivos anexados */}
+                {ordemServico.arquivosAnexados.length > 0 && (
+                    <Row className="mb-3">
+                        <Col>
+                            <ListaArquivosAnexados
+                                arquivos={ordemServico.arquivosAnexados}
+                                onRemoverArquivo={handleRemoverArquivo}
+                            />
+                        </Col>
+                    </Row>
+                )}
+                
+                {/* Botões de Ação */}
+                <Row className="mb-3">
+                    <Col md={8} className="d-flex align-items-center">
+                        <Button 
+                            type="submit" 
+                            variant="primary" 
+                            size="md"
+                            className="px-4 py-2 me-3"
                         >
-                            Testar Validação
+                            <FaSave className="me-2" />
+                            {modoEdicao ? 'Atualizar OS' : 'Salvar Ordem de Serviço'}
                         </Button>
-                    </Col>
-                    <Col xs="auto">
                         <Button
-                            variant="secondary"
+                            variant="outline-secondary"
                             size="sm"
-                            className="px-3"
-                            onClick={testarAnexos}
-                        >
-                            Testar Anexos
-                        </Button>
-                    </Col>
-                    <Col xs="auto">
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            className="px-3"
                             onClick={resetForm}
+                            className="px-3"
+                            title="Limpar formulário"
                         >
                             <FaTimes className="me-1" /> Limpar
+                        </Button>
+                    </Col>
+                    <Col md={4} className="text-end">
+                        <Button
+                            variant="outline-info"
+                            size="sm"
+                            className="me-2"
+                            onClick={testarValidacao}
+                            title="Verificar campos obrigatórios"
+                        >
+                            Validar Campos
+                        </Button>
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={testarAnexos}
+                            title="Testar sistema de anexos"
+                        >
+                            Testar Anexos
                         </Button>
                     </Col>
                 </Row>

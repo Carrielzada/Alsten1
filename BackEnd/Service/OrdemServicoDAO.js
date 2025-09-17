@@ -402,7 +402,8 @@ class OrdemServicoDAO {
                     servicoRealizar: registro.servico_realizar,
                     valor: registro.valor,
                     etapaId: registro.etapa_id ? { id: registro.etapa_id, nome: registro.etapa_nome } : null,
-                    notaFiscal: registro.nota_fiscal
+                    notaFiscal: registro.nota_fiscal,
+                    comprovante: registro.comprovante
                 };
                 return os;
             } else {
@@ -499,6 +500,30 @@ class OrdemServicoDAO {
             return false;
         } catch (error) {
             console.error("Erro ao remover arquivo da Ordem de Serviço:", error);
+            throw error;
+        } finally {
+            conexao.release();
+        }
+    }
+
+    async atualizarComprovante(osId, nomeArquivo) {
+        const conexao = await conectar();
+        try {
+            // Primeiro, consulte se existe uma OS com este ID
+            const sqlVerificar = "SELECT id FROM ordem_servico WHERE id = ?";
+            const [resultado] = await conexao.query(sqlVerificar, [osId]);
+            
+            if (resultado.length === 0) {
+                return false; // OS não encontrada
+            }
+            
+            // Atualize o campo comprovante
+            const sql = "UPDATE ordem_servico SET comprovante = ? WHERE id = ?";
+            await conexao.query(sql, [nomeArquivo, osId]);
+            
+            return true;
+        } catch (error) {
+            console.error("Erro ao atualizar comprovante da Ordem de Serviço:", error);
             throw error;
         } finally {
             conexao.release();
