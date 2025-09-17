@@ -158,41 +158,41 @@ const TelaListagemLogsOS = () => {
                     {logSelecionado && (
                         <div>
                             <div className="row mb-3">
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Data/Hora:</strong>
                                     <p>{formatarData(logSelecionado.data_alteracao)}</p>
                                 </div>
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Usuário:</strong>
                                     <p>{logSelecionado.nome_usuario || 'Usuário não identificado'}</p>
                                 </div>
                             </div>
                             <div className="row mb-3">
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>OS ID:</strong>
                                     <p>{logSelecionado.ordem_servico_id}</p>
                                 </div>
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>ID do Log:</strong>
                                     <p>{logSelecionado.id}</p>
                                 </div>
                             </div>
                             <div className="row mb-3">
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Campo Alterado:</strong>
                                     <p>{getCampoLabel(logSelecionado.campo_alterado)}</p>
                                 </div>
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Campo Original:</strong>
                                     <p>{logSelecionado.campo_alterado}</p>
                                 </div>
                             </div>
                             <div className="row mb-3">
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Valor Anterior:</strong>
                                     <p className="text-muted">{logSelecionado.valor_anterior || 'N/A'}</p>
                                 </div>
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Novo Valor:</strong>
                                     <p className="text-success fw-bold">{logSelecionado.valor_novo || 'N/A'}</p>
                                 </div>

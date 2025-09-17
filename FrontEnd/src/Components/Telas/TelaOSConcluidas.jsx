@@ -5,8 +5,10 @@ import { FaSearch, FaFilter, FaEye, FaDownload, FaTimes } from 'react-icons/fa';
 // Layout será fornecido pelo LayoutModerno no App.js - não importar aqui
 import { buscarTodasOrdensServico } from '../../Services/ordemServicoService';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
+import { useToast } from '../../hooks/useToast';
 
 const TelaOSConcluidas = () => {
+    const toast = useToast();
     const [ordensServico, setOrdensServico] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -73,8 +75,20 @@ const TelaOSConcluidas = () => {
             }
             
             setError(null);
+            
+            // Toast informativo sobre quantas OS concluídas foram encontradas
+            if (osFiltradas.length === 0) {
+                toast.info('Nenhuma ordem de serviço concluída encontrada');
+            } else {
+                toast.success(`${osFiltradas.length} ordens de serviço concluídas carregadas`);
+            }
         } catch (err) {
-            setError(err.message);
+            console.error('Erro ao buscar ordens de serviço concluídas:', err);
+            const errorMessage = err?.response?.data?.mensagem || 
+                               err?.message || 
+                               'Erro ao carregar ordens de serviço concluídas';
+            setError(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -137,6 +151,14 @@ const TelaOSConcluidas = () => {
 
     const aplicarFiltrosBotao = () => {
         setPaginaAtual(1); // Voltar para a primeira página ao aplicar filtros
+        
+        // Contar filtros ativos
+        const filtrosAtivos = Object.values(filtros).filter(valor => valor && valor.trim()).length;
+        
+        if (filtrosAtivos > 0) {
+            toast.info(`Aplicando ${filtrosAtivos} filtro(s) aos resultados`);
+        }
+        
         fetchOrdensServico();
     };
 
@@ -161,6 +183,7 @@ const TelaOSConcluidas = () => {
             tecnico: ''
         });
         setPaginaAtual(1);
+        toast.info('Filtros limpos - exibindo todas as OS concluídas');
         fetchOrdensServico();
     };
 

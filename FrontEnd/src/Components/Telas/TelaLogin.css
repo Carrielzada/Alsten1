@@ -280,6 +280,26 @@ color: #191970;
   pointer-events: all;
 }
 
+/* Breakpoint para tablets */
+@media (max-width: 1024px) and (min-width: 871px) {
+  .signin-signup {
+    width: 60%;
+    left: 70%;
+  }
+  
+  .login-page form {
+    padding: 0rem 3rem;
+  }
+  
+  .left-panel {
+    padding: 3rem 12% 2rem 8%;
+  }
+  
+  .right-panel {
+    padding: 3rem 8% 2rem 12%;
+  }
+}
+
 @media (max-width: 870px) {
   .login-page {
     min-height: 800px;

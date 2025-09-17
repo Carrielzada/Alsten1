@@ -5,8 +5,10 @@ import { FaFilter, FaEye, FaTimes, FaTable, FaFileExport } from 'react-icons/fa'
 // Layout será fornecido pelo LayoutModerno - não importar aqui
 import { buscarTodasOrdensServico } from '../../Services/ordemServicoService';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
+import { useToast } from '../../hooks/useToast';
 
 const TelaRelatorioCompleto = () => {
+    const toast = useToast();
     const [ordensServico, setOrdensServico] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -61,7 +63,12 @@ const TelaRelatorioCompleto = () => {
             
             setError(null);
         } catch (err) {
-            setError(err.message);
+            console.error('Erro ao carregar relatório:', err);
+            const errorMessage = err?.response?.data?.mensagem || 
+                               err?.message || 
+                               'Erro ao carregar relatório completo';
+            setError(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -112,6 +119,7 @@ const TelaRelatorioCompleto = () => {
             diasReparo: ''
         });
         setPaginaAtual(1);
+        toast.info('Filtros limpos - exibindo todos os resultados');
         // fetchOrdensServico será chamado automaticamente pelo useEffect quando os filtros mudarem
     };
 
@@ -173,6 +181,8 @@ const TelaRelatorioCompleto = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        toast.success(`Relatório exportado com sucesso! ${ordensServico.length} registros salvos em CSV.`);
     };
 
     const renderPaginacao = () => {
@@ -277,7 +287,7 @@ const TelaRelatorioCompleto = () => {
                     {showFiltros && (
                         <div className="filtros-container mb-4 p-3" style={{ backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
                             <Row>
-                                <Col md={3}>
+                                <Col xs={12} sm={6} md={3}>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Cliente</Form.Label>
                                         <Form.Control 
@@ -290,7 +300,7 @@ const TelaRelatorioCompleto = () => {
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col md={3}>
+                                <Col xs={12} sm={6} md={3}>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Modelo</Form.Label>
                                         <Form.Control 
@@ -303,7 +313,7 @@ const TelaRelatorioCompleto = () => {
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col md={3}>
+                                <Col xs={12} sm={6} md={3}>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Nº Série</Form.Label>
                                         <Form.Control 
@@ -316,7 +326,7 @@ const TelaRelatorioCompleto = () => {
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col md={3}>
+                                <Col xs={12} sm={6} md={3}>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Fabricante</Form.Label>
                                         <Form.Control 

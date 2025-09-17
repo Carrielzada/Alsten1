@@ -7,6 +7,7 @@ import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope, FaSearch, FaT
 import FormCadOrdemServico from './Formularios/FormCadOrdemServico';
 import TelaLogsOS from './TelaLogsOS';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
+import { useToast } from '../../hooks/useToast';
 
 // Ensure you have run: npm install react-resizable
 import 'react-resizable/css/styles.css';
@@ -39,6 +40,7 @@ const ResizableHeader = ({ onResize, width, children, ...restProps }) => {
 };
 
 const TelaListagemOS = () => {
+    const toast = useToast();
     const [ordensServico, setOrdensServico] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -105,8 +107,18 @@ const TelaListagemOS = () => {
             }
             
             setError(null);
+            
+            // Mostrar toast de sucesso apenas se foi uma busca específica
+            if (termo && termo.trim()) {
+                toast.success(`Encontrados ${data.listaOrdensServico?.length || 0} resultados para "${termo}"`);
+            }
         } catch (err) {
-            setError(err.message);
+            console.error('Erro ao buscar ordens de serviço:', err);
+            const errorMessage = err?.response?.data?.mensagem || 
+                               err?.message || 
+                               'Erro ao carregar ordens de serviço';
+            setError(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -127,6 +139,7 @@ const TelaListagemOS = () => {
         setOrdemServicoEmEdicao(null);
         setFormDirty(false);
         fetchOrdensServico();
+        toast.success('Ordem de Serviço salva com sucesso!');
     };
 
     const handleCloseEditModal = () => {
@@ -416,6 +429,7 @@ const TelaListagemOS = () => {
                                         onClick={() => {
                                             setTermoBusca('');
                                             fetchOrdensServico(1, itensPorPagina, '');
+                                            toast.info('Filtros limpos - exibindo todas as ordens de serviço');
                                         }}
                                     >
                                         <FaTimes />

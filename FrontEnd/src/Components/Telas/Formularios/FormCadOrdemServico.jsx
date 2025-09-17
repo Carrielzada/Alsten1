@@ -186,6 +186,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     });
     const [dirty, setDirty] = useState(false);
     const [faltandoCampos, setFaltandoCampos] = useState([]);
+    const [loadingFormData, setLoadingFormData] = useState(true);
+    const [savingForm, setSavingForm] = useState(false);
 
     // Detecta alterações no formulário
     useEffect(() => {
@@ -219,6 +221,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     useEffect(() => {
         const carregarDadosCadastrais = async () => {
             try {
+                setLoadingFormData(true);
                 const token = localStorage.getItem('token');
                 const usuarioLogado = localStorage.getItem('usuarioLogado');
                 
@@ -319,6 +322,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
             } catch (error) {
                 console.error("Erro ao carregar dados dos cadastros:", error);
                 toast.error("Erro ao carregar dados dos cadastros.");
+            } finally {
+                setLoadingFormData(false);
             }
         };
 
@@ -638,6 +643,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         console.log('Dados da OS processados:', dadosProcessados);
 
         try {
+            setSavingForm(true);
             const response = await gravarOrdemServico(dadosProcessados);
 
             if (response.status) {
@@ -655,6 +661,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         } catch (error) {
             console.error("Erro ao salvar a Ordem de Serviço:", error);
             toast.error(error.message || "Não foi possível conectar com o servidor.");
+        } finally {
+            setSavingForm(false);
         }
     };
 
@@ -707,6 +715,17 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
       const d = new Date(date);
       if (isNaN(d)) return '';
       return d.toISOString().slice(0, 10);
+    }
+
+    if (loadingFormData) {
+        return (
+            <Container className="p-3 bg-white border rounded shadow-sm mx-auto form-cad-os text-center">
+                <div className="spinner-border text-primary my-5" role="status">
+                    <span className="visually-hidden">Carregando...</span>
+                </div>
+                <p className="mt-2">Carregando dados do formulário...</p>
+            </Container>
+        );
     }
 
     return (
@@ -1423,9 +1442,21 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             type="submit" 
                             variant="success"
                             size="md"
+                            disabled={savingForm}
                         >
-                            <FaSave className="me-2" />
-                            {modoEdicao ? 'Atualizar OS' : 'Salvar OS'}
+                            {savingForm ? (
+                                <>
+                                    <div className="spinner-border spinner-border-sm me-2" role="status">
+                                        <span className="visually-hidden">Salvando...</span>
+                                    </div>
+                                    Salvando...
+                                </>
+                            ) : (
+                                <>
+                                    <FaSave className="me-2" />
+                                    {modoEdicao ? 'Atualizar OS' : 'Salvar OS'}
+                                </>
+                            )}
                         </Button>
                         
                         <Button

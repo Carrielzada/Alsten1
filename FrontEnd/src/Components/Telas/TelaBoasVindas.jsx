@@ -73,7 +73,7 @@ const TelaBoasVindas = () => {
                 
                 <Row>
                     {funcionalidades.map((item, index) => (
-                        <Col md={4} key={index} className="mb-4">
+                        <Col xs={12} sm={6} lg={4} key={index} className="mb-4">
                             <Card className="h-100 shadow-sm hover-card">
                                 <Card.Body className="text-center p-4">
                                     {item.icone}
