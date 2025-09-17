@@ -387,15 +387,43 @@ class OrdemServicoCtrl {
     }
 
     async registrarLogsAlteracoes(dadosAntigos, dadosNovos, usuarioId, logDAO) {
+        // TODOS os campos da Ordem de Serviço para monitoramento completo
         const camposParaMonitorar = [
+            // Campos básicos
             'cliente', 'modeloEquipamento', 'defeitoAlegado', 'numeroSerie', 
             'fabricante', 'urgencia', 'tipoAnalise', 'tipoLacre', 'tipoLimpeza', 
-            'tipoTransporte', 'formaPagamento', 'etapa'
+            'tipoTransporte', 'formaPagamento', 'etapa',
+            
+            // Novos campos adicionados
+            'vendedor', 'diasPagamento', 'dataEntrega', 'dataAprovacaoOrcamento',
+            'diasReparo', 'dataEquipamentoPronto', 'informacoesConfidenciais',
+            'agendado', 'possuiAcessorio', 'tipoTransporteTexto', 'transporteCifFob',
+            'pedidoCompras', 'defeitoConstatado', 'servicoRealizar', 'valor',
+            'etapaId', 'comprovanteAprovacao', 'notaFiscal', 'comprovante'
         ];
 
         for (const campo of camposParaMonitorar) {
             const valorAntigo = dadosAntigos[campo];
             const valorNovo = dadosNovos[campo];
+
+            // Tratamento especial para checklistItems (array)
+            if (campo === 'checklistItems') {
+                const itensAntigos = Array.isArray(valorAntigo) ? valorAntigo : [];
+                const itensNovos = Array.isArray(valorNovo) ? valorNovo : [];
+                
+                if (JSON.stringify(itensAntigos.sort()) !== JSON.stringify(itensNovos.sort())) {
+                    const descricao = `Checklist alterado: ${itensAntigos.length} itens -> ${itensNovos.length} itens`;
+                    await logDAO.registrarLog(
+                        dadosNovos.id,
+                        usuarioId,
+                        'checklistItems',
+                        `${itensAntigos.length} itens`,
+                        `${itensNovos.length} itens`,
+                        descricao
+                    );
+                }
+                continue;
+            }
 
             const valorAntigoNormalizado = this.normalizarValor(valorAntigo);
             const valorNovoNormalizado = this.normalizarValor(valorNovo);
@@ -404,7 +432,9 @@ class OrdemServicoCtrl {
                 const valorAntigoStr = await this.extrairNomeDoValor(valorAntigo, campo);
                 const valorNovoStr = await this.extrairNomeDoValor(valorNovo, campo);
 
-                const descricao = `Campo "${campo}" alterado de "${valorAntigoStr}" para "${valorNovoStr}"`;
+                const nomeAmigavel = this.obterNomeAmigavelCampo(campo);
+                const descricao = `${nomeAmigavel} alterado de "${valorAntigoStr}" para "${valorNovoStr}"`;
+                
                 await logDAO.registrarLog(
                     dadosNovos.id,
                     usuarioId,
@@ -425,8 +455,28 @@ class OrdemServicoCtrl {
 
     async extrairNomeDoValor(valor, campo) {
         if (!valor) return 'N/A';
+        
+        // Campos booleanos
+        if (typeof valor === 'boolean') {
+            return valor ? 'Sim' : 'Não';
+        }
+        
+        // Campos de data
+        if (['dataEntrega', 'dataAprovacaoOrcamento', 'dataEquipamentoPronto'].includes(campo)) {
+            if (valor instanceof Date) return valor.toLocaleDateString('pt-BR');
+            if (typeof valor === 'string' && valor.match(/^\d{4}-\d{2}-\d{2}/)) {
+                return new Date(valor).toLocaleDateString('pt-BR');
+            }
+        }
+        
+        // Campos numéricos especiais
+        if (campo === 'valor' && typeof valor === 'number') {
+            return `R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        }
+        
         if (typeof valor === 'object') {
             switch (campo) {
+                // Campos básicos
                 case 'cliente': return valor.nome || valor.numeroDocumento || valor.id || 'Cliente';
                 case 'modeloEquipamento': return valor.modelo || valor.id || 'Modelo';
                 case 'fabricante': return valor.nome_fabricante || valor.id || 'Fabricante';
@@ -436,10 +486,59 @@ class OrdemServicoCtrl {
                 case 'tipoLimpeza': return valor.tipoLimpeza || valor.id || 'Tipo de Limpeza';
                 case 'tipoTransporte': return valor.tipoTransporte || valor.id || 'Tipo de Transporte';
                 case 'formaPagamento': return valor.pagamento || valor.id || 'Forma de Pagamento';
+                
+                // Novos campos
+                case 'vendedor': return valor.nome || valor.id || 'Vendedor';
+                case 'diasPagamento': return valor.dias || valor.descricao || valor.id || 'Dias de Pagamento';
+                case 'etapaId': return valor.nome || valor.etapa || valor.id || 'Etapa';
+                
                 default: return valor.id || JSON.stringify(valor);
             }
         }
+        
         return String(valor);
+    }
+
+    obterNomeAmigavelCampo(campo) {
+        const mapeamento = {
+            // Campos básicos
+            'cliente': 'Cliente',
+            'modeloEquipamento': 'Modelo de Equipamento',
+            'defeitoAlegado': 'Defeito Alegado',
+            'numeroSerie': 'Número de Série',
+            'fabricante': 'Fabricante',
+            'urgencia': 'Nível de Urgência',
+            'tipoAnalise': 'Tipo de Análise',
+            'tipoLacre': 'Tipo de Lacre',
+            'tipoLimpeza': 'Tipo de Limpeza',
+            'tipoTransporte': 'Tipo de Transporte',
+            'formaPagamento': 'Forma de Pagamento',
+            'etapa': 'Etapa',
+            
+            // Novos campos
+            'vendedor': 'Vendedor',
+            'diasPagamento': 'Dias de Pagamento',
+            'dataEntrega': 'Data de Entrega',
+            'dataAprovacaoOrcamento': 'Data de Aprovação do Orçamento',
+            'diasReparo': 'Dias de Reparo',
+            'dataEquipamentoPronto': 'Data do Equipamento Pronto',
+            'informacoesConfidenciais': 'Informações Confidenciais',
+            'checklistItems': 'Itens do Checklist',
+            'agendado': 'Agendado',
+            'possuiAcessorio': 'Possui Acessório',
+            'tipoTransporteTexto': 'Observações do Transporte',
+            'transporteCifFob': 'Transporte CIF/FOB',
+            'pedidoCompras': 'Pedido de Compras',
+            'defeitoConstatado': 'Defeito Constatado',
+            'servicoRealizar': 'Serviço a Realizar',
+            'valor': 'Valor',
+            'etapaId': 'Etapa Atual',
+            'comprovanteAprovacao': 'Comprovante de Aprovação',
+            'notaFiscal': 'Nota Fiscal',
+            'comprovante': 'Comprovante'
+        };
+        
+        return mapeamento[campo] || campo;
     }
 }
 

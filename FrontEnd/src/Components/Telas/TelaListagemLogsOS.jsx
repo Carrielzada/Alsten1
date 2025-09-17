@@ -50,18 +50,44 @@ const TelaListagemLogsOS = () => {
 
     const getCampoLabel = (campo) => {
         const labels = {
+            // Campos básicos
             'cliente': 'Cliente',
             'modeloEquipamento': 'Modelo do Equipamento',
             'defeitoAlegado': 'Defeito Alegado',
             'numeroSerie': 'Número de Série',
             'fabricante': 'Fabricante',
-            'urgencia': 'Urgência',
+            'urgencia': 'Nível de Urgência',
             'tipoAnalise': 'Tipo de Análise',
             'tipoLacre': 'Tipo de Lacre',
             'tipoLimpeza': 'Tipo de Limpeza',
             'tipoTransporte': 'Tipo de Transporte',
             'formaPagamento': 'Forma de Pagamento',
-            'etapa': 'Etapa'
+            'etapa': 'Etapa',
+            
+            // Novos campos
+            'vendedor': 'Vendedor',
+            'diasPagamento': 'Dias de Pagamento',
+            'dataEntrega': 'Data de Entrega',
+            'dataAprovacaoOrcamento': 'Data de Aprovação do Orçamento',
+            'diasReparo': 'Dias de Reparo',
+            'dataEquipamentoPronto': 'Data do Equipamento Pronto',
+            'informacoesConfidenciais': 'Informações Confidenciais',
+            'checklistItems': 'Itens do Checklist',
+            'agendado': 'Agendado',
+            'possuiAcessorio': 'Possui Acessório',
+            'tipoTransporteTexto': 'Observações do Transporte',
+            'transporteCifFob': 'Transporte CIF/FOB',
+            'pedidoCompras': 'Pedido de Compras',
+            'defeitoConstatado': 'Defeito Constatado',
+            'servicoRealizar': 'Serviço a Realizar',
+            'valor': 'Valor',
+            'etapaId': 'Etapa Atual',
+            'comprovanteAprovacao': 'Comprovante de Aprovação',
+            'notaFiscal': 'Nota Fiscal',
+            'comprovante': 'Comprovante',
+            
+            // Ações especiais
+            'criacao': 'Criação da OS'
         };
         return labels[campo] || campo;
     };
