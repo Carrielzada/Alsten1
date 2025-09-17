@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useCallback, useMemo } from 'react';
 import { Card, Form, Row, Col, Tabs, Tab } from 'react-bootstrap';
 import { FaUser, FaLock, FaSave, FaTimes, FaEdit } from 'react-icons/fa';
 // Layout será fornecido pelo LayoutModerno no App.js - não importar aqui
@@ -29,16 +29,16 @@ const TelaPerfil = () => {
     const [carregandoSenha, setCarregandoSenha] = useState(false);
     
 
-    // Handlers para dados pessoais
-    const handleDadosChange = (e) => {
+    // Handlers para dados pessoais - memoizados
+    const handleDadosChange = useCallback((e) => {
         const { name, value } = e.target;
         setDadosPessoais(prev => ({
             ...prev,
             [name]: value
         }));
-    };
+    }, []);
 
-    const handleSalvarDados = async () => {
+    const handleSalvarDados = useCallback(async () => {
         if (!dadosPessoais.nome.trim() || !dadosPessoais.email.trim()) {
             toast.warning('Nome e email são obrigatórios.');
             return;
@@ -74,26 +74,26 @@ const TelaPerfil = () => {
         } finally {
             setCarregandoDados(false);
         }
-    };
+    }, [dadosPessoais, usuarioLogado, setUsuarioLogado, toast]);
 
-    const handleCancelarEdicao = () => {
+    const handleCancelarEdicao = useCallback(() => {
         setDadosPessoais({
             nome: usuarioLogado.nome || '',
             email: usuarioLogado.email || ''
         });
         setEditandoDados(false);
-    };
+    }, [usuarioLogado]);
 
-    // Handlers para alteração de senha
-    const handleSenhaChange = (e) => {
+    // Handlers para alteração de senha - memoizados
+    const handleSenhaChange = useCallback((e) => {
         const { name, value } = e.target;
         setDadosSenha(prev => ({
             ...prev,
             [name]: value
         }));
-    };
+    }, []);
 
-    const handleAlterarSenha = async () => {
+    const handleAlterarSenha = useCallback(async () => {
         if (!dadosSenha.senhaAtual || !dadosSenha.novaSenha || !dadosSenha.confirmarSenha) {
             toast.warning('Todos os campos de senha são obrigatórios.');
             return;
@@ -131,10 +131,10 @@ const TelaPerfil = () => {
         } finally {
             setCarregandoSenha(false);
         }
-    };
+    }, [dadosSenha, usuarioLogado.email, toast]);
 
-    // Obter nome do role
-    const getRoleName = (roleId) => {
+    // Obter nome do role - memoizado
+    const getRoleName = useMemo(() => {
         const roles = {
             1: 'Administrador',
             2: 'Diretoria', 
@@ -143,8 +143,8 @@ const TelaPerfil = () => {
             5: 'Logística',
             6: 'Técnico'
         };
-        return roles[roleId] || 'Usuário';
-    };
+        return (roleId) => roles[roleId] || 'Usuário';
+    }, []);
 
     return (
         <>
