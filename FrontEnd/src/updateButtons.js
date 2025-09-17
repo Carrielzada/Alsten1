@@ -11,7 +11,6 @@ const arquivosParaAtualizar = [
   'TelaCadFabricante.jsx',
   'TelaCadServicoPadrao.jsx',
   'TelaCadUrgencia.jsx',
-  'TelaCadPropagandaPF.jsx',
   'TelaCadAnalise.jsx',
   'TelaCadDefeito.jsx',
   'TelaBoasVindas.jsx',
@@ -25,10 +24,7 @@ const arquivosParaAtualizar = [
   'TelaWorkInProgress.jsx',
   'TelaCadDefeitoAlegado.jsx',
   'TelaCadLacre.jsx',
-  'TelaCadPropagandaPJ.jsx',
   'TelaCadClientePF.jsx',
-  'TelaCliente.jsx',
-  'TelaCadPublicidadePJ.jsx',
   'TelaListagemOS.jsx',
   'TelaCadPagamento.jsx',
   'TelaOSConcluidas.jsx'

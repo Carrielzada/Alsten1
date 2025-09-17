@@ -171,8 +171,6 @@ export default class UsersDAO {
             row.email,
             row.password,
             row.role_id,
-            row.prop_publ,
-            row.id_dados,
             row.criado_em,
             row.atualizado_em
         );
