@@ -356,8 +356,8 @@ const TelaListagemOS = () => {
                             <FaEdit className="me-2" />
                             Listagem de Ordens de Serviço
                         </h2>
-                        <button className="btn btn-primary" onClick={handleNovaOS}>
-                            <FaPlus className="me-2" />
+                        <button className="btn btn-primary btn-sm" onClick={handleNovaOS}>
+                            <FaPlus />
                             Nova OS
                         </button>
                     </div>
@@ -379,22 +379,22 @@ const TelaListagemOS = () => {
                                     }}
                                 />
                                 <button 
-                                    className="btn btn-outline-secondary" 
+                                    className="btn btn-outline-secondary btn-sm" 
                                     type="button"
                                     onClick={() => fetchOrdensServico(1, itensPorPagina, termoBusca)}
                                 >
-                                    Buscar
+                                    <FaSearch />
                                 </button>
                                 {termoBusca && (
                                     <button 
-                                        className="btn btn-outline-secondary" 
+                                        className="btn btn-outline-danger btn-sm" 
                                         type="button"
                                         onClick={() => {
                                             setTermoBusca('');
                                             fetchOrdensServico(1, itensPorPagina, '');
                                         }}
                                     >
-                                        Limpar
+                                        <FaTimes />
                                     </button>
                                 )}
                             </div>

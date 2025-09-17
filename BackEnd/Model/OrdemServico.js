@@ -38,7 +38,7 @@ class OrdemServico {
         this.etapaId = etapaId?.id ? etapaId.id : etapaId;
         this.comprovanteAprovacao = comprovanteAprovacao;
         this.notaFiscal = notaFiscal;
-        this.comprovante = comprovante;
+        this.comprovante = comprovante; // Campo para UMA imagem de comprovante
     }
 
     // Método para adicionar um arquivo à lista

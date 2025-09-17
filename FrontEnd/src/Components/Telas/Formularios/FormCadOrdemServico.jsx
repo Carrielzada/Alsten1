@@ -343,6 +343,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                 valor: ordemServicoEmEdicao.valor ?? '',
                 notaFiscal: ordemServicoEmEdicao.notaFiscal ?? '',
                 comprovanteAprovacao: ordemServicoEmEdicao.comprovanteAprovacao ?? '',
+                comprovante: ordemServicoEmEdicao.comprovante ?? '',
                 // Garante que checklistItems seja sempre array
                 checklistItems: Array.isArray(ordemServicoEmEdicao.checklistItems)
                   ? ordemServicoEmEdicao.checklistItems
@@ -654,6 +655,15 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         if (dadosProcessados.transporteCifFob === '' || dadosProcessados.transporteCifFob === undefined) {
             dadosProcessados.transporteCifFob = null;
             console.log('Campo transporteCifFob convertido para null antes do envio');
+        }
+        
+        // Processar campo comprovante - se for um arquivo, será tratado separadamente
+        if (dadosProcessados.comprovante && typeof dadosProcessados.comprovante === 'object') {
+            // Se for um arquivo File, manter como está para upload
+            console.log('Campo comprovante é um arquivo, será enviado para upload');
+        } else if (dadosProcessados.comprovante === '') {
+            dadosProcessados.comprovante = null;
+            console.log('Campo comprovante convertido para null antes do envio');
         }
         
         console.log('Dados da OS processados:', dadosProcessados);
@@ -1000,8 +1010,99 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Col>
                 </Row>
 
+<<<<<<< HEAD
 
 
+=======
+                {/* Campo Comprovante - UMA IMAGEM APENAS */}
+                <Row className="mb-3">
+                    <Col md={6}>
+                        <Form.Group controlId="comprovante">
+                            <Form.Label>Comprovante (Imagem)</Form.Label>
+                            <Form.Control
+                                type="file"
+                                name="comprovante"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    markDirty();
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        // Validar se é uma imagem
+                                        if (!file.type.startsWith('image/')) {
+                                            toast.error('Por favor, selecione apenas arquivos de imagem.');
+                                            e.target.value = '';
+                                            return;
+                                        }
+                                        // Validar tamanho (máximo 5MB)
+                                        if (file.size > 5 * 1024 * 1024) {
+                                            toast.error('A imagem deve ter no máximo 5MB.');
+                                            e.target.value = '';
+                                            return;
+                                        }
+                                        setOrdemServico(prevState => ({
+                                            ...prevState,
+                                            comprovante: file
+                                        }));
+                                    }
+                                }}
+                            />
+                            <Form.Text className="text-muted">
+                                Apenas uma imagem (JPG, PNG, GIF, etc.) - Máximo 5MB
+                            </Form.Text>
+                        </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                        {ordemServico.comprovante && (
+                            <div className="mt-4">
+                                <p className="mb-2"><strong>Imagem selecionada:</strong></p>
+                                <div className="d-flex align-items-center">
+                                    <img 
+                                        src={typeof ordemServico.comprovante === 'string' ? 
+                                            `${process.env.REACT_APP_API_URL}/uploads/${ordemServico.comprovante}` : 
+                                            URL.createObjectURL(ordemServico.comprovante)
+                                        } 
+                                        alt="Comprovante" 
+                                        style={{ maxWidth: '100px', maxHeight: '100px', marginRight: '10px' }}
+                                        className="border rounded"
+                                    />
+                                    <Button 
+                                        variant="outline-danger" 
+                                        size="sm"
+                                        onClick={() => {
+                                            markDirty();
+                                            setOrdemServico(prevState => ({
+                                                ...prevState,
+                                                comprovante: ''
+                                            }));
+                                            document.querySelector('input[name="comprovante"]').value = '';
+                                        }}
+                                    >
+                                        <FaTimes />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </Col>
+                </Row>
+
+
+                {/* Componente Mobile para Upload de Imagens - TEMPORARIAMENTE COMENTADO */}
+                {/* 
+                <Row className="mb-3">
+                    <Col>
+                        <MobileImageUpload
+                            arquivos={ordemServico.arquivosAnexados}
+                            onFileSelect={handleAnexarArquivo}
+                            onFileRemove={handleRemoverArquivo}
+                            maxFiles={10}
+                            acceptedTypes="image/*"
+                        />
+                    </Col>
+                </Row>
+                */}
+
+
+>>>>>>> 153f7dff68df0911d789a58d52adf343f27db289
                 {/* Novos campos adicionados */}
                 <Row className="mb-3">
                     <Col md={6} sm={12} xs={12}>
@@ -1300,6 +1401,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                         </Form.Group>
                     </Col>
                 </Row>
+<<<<<<< HEAD
                 
                 {/* Campo Comprovante (UMA imagem) */}
                 <Row className="mb-3">
@@ -1410,15 +1512,103 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                         >
                             <FaSave className="me-2" />
                             {modoEdicao ? 'Atualizar OS' : 'Salvar Ordem de Serviço'}
+=======
+
+                {/* Seção de Anexos - Movida para o final */}
+                <hr className="my-4" />
+                <h6 className="mb-3">
+                    <FaPaperclip className="me-2" />
+                    Anexos do Sistema
+                </h6>
+                
+                <Row className="mb-3 align-items-end">
+                    <Col>
+                        <Form.Group controlId="arquivoInput">
+                            <Form.Label>Anexar Arquivos</Form.Label>
+                            <Form.Control
+                                type="file"
+                                name="arquivo"
+                                onChange={handleFileChange}
+                                style={faltandoCampos.includes('arquivosAnexados') ? { border: '2px solid red' } : {}}
+                            />
+                            <Form.Text className="text-muted">
+                                Aceita qualquer tipo de arquivo comum (PDF, DOC, XLS, etc.)
+                            </Form.Text>
+                        </Form.Group>
+                    </Col>
+                    <Col xs="auto">
+                        <Button variant="outline-secondary" onClick={handleAnexarArquivo} disabled={!ordemServico.id} size="sm">
+                            <FaPaperclip /> Anexar
+                        </Button>
+                    </Col>
+                </Row>
+                
+                {ordemServico.id ? (
+                    <small className="text-muted d-block mb-3">Anexe arquivos à OS salva.</small>
+                ) : (
+                    <small className="text-muted d-block mb-3">Salve a OS primeiro para anexar arquivos.</small>
+                )}
+
+                {/* Lista de arquivos anexados */}
+                {ordemServico.arquivosAnexados.length > 0 && (
+                    <Row className="mb-3">
+                        <Col>
+                            <ListaArquivosAnexados
+                                arquivos={ordemServico.arquivosAnexados}
+                                onRemoverArquivo={handleRemoverArquivo}
+                            />
+                        </Col>
+                    </Row>
+                )}
+
+                {/* Botão Salvar */}
+                <Row className="mb-3">
+                    <Col className="d-flex justify-content-center">
+                        <Button 
+                            type="submit" 
+                            variant="primary" 
+                            size="lg"
+                            className="px-4"
+                        >
+                            <FaSave />
+                            Salvar OS
+                        </Button>
+                    </Col>
+                </Row>
+
+                <Row className="mt-3 d-flex justify-content-center">
+                    <Col xs="auto">
+                        <Button
+                            variant="outline-info"
+                            size="sm"
+                            className="px-2 me-2"
+                            onClick={testarValidacao}
+                        >
+                            Testar
+>>>>>>> 153f7dff68df0911d789a58d52adf343f27db289
                         </Button>
                         <Button
                             variant="outline-secondary"
                             size="sm"
+<<<<<<< HEAD
+=======
+                            className="px-2 me-2"
+                            onClick={testarAnexos}
+                        >
+                            Anexos
+                        </Button>
+                    </Col>
+                    <Col xs="auto">
+                        <Button
+                            variant="outline-danger"
+                            size="sm"
+                            className="px-2"
+>>>>>>> 153f7dff68df0911d789a58d52adf343f27db289
                             onClick={resetForm}
                             className="px-3"
                             title="Limpar formulário"
                         >
-                            <FaTimes className="me-1" /> Limpar
+                            <FaTimes /> Limpar
                         </Button>
                     </Col>
                     <Col md={4} className="text-end">
