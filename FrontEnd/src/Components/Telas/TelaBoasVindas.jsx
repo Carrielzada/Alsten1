@@ -3,7 +3,7 @@ import { Card, Row, Col } from 'react-bootstrap';
 import Button from '../UI/Button';
 import { FaClipboardList, FaTools, FaFileAlt, FaUserCog, FaChartLine } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import LayoutModerno from '../LayoutModerno/LayoutModerno';
+// Layout será fornecido pelo LayoutModerno no App.js - não importar aqui
 
 const TelaBoasVindas = () => {
     const navigate = useNavigate();
@@ -47,7 +47,7 @@ const TelaBoasVindas = () => {
     ];
 
     return (
-        <LayoutModerno>
+        <>
             <div className="container-fluid px-4">
                 <div className="py-3">
                 <Card className="shadow-sm mb-5">
@@ -117,7 +117,7 @@ const TelaBoasVindas = () => {
                     box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
                 }
             `}</style>
-        </LayoutModerno>
+        </>
     );
 };
 

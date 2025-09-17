@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Form, Card, Row, Col, Badge, Spinner } from 'react-bootstrap';
 import Button from '../UI/Button';
 import { FaFilter, FaEye, FaTimes, FaTable, FaFileExport } from 'react-icons/fa';
-import Layout from '../Templates2/Layout';
+// Layout será fornecido pelo LayoutModerno - não importar aqui
 import { buscarTodasOrdensServico } from '../../Services/ordemServicoService';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
 
@@ -245,7 +245,7 @@ const TelaRelatorioCompleto = () => {
     };
 
     return (
-        <Layout>
+        <>
             <Card className="shadow-sm">
                 <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
                     <div className="d-flex align-items-center">
@@ -635,7 +635,7 @@ const TelaRelatorioCompleto = () => {
                 cliente={clienteSelecionado} 
                 title="Detalhes do Cliente"
             />
-        </Layout>
+        </>
     );
 };
 

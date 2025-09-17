@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/static/css/main.5c63489a.css",
-    "main.js": "/static/js/main.67d47e86.js",
+    "main.css": "/static/css/main.add3de3b.css",
+    "main.js": "/static/js/main.9f8731a3.js",
     "static/media/logoalsten.png": "/static/media/logoalsten.891041513dc78610c2da.png",
     "static/media/pagina404.png": "/static/media/pagina404.4bf0805d8d55a31c5142.png",
     "index.html": "/index.html"
   },
   "entrypoints": [
-    "static/css/main.5c63489a.css",
-    "static/js/main.67d47e86.js"
+    "static/css/main.add3de3b.css",
+    "static/js/main.9f8731a3.js"
   ]
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Form, Card, Row, Col, Badge, Spinner, Modal } from 'react-bootstrap';
 import Button from '../UI/Button';
 import { FaSearch, FaFilter, FaEye, FaDownload, FaTimes } from 'react-icons/fa';
-import LayoutModerno from '../LayoutModerno/LayoutModerno';
+// Layout será fornecido pelo LayoutModerno no App.js - não importar aqui
 import { buscarTodasOrdensServico } from '../../Services/ordemServicoService';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
 
@@ -266,8 +266,7 @@ const TelaOSConcluidas = () => {
     };
 
     return (
-        <LayoutModerno>
-            <div className="container-fluid px-4">
+        <div className="container-fluid px-4">
                 <Card className="mb-4 shadow-sm">
                 <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 className="mb-0">Ordens de Serviço Concluídas</h5>
@@ -649,8 +648,7 @@ const TelaOSConcluidas = () => {
                     </Button>
                 </Modal.Footer>
             </Modal>
-            </div>
-        </LayoutModerno>
+        </div>
     );
 };
 

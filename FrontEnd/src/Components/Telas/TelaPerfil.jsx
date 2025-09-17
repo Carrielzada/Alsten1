@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Card, Form, Row, Col, Alert, Tabs, Tab } from 'react-bootstrap';
 import { FaUser, FaLock, FaSave, FaTimes, FaEdit } from 'react-icons/fa';
-import LayoutModerno from '../LayoutModerno/LayoutModerno';
+// Layout será fornecido pelo LayoutModerno no App.js - não importar aqui
 import Button from '../UI/Button';
 import { ContextoUsuarioLogado } from '../../App';
 import { atualizarMeuPerfil, alterarSenha } from '../../Services/usersService';
@@ -158,7 +158,7 @@ const TelaPerfil = () => {
     };
 
     return (
-        <LayoutModerno>
+        <>
             <div className="container-fluid px-4">
                 
                 <Row className="justify-content-center">
@@ -331,7 +331,7 @@ const TelaPerfil = () => {
                 hideProgressBar={false}
                 theme="colored" 
             />
-        </LayoutModerno>
+        </>
     );
 };
 

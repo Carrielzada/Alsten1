@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Resizable } from 'react-resizable';
 import { buscarTodasOrdensServico, consultarOrdemServicoPorId } from '../../Services/ordemServicoService';
-import Layout from '../Templates2/Layout';
+// Layout será fornecido pelo LayoutModerno - não importar aqui
 import { Modal as BootstrapModal, Badge, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope, FaSearch, FaTimes } from 'react-icons/fa';
 import FormCadOrdemServico from './Formularios/FormCadOrdemServico';
@@ -274,20 +274,19 @@ const TelaListagemOS = () => {
     };
 
 
-    if (loading) return <Layout>
-         <div className="text-center my-5">
-             <div className="spinner-border text-primary" role="status">
-                 <span className="visually-hidden">Carregando...</span>
-             </div>
-             <p className="mt-2">Carregando ordens de serviço (página {paginaAtual})...</p>
-             <p className="text-muted small">Mostrando {itensPorPagina} registros por página para um equilíbrio entre desempenho e usabilidade</p>
-         </div>
-     </Layout>;
-    if (error) return <Layout><p>Erro ao carregar ordens de serviço: {error}</p></Layout>;
+    if (loading) return (
+        <div className="text-center my-5">
+            <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Carregando...</span>
+            </div>
+            <p className="mt-2">Carregando ordens de serviço (página {paginaAtual})...</p>
+            <p className="text-muted small">Mostrando {itensPorPagina} registros por página para um equilíbrio entre desempenho e usabilidade</p>
+        </div>
+    );
+    if (error) return <p>Erro ao carregar ordens de serviço: {error}</p>;
 
     return (
-        <Layout>
-            <div className="container-fluid">
+        <div className="container-fluid">
                 <style>{`
                     /* Resizable handle styles */
                     .resizable-table th {
@@ -665,8 +664,7 @@ const TelaListagemOS = () => {
                     cliente={clienteSelecionado}
                     title="Detalhes do Cliente"
                 />
-            </div>
-        </Layout>
+        </div>
     );
 };
 

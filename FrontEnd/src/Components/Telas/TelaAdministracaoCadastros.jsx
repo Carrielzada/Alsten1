@@ -5,7 +5,7 @@ import {
     FaShippingFast, FaTruck, FaExclamationTriangle, FaVial, 
     FaBroom, FaUserShield, FaCreditCard 
 } from 'react-icons/fa';
-import Layout from '../Templates2/Layout.jsx';
+// Layout será fornecido pelo LayoutModerno - não importar aqui
 import CardCadastro from '../Cards/CardCadastro';
 import { ContextoUsuarioLogado } from '../../App';
 
@@ -120,8 +120,7 @@ const TelaAdministracaoCadastros = () => {
     ];
 
     return (
-        <Layout>
-            <Container fluid className="py-4">
+        <Container fluid className="py-4">
                 {/* Cabeçalho */}
                 <Row className="mb-4">
                     <Col>
@@ -208,8 +207,7 @@ const TelaAdministracaoCadastros = () => {
                         </Card>
                     </Col>
                 </Row>
-            </Container>
-        </Layout>
+        </Container>
     );
 };
 

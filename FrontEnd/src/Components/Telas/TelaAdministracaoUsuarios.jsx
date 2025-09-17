@@ -6,7 +6,7 @@ import {
     FaUser, FaEnvelope, FaClock, FaFilter 
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import Layout from '../Templates2/Layout.jsx';
+// Layout será fornecido pelo LayoutModerno - não importar aqui
 import FormUsuario from '../Formularios/FormUsuario';
 import { ContextoUsuarioLogado } from '../../App';
 import { 
@@ -188,20 +188,17 @@ const TelaAdministracaoUsuarios = () => {
 
     if (loading) {
         return (
-            <Layout>
-                <div className="text-center py-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Carregando...</span>
-                    </div>
-                    <p className="mt-2">Carregando usuários...</p>
+            <div className="text-center py-5">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Carregando...</span>
                 </div>
-            </Layout>
+                <p className="mt-2">Carregando usuários...</p>
+            </div>
         );
     }
 
     return (
-        <Layout>
-            <Container fluid className="py-4">
+        <Container fluid className="py-4">
                 {/* Cabeçalho */}
                 <Row className="mb-4">
                     <Col>
@@ -473,8 +470,7 @@ const TelaAdministracaoUsuarios = () => {
                         </Button>
                     </Modal.Footer>
                 </Modal>
-            </Container>
-        </Layout>
+        </Container>
     );
 };
 
