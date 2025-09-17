@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Form, Row, Col, Container } from "react-bootstrap";
-import { FaSave, FaTimes, FaPaperclip, FaEye, FaVial } from "react-icons/fa";
+import { FaSave, FaTimes, FaPaperclip, FaEye, FaVial, FaPrint, FaFilePdf, FaDownload } from "react-icons/fa";
 import Button from '../../UI/Button'; // Nosso Button moderno que substitui o Bootstrap
 import CaixaSelecaoPesquisavel from '../../busca/CaixaSelecaoPesquisavel';
 import { buscarFabricantes } from '../../../Services/fabricanteService';
@@ -126,6 +126,34 @@ function usuarioPodeAcessarEtapa(userRole, etapa) {
 function getEtapasPermitidas(userRole) {
     const acesso = acessoPorNivel[userRole];
     return acesso ? acesso.etapasPermitidas : [];
+}
+
+// Função para calcular data de entrega baseada em dias úteis
+function calcularDataEntregaUteis(dataAprovacao, diasReparo) {
+    if (!dataAprovacao || !diasReparo || diasReparo <= 0) {
+        return null;
+    }
+    
+    const dataInicial = new Date(dataAprovacao);
+    let diasAdicionados = 0;
+    let dataCalculada = new Date(dataInicial);
+    
+    // Avançar para o próximo dia útil se a aprovação foi em fim de semana
+    while (dataCalculada.getDay() === 0 || dataCalculada.getDay() === 6) {
+        dataCalculada.setDate(dataCalculada.getDate() + 1);
+    }
+    
+    // Contar apenas dias úteis (segunda a sexta)
+    while (diasAdicionados < diasReparo) {
+        dataCalculada.setDate(dataCalculada.getDate() + 1);
+        
+        // Verificar se é dia útil (1=segunda, 2=terça, ..., 5=sexta)
+        if (dataCalculada.getDay() >= 1 && dataCalculada.getDay() <= 5) {
+            diasAdicionados++;
+        }
+    }
+    
+    return dataCalculada.toISOString().split('T')[0];
 }
 
 // Lista ordenada das etapas conforme o fluxo do processo
@@ -495,6 +523,30 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         }
     }, [vendedores, modoEdicao, ordemServico.vendedor]);
 
+    // 📅 Cálculo automático da data de entrega
+    useEffect(() => {
+        if (ordemServico.dataAprovacaoOrcamento && ordemServico.diasReparo && ordemServico.diasReparo > 0) {
+            const novaDataEntrega = calcularDataEntregaUteis(
+                ordemServico.dataAprovacaoOrcamento, 
+                parseInt(ordemServico.diasReparo)
+            );
+            
+            if (novaDataEntrega && novaDataEntrega !== ordemServico.dataEquipamentoPronto) {
+                console.log('Cálculo automático:', {
+                    aprovacao: ordemServico.dataAprovacaoOrcamento,
+                    diasReparo: ordemServico.diasReparo,
+                    dataCalculada: novaDataEntrega
+                });
+                
+                setOrdemServico(prevState => ({
+                    ...prevState,
+                    dataEquipamentoPronto: novaDataEntrega
+                }));
+                markDirty();
+            }
+        }
+    }, [ordemServico.dataAprovacaoOrcamento, ordemServico.diasReparo]);
+
     const handleInputChange = (e) => {
         markDirty();
         const { name, value } = e.target;
@@ -777,6 +829,41 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
             toast.error(error.message || "Não foi possível conectar com o servidor.");
         } finally {
             setSavingForm(false);
+        }
+    };
+
+    // Funções para geração de PDF
+    const gerarPDF = async (opcoes = {}) => {
+        if (!ordemServico.id) {
+            toast.warn('Salve a OS primeiro para gerar o PDF.');
+            return;
+        }
+
+        try {
+            const { incluirVendedor = true, incluirTecnico = true, acao = 'download' } = opcoes;
+            
+            const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+            const url = `${baseUrl}/pdf/orcamento/${ordemServico.id}${
+                acao === 'visualizar' ? '/visualizar' : ''
+            }?incluirVendedor=${incluirVendedor}&incluirTecnico=${incluirTecnico}&formato=${acao === 'visualizar' ? 'inline' : 'download'}`;
+            
+            if (acao === 'visualizar') {
+                // Abrir em nova aba para visualizar
+                window.open(url, '_blank');
+                toast.info('PDF aberto em nova aba!');
+            } else {
+                // Download direto
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `Orcamento_OS_${ordemServico.id}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                toast.success('PDF baixado com sucesso!');
+            }
+        } catch (error) {
+            console.error('Erro ao gerar PDF:', error);
+            toast.error('Erro ao gerar PDF.');
         }
     };
 
@@ -1254,13 +1341,31 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                 <Row className="mb-3">
                     <Col md={6}>
                         <Form.Group controlId="dataEquipamentoPronto">
-                            <Form.Label>Data do Equipamento Pronto</Form.Label>
+                            <Form.Label>
+                                Data do Equipamento Pronto 
+                                {ordemServico.dataAprovacaoOrcamento && ordemServico.diasReparo && (
+                                    <small className="text-success ms-2">
+                                        📅 (Calculado automaticamente)
+                                    </small>
+                                )}
+                            </Form.Label>
                             <Form.Control
                                 type="date"
                                 name="dataEquipamentoPronto"
                                 value={toInputDateString(ordemServico.dataEquipamentoPronto)}
                                 onChange={handleInputChange}
+                                style={{
+                                    backgroundColor: ordemServico.dataAprovacaoOrcamento && ordemServico.diasReparo ? '#f8f9fa' : 'white',
+                                    borderColor: ordemServico.dataAprovacaoOrcamento && ordemServico.diasReparo ? '#28a745' : '#ced4da'
+                                }}
                             />
+                            {ordemServico.dataAprovacaoOrcamento && ordemServico.diasReparo && (
+                                <Form.Text className="text-success">
+                                    <small>
+                                        ℹ️ Data calculada: {ordemServico.dataAprovacaoOrcamento} + {ordemServico.diasReparo} dias úteis
+                                    </small>
+                                </Form.Text>
+                            )}
                         </Form.Group>
                     </Col>
                 </Row>
