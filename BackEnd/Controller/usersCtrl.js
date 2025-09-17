@@ -184,6 +184,8 @@ export default class UsersCtrl {
         }
     }
     
+    // Método consultarVendedores removido - usando consultar() diretamente com permissões adequadas
+
     async atualizarDadosUsuario(req, res) {
     res.type("application/json");
 

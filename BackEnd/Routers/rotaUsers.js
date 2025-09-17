@@ -11,9 +11,9 @@ rotaUsers.post('/registrar', (req, res) => usersCtrl.gravar(req, res));
 // Rotas protegidas que requerem autenticação
 rotaUsers.put('/alterarSenha', verificarAutenticacao, (req, res) => usersCtrl.atualizar(req, res)); // altera senha de usuario
 
-// 🔒 ROTAS ADMINISTRATIVAS - Apenas Admin (role 1)
-rotaUsers.get('/role', verificarAutenticacao, verificarRole(1), (req, res) => usersCtrl.consultarPorRole(req, res)); // consulta user por role
-rotaUsers.get('/', verificarAutenticacao, verificarRole(1), (req, res) => usersCtrl.consultar(req, res)); //consulta todos os usuários
+// 🔒 ROTAS ADMINISTRATIVAS - Admin para gestão, outros roles para consulta OS
+rotaUsers.get('/role', verificarAutenticacao, verificarRole(1), (req, res) => usersCtrl.consultarPorRole(req, res)); // consulta user por role - apenas Admin
+rotaUsers.get('/', verificarAutenticacao, verificarRole([1, 2, 3, 4, 5, 6]), (req, res) => usersCtrl.consultar(req, res)); // consulta usuários - todos podem (para OS)
 rotaUsers.delete('/:id', verificarAutenticacao, verificarRole(1), (req, res) => usersCtrl.excluir(req, res)); //deleta por id
 rotaUsers.put('/:id', verificarAutenticacao, verificarRole(1), (req, res) => usersCtrl.atualizarDadosUsuario(req, res)); // atualizar qualquer usuario
 
@@ -26,5 +26,7 @@ rotaUsers.put('/meuPerfil', verificarAutenticacao, (req, res) => {
     // Chama o método de atualização
     usersCtrl.atualizarDadosUsuario(req, res);
 });
+
+// Endpoint /vendedores removido - usando /users diretamente com permissões adequadas
 
 export default rotaUsers;

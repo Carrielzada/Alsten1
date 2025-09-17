@@ -111,7 +111,7 @@ export function logout(req, res) {
     res.status(200).json({ status: true, mensagem: "Logout realizado com sucesso!" });
 }
 
-export function verificarRole(...requiredRoles) {
+export function verificarRole(requiredRoles) {
     return (req, res, next) => {
         const usuario = req.user;
 
@@ -119,7 +119,10 @@ export function verificarRole(...requiredRoles) {
             return res.status(401).json({ mensagem: "Usuário não autenticado!" });
         }
 
-        if (!requiredRoles.includes(usuario.role)) {
+        // Suporta tanto array quanto argumentos individuais
+        const rolesArray = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
+        
+        if (!rolesArray.includes(usuario.role)) {
             return res.status(403).json({ mensagem: "Acesso negado! Permissão insuficiente." });
         }
 
