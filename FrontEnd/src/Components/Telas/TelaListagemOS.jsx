@@ -3,7 +3,7 @@ import { Resizable } from 'react-resizable';
 import { buscarTodasOrdensServico, consultarOrdemServicoPorId } from '../../Services/ordemServicoService';
 import Layout from '../Templates2/Layout';
 import { Modal as BootstrapModal, Badge, Tooltip, OverlayTrigger } from 'react-bootstrap';
-import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope, FaSearch, FaTimes } from 'react-icons/fa';
 import FormCadOrdemServico from './Formularios/FormCadOrdemServico';
 import TelaLogsOS from './TelaLogsOS';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
