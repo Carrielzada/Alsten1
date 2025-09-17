@@ -110,8 +110,17 @@ function AppContent() {
         <Route path="/cadastros/defeito-alegado" element={<TelaCadDefeitoAlegado />} />
         <Route path="/cadastros/clientes" element={<TelaCadastroClientes />} />
         <Route path="/cadastros/servico-realizado" element={<TelaCadServicoPadrao />} />
-        <Route path="/admin/cadastros" element={<TelaAdministracaoCadastros />} />
-        <Route path="/admin/usuarios" element={<TelaAdministracaoUsuarios />} />
+        {/* Rotas administrativas protegidas - apenas para Admin (role 1) */}
+        <Route path="/admin/cadastros" element={
+          <ProtectedComponent allowedRoles={[1]} usuarioLogado={usuarioLogado}>
+            <TelaAdministracaoCadastros />
+          </ProtectedComponent>
+        } />
+        <Route path="/admin/usuarios" element={
+          <ProtectedComponent allowedRoles={[1]} usuarioLogado={usuarioLogado}>
+            <TelaAdministracaoUsuarios />
+          </ProtectedComponent>
+        } />
         <Route path="/meu-perfil" element={<TelaPerfil />} />
         <Route path="/cadastrar-ordem-servico" element={<TelaCadOrdemServico />} />
         <Route path="/cadastrar-ordem-servico/:id" element={<TelaCadOrdemServico />} />

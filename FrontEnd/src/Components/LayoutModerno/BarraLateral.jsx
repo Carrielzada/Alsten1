@@ -1,9 +1,14 @@
 import { Link } from 'react-router-dom';
+import { useContext } from 'react';
+import { ContextoUsuarioLogado } from '../../App';
 import './BarraLateral.css'; // Pode ser mesclado com LayoutModerno.css ou mantido separado
 
 // Adicione className às props
 const BarraLateral = ({ className }) => {
-  const menuItems = [
+  const { usuarioLogado } = useContext(ContextoUsuarioLogado);
+  const isAdmin = usuarioLogado?.role === 1;
+  // Itens do menu básico para todos os usuários
+  const baseMenuItems = [
     { path: '/boas-vindas', label: 'Início', icon: 'FaHome' },
     { path: '/ordens-servico', label: 'Ordens de Serviço', icon: 'FaBoxOpen' },
     { path: '/os-concluidas', label: 'OS Concluídas', icon: 'FaCheckCircle' },
@@ -24,19 +29,27 @@ const BarraLateral = ({ className }) => {
         { path: '/cadastrar-ordem-servico', label: 'Cadastrar ordem de serviço' },
       ],
     },
-    {
-      label: 'Admin',
-      icon: 'FaUserCog',
-      subItems: [
-        { path: '/admin/usuarios', label: 'Usuários do Sistema' },
-        { path: '/meu-perfil', label: 'Meu Perfil' },
-        { path: '/admin/configuracoes', label: 'Configurações' },
-        { path: '/admin/logs', label: 'Logs do Sistema' },
-        { path: '/admin/relatorios', label: 'Relatórios' },
-      ],
-    },
-    // Adicionar mais itens de menu conforme necessário
   ];
+
+  // Menu administrativo (apenas para Admin - role 1)
+  const adminMenuItems = {
+    label: 'Admin',
+    icon: 'FaUserCog',
+    subItems: [
+      { path: '/admin/cadastros', label: 'Administração de Cadastros' },
+      { path: '/admin/usuarios', label: 'Usuários do Sistema' },
+      { path: '/meu-perfil', label: 'Meu Perfil' },
+    ],
+  };
+
+  // Construir menu dinâmico baseado no role do usuário
+  const menuItems = isAdmin ? [...baseMenuItems, adminMenuItems] : [...baseMenuItems, {
+    label: 'Perfil',
+    icon: 'FaUser',
+    subItems: [
+      { path: '/meu-perfil', label: 'Meu Perfil' },
+    ],
+  }];
 
   const navClass = `barra-lateral ${className || ''}`;
 
