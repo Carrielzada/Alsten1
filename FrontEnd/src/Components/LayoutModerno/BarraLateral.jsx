@@ -12,31 +12,14 @@ const BarraLateral = ({ className }) => {
     { path: '/boas-vindas', label: 'Início', icon: 'FaHome' },
     { path: '/ordens-servico', label: 'Ordens de Serviço', icon: 'FaBoxOpen' },
     { path: '/os-concluidas', label: 'OS Concluídas', icon: 'FaCheckCircle' },
-    {
-      label: 'Cadastros',
-      icon: 'FaCog',
-      subItems: [
-        { path: '/cadastros/clientes', label: 'Clientes' },
-        { path: '/cadastros/modelo-equipamento', label: 'Modelos de Equipamento' },
-        { path: '/cadastros/pagamento', label: 'Formas de Pagamentos' },
-        { path: '/cadastros/urgencia', label: 'Níveis de Urgência' },
-        { path: '/cadastros/tipo-lacre', label: 'Tipos de Lacre' },
-        { path: '/cadastros/tipo-analise', label: 'Tipos de Análise' },
-        { path: '/cadastros/tipo-limpeza', label: 'Tipos de Limpeza' },
-        { path: '/cadastros/tipo-transporte', label: 'Tipos de Transporte' },
-        { path: '/cadastros/defeito-alegado', label: 'Defeito Alegado' },
-        { path: '/cadastros/servico-realizado', label: 'Serviço a Realizar' },
-        { path: '/cadastrar-ordem-servico', label: 'Cadastrar ordem de serviço' },
-      ],
-    },
+    { path: '/cadastros', label: 'Cadastros', icon: 'FaCog' },
   ];
 
   // Menu administrativo (apenas para Admin - role 1)
   const adminMenuItems = {
     label: 'Admin',
-    icon: 'FaUserCog',
+    icon: 'FaUserShield',
     subItems: [
-      { path: '/admin/cadastros', label: 'Administração de Cadastros' },
       { path: '/admin/usuarios', label: 'Usuários do Sistema' },
       { path: '/meu-perfil', label: 'Meu Perfil' },
     ],

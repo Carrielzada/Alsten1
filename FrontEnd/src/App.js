@@ -22,6 +22,7 @@ import TelaCadFabricante from "./Components/Telas/TelaCadFabricante";
 import TelaCadDefeitoAlegado from "./Components/Telas/TelaCadDefeitoAlegado"; 
 import TelaCadastroClientes from "./Components/Telas/TelaCadastroClientes";
 import TelaAdministracaoCadastros from "./Components/Telas/TelaAdministracaoCadastros";
+import TelaCadastros from "./Components/Telas/TelaCadastros";
 import TelaAdministracaoUsuarios from "./Components/Telas/TelaAdministracaoUsuarios";
 import TelaCadServicoPadrao from "./Components/Telas/TelaCadServicoPadrao";
 import TelaRelatorioCompleto from "./Components/Telas/TelaRelatorioCompleto";
@@ -110,6 +111,7 @@ function AppContent() {
         <Route path="/cadastros/defeito-alegado" element={<TelaCadDefeitoAlegado />} />
         <Route path="/cadastros/clientes" element={<TelaCadastroClientes />} />
         <Route path="/cadastros/servico-realizado" element={<TelaCadServicoPadrao />} />
+        <Route path="/cadastros" element={<TelaCadastros />} />
         {/* Rotas administrativas protegidas - apenas para Admin (role 1) */}
         <Route path="/admin/cadastros" element={
           <ProtectedComponent allowedRoles={[1]} usuarioLogado={usuarioLogado}>
