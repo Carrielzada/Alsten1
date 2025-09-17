@@ -5,7 +5,7 @@ import {
     FaShippingFast, FaTruck, FaExclamationTriangle, FaVial, 
     FaBroom, FaUserShield, FaCreditCard 
 } from 'react-icons/fa';
-import Layout from './Templates2/Layout';
+import Layout from '../Templates2/Layout.jsx';
 import CardCadastro from '../Cards/CardCadastro';
 import { ContextoUsuarioLogado } from '../../App';
 

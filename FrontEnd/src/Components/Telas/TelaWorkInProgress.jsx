@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Card, Row, Col } from 'react-bootstrap';
 import { FaHammer, FaCogs, FaRocket, FaInfoCircle } from 'react-icons/fa';
-import Layout from './Templates2/Layout';
+import Layout from '../Templates2/Layout.jsx';
 
 const TelaWorkInProgress = ({ 
     title = "Funcionalidade em Desenvolvimento", 

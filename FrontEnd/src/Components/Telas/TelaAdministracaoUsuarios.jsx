@@ -5,7 +5,7 @@ import {
     FaUser, FaEnvelope, FaClock, FaFilter 
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import Layout from './Templates2/Layout';
+import Layout from '../Templates2/Layout.jsx';
 import FormUsuario from '../Formularios/FormUsuario';
 import { ContextoUsuarioLogado } from '../../App';
 import { 
