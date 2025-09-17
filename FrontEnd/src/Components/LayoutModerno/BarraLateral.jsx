@@ -1,12 +1,21 @@
 import { Link } from 'react-router-dom';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { ContextoUsuarioLogado } from '../../App';
+import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import './BarraLateral.css'; // Pode ser mesclado com LayoutModerno.css ou mantido separado
 
 // Adicione className às props
 const BarraLateral = ({ className }) => {
   const { usuarioLogado } = useContext(ContextoUsuarioLogado);
   const isAdmin = usuarioLogado?.role === 1;
+  const [openMenus, setOpenMenus] = useState({ cadastros: false, admin: false, perfil: false });
+  
+  const toggleMenu = (menuKey) => {
+    setOpenMenus(prev => ({
+      ...prev,
+      [menuKey]: !prev[menuKey]
+    }));
+  };
   // Itens do menu básico para todos os usuários
   const baseMenuItems = [
     { path: '/boas-vindas', label: 'Início', icon: 'FaHome' },
@@ -61,29 +70,46 @@ const BarraLateral = ({ className }) => {
         <h1 className="logo-texto">Alsten</h1>
       </div>
       <ul className="menu-lista">
-        {menuItems.map((item, index) => (
-          <li key={index} className="menu-item">
-            {item.subItems ? (
-              <>
-                <span className="menu-link-header">{/* {item.icon && <span className="menu-icon"><item.icon /></span>} */} {item.label}</span>
-                <ul className="submenu-lista">
-                  {item.subItems.map((subItem, subIndex) => (
-                    <li key={subIndex} className="submenu-item">
-                      <Link to={subItem.path} className="menu-link">
-                        {subItem.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : (
-              <Link to={item.path} className="menu-link">
-                {/* {item.icon && <span className="menu-icon"><item.icon /></span>} */}
-                {item.label}
-              </Link>
-            )}
-          </li>
-        ))}
+        {menuItems.map((item, index) => {
+          const menuKey = item.label.toLowerCase().replace(/\s+/g, '');
+          const isOpen = openMenus[menuKey];
+          
+          return (
+            <li key={index} className="menu-item">
+              {item.subItems ? (
+                <>
+                  <div 
+                    className="menu-link-header clickable" 
+                    onClick={() => toggleMenu(menuKey)}
+                    role="button"
+                    tabIndex="0"
+                    onKeyPress={(e) => e.key === 'Enter' && toggleMenu(menuKey)}
+                  >
+                    <span className="menu-header-content">
+                      {item.label}
+                    </span>
+                    <span className="menu-toggle-icon">
+                      {isOpen ? <FaChevronDown /> : <FaChevronRight />}
+                    </span>
+                  </div>
+                  <ul className={`submenu-lista ${isOpen ? 'open' : ''}`}>
+                    {item.subItems.map((subItem, subIndex) => (
+                      <li key={subIndex} className="submenu-item">
+                        <Link to={subItem.path} className="menu-link">
+                          {subItem.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <Link to={item.path} className="menu-link">
+                  {item.label}
+                </Link>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

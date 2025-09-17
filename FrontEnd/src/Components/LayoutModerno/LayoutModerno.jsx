@@ -59,7 +59,7 @@ const LayoutModerno = ({ children }) => {
         <BarraLateral 
           className={`${!mostrarBarra ? 'hidden' : ''} ${isMobile ? 'mobile' : ''}`} 
         />
-        <ConteudoPrincipal mostrarBarra={mostrarBarra} isMobile={isMobile}>
+        <ConteudoPrincipal mostrarBarra={mostrarBarra} isMobile={isMobile} showBreadcrumb={true}>
           {children}
         </ConteudoPrincipal>
       </div>

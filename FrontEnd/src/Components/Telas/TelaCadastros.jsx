@@ -8,6 +8,7 @@ import {
 // Layout será fornecido pelo LayoutModerno - não importar aqui
 import CardCadastro from '../Cards/CardCadastro';
 import { ContextoUsuarioLogado } from '../../App';
+import './TelaCadastros.css';
 
 const TelaCadastros = () => {
     const { usuarioLogado } = useContext(ContextoUsuarioLogado);
@@ -133,7 +134,7 @@ const TelaCadastros = () => {
                 {/* Cabeçalho */}
                 <Row className="mb-4">
                     <Col>
-                        <Card className="border-0 shadow-sm bg-gradient" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                        <Card className="border-0 shadow-sm cadastros-header-card">
                             <Card.Body className="py-4 text-white">
                                 <div className="text-center">
                                     <FaCogs size={48} className="mb-3" />
@@ -148,7 +149,7 @@ const TelaCadastros = () => {
                 </Row>
 
                 {/* Cadastros Essenciais */}
-                <Row className="mb-5">
+                <Row className="mb-5 cadastros-section">
                     <Col>
                         <h4 className="fw-bold text-success mb-3 d-flex align-items-center">
                             <FaPlus className="me-2" />
@@ -165,7 +166,7 @@ const TelaCadastros = () => {
                 </Row>
 
                 {/* Cadastros de Clientes */}
-                <Row className="mb-5">
+                <Row className="mb-5 cadastros-section">
                     <Col>
                         <h4 className="fw-bold text-info mb-3 d-flex align-items-center">
                             <FaUsers className="me-2" />
@@ -182,7 +183,7 @@ const TelaCadastros = () => {
                 </Row>
 
                 {/* Cadastros de Equipamentos */}
-                <Row className="mb-5">
+                <Row className="mb-5 cadastros-section">
                     <Col>
                         <h4 className="fw-bold text-primary mb-3 d-flex align-items-center">
                             <FaCogs className="me-2" />
@@ -199,7 +200,7 @@ const TelaCadastros = () => {
                 </Row>
 
                 {/* Cadastros de Processos */}
-                <Row className="mb-5">
+                <Row className="mb-5 cadastros-section">
                     <Col>
                         <h4 className="fw-bold text-secondary mb-3 d-flex align-items-center">
                             <FaWrench className="me-2" />
@@ -216,7 +217,7 @@ const TelaCadastros = () => {
                 </Row>
 
                 {/* Cadastros Comerciais */}
-                <Row className="mb-5">
+                <Row className="mb-5 cadastros-section">
                     <Col>
                         <h4 className="fw-bold text-success mb-3 d-flex align-items-center">
                             <FaCreditCard className="me-2" />
@@ -234,7 +235,7 @@ const TelaCadastros = () => {
 
                 {/* Cadastros Administrativos (apenas para Admin) */}
                 {isAdmin && (
-                    <Row className="mb-4">
+                    <Row className="mb-4 cadastros-section admin-section">
                         <Col>
                             <h4 className="fw-bold text-danger mb-3 d-flex align-items-center">
                                 <FaUserShield className="me-2" />

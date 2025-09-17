@@ -39,13 +39,42 @@
 }
 
 .menu-link-header {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 12px 20px;
   color: #bdc3c7; /* Cinza claro para cabeçalhos de submenu */
   font-weight: bold;
   text-decoration: none;
   font-size: 0.95em;
-  /* Adicionar ícone aqui se necessário */
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+
+.menu-link-header.clickable:hover {
+  background-color: #34495e;
+  color: #ffffff;
+  border-left-color: #3498db;
+}
+
+.menu-link-header.clickable:focus {
+  outline: 2px solid #3498db;
+  outline-offset: 2px;
+}
+
+.menu-header-content {
+  flex: 1;
+}
+
+.menu-toggle-icon {
+  font-size: 0.8em;
+  opacity: 0.7;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.menu-link-header.clickable:hover .menu-toggle-icon {
+  opacity: 1;
 }
 
 .menu-link {
@@ -81,7 +110,8 @@
 
 .menu-item:hover > .submenu-lista, /* Mostrar submenu no hover do item pai */
 .menu-item .submenu-lista.open { /* Ou se tiver uma classe 'open' */
-  max-height: 500px; /* Altura suficiente para os subitens, ajuste conforme necessário */
+  max-height: 800px; /* Aumentado para comportar todos os itens */
+  overflow-y: auto; /* Adiciona scroll se necessário */
 }
 
 .submenu-item .menu-link {
