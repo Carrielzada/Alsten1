@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { getBlingSuccessUrl, getEnvironmentInfo } from '../../utils/urlUtils';
 
 // Configuração base do axios para a API do Bling
 const blingApi = axios.create({
@@ -62,7 +63,16 @@ export const useBling = () => {
             setIsLoading(true);
             setError(null);
             
-            const response = await blingApi.get('/bling/auth');
+            // Envia informações do ambiente atual para o backend
+            const envInfo = getEnvironmentInfo();
+            console.log('Enviando informações do ambiente para o backend:', envInfo);
+            
+            const response = await blingApi.get('/bling/auth', {
+                params: {
+                    frontendUrl: envInfo.frontend,
+                    successUrl: envInfo.blingSuccess
+                }
+            });
             
             if (response.data.success && response.data.authUrl) {
                 // Abre a URL de autenticação em uma nova janela

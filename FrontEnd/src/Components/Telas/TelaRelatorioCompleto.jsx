@@ -73,7 +73,16 @@ const TelaRelatorioCompleto = () => {
     const handleFiltroChange = (e) => {
         const { name, value } = e.target;
         setFiltros(prev => ({ ...prev, [name]: value }));
+        // Aplicar filtros automaticamente após mudança
+        setPaginaAtual(1);
     };
+    
+    // useEffect para aplicar filtros automaticamente quando mudarem
+    useEffect(() => {
+        if (!loading) {
+            fetchOrdensServico();
+        }
+    }, [filtros, paginaAtual, itensPorPagina]);
 
     const aplicarFiltros = () => {
         setPaginaAtual(1);
@@ -471,22 +480,16 @@ const TelaRelatorioCompleto = () => {
                                 </Col>
                                 <Col md={6} className="d-flex align-items-end justify-content-end mb-3">
                                     <Button 
-                                        variant="secondary" 
+                                        variant="outline-secondary" 
                                         size="sm" 
-                                        onClick={limparFiltros} 
-                                        className="me-2"
+                                        onClick={limparFiltros}
                                     >
                                         <FaTimes className="me-1" />
                                         Limpar Filtros
                                     </Button>
-                                    <Button 
-                                        variant="primary" 
-                                        size="sm" 
-                                        onClick={aplicarFiltros}
-                                    >
-                                        <FaSearch className="me-1" />
-                                        Aplicar Filtros
-                                    </Button>
+                                    <small className="text-muted ms-3 align-self-center">
+                                        Filtros aplicados automaticamente
+                                    </small>
                                 </Col>
                             </Row>
                         </div>
@@ -506,91 +509,114 @@ const TelaRelatorioCompleto = () => {
                         </div>
                     ) : (
                         <>
-                            <div className="table-responsive">
-                                <Table striped bordered hover size="sm">
-                                    <thead className="bg-light">
+                            <div className="table-responsive" style={{fontSize: '0.85rem'}}>
+                                <Table striped hover size="sm" className="table-compact">
+                                    <thead className="bg-light sticky-top">
                                         <tr>
-                                            <th style={{minWidth: '60px'}}>ID</th>
-                                            <th style={{minWidth: '150px'}}>Cliente</th>
-                                            <th style={{minWidth: '120px'}}>Modelo</th>
-                                            <th style={{minWidth: '100px'}}>Nº Série</th>
-                                            <th style={{minWidth: '100px'}}>Fabricante</th>
-                                            <th style={{minWidth: '200px'}}>Defeito Alegado</th>
-                                            <th style={{minWidth: '200px'}}>Defeito Constatado</th>
-                                            <th style={{minWidth: '200px'}}>Serviço Realizado</th>
-                                            <th style={{minWidth: '100px'}}>Técnico</th>
-                                            <th style={{minWidth: '100px'}}>Data Entrega</th>
-                                            <th style={{minWidth: '100px'}}>Data Conclusão</th>
-                                            <th style={{minWidth: '100px'}}>Valor</th>
-                                            <th style={{minWidth: '100px'}}>Urgência</th>
-                                            <th style={{minWidth: '120px'}}>Tipo Análise</th>
-                                            <th style={{minWidth: '100px'}}>NF</th>
-                                            <th style={{minWidth: '100px'}}>Pedido</th>
-                                            <th style={{minWidth: '80px'}}>Dias</th>
-                                            <th style={{minWidth: '80px'}}>Ações</th>
+                                            <th style={{width: '50px', padding: '6px'}}>ID</th>
+                                            <th style={{width: '140px', padding: '6px'}}>Cliente</th>
+                                            <th style={{width: '110px', padding: '6px'}}>Modelo</th>
+                                            <th style={{width: '90px', padding: '6px'}}>Nº Série</th>
+                                            <th style={{width: '90px', padding: '6px'}}>Fabricante</th>
+                                            <th style={{width: '150px', padding: '6px'}}>Defeito Alegado</th>
+                                            <th style={{width: '150px', padding: '6px'}}>Defeito Constatado</th>
+                                            <th style={{width: '150px', padding: '6px'}}>Serviço Realizado</th>
+                                            <th style={{width: '80px', padding: '6px'}}>Técnico</th>
+                                            <th style={{width: '85px', padding: '6px'}}>Entrega</th>
+                                            <th style={{width: '85px', padding: '6px'}}>Conclusão</th>
+                                            <th style={{width: '80px', padding: '6px'}}>Valor</th>
+                                            <th style={{width: '70px', padding: '6px'}}>Urgência</th>
+                                            <th style={{width: '90px', padding: '6px'}}>Tipo Análise</th>
+                                            <th style={{width: '60px', padding: '6px'}}>NF</th>
+                                            <th style={{width: '70px', padding: '6px'}}>Pedido</th>
+                                            <th style={{width: '50px', padding: '6px'}}>Dias</th>
+                                            <th style={{width: '50px', padding: '6px'}}>Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {ordensServico.map((os) => (
                                             <tr key={os.id}>
-                                                <td><strong>#{os.id}</strong></td>
-                                                <td>
-                                                    <Button 
-                                                        variant="link" 
-                                                        size="sm" 
+                                                <td style={{padding: '8px', textAlign: 'center'}}><strong className="text-primary">#{os.id}</strong></td>
+                                                <td style={{padding: '8px'}}>
+                                                    <span 
+                                                        className="text-primary fw-semibold" 
+                                                        style={{cursor: 'pointer'}} 
                                                         onClick={() => handleVerDetalhesCliente(os.cliente)}
-                                                        className="p-0 text-decoration-none text-start"
+                                                        title="Clique para ver detalhes do cliente"
                                                     >
                                                         {os.cliente?.nome || `Cliente ${os.cliente?.id}` || 'N/A'}
-                                                    </Button>
+                                                    </span>
                                                 </td>
-                                                <td>{os.modeloEquipamento?.modelo || 'N/A'}</td>
-                                                <td>{os.numeroSerie || 'N/A'}</td>
-                                                <td>{os.fabricante?.nome_fabricante || 'N/A'}</td>
-                                                <td>
-                                                    <div style={{maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis'}} title={os.defeitoAlegado}>
+                                                <td style={{padding: '8px'}} title={os.modeloEquipamento?.modelo}>
+                                                    <div className="text-truncate" style={{maxWidth: '100px'}}>
+                                                        {os.modeloEquipamento?.modelo || 'N/A'}
+                                                    </div>
+                                                </td>
+                                                <td style={{padding: '8px'}} title={os.numeroSerie}>
+                                                    <small className="text-muted">{os.numeroSerie || 'N/A'}</small>
+                                                </td>
+                                                <td style={{padding: '8px'}} title={os.fabricante?.nome_fabricante}>
+                                                    <div className="text-truncate" style={{maxWidth: '80px'}}>
+                                                        {os.fabricante?.nome_fabricante || 'N/A'}
+                                                    </div>
+                                                </td>
+                                                <td style={{padding: '8px'}} title={os.defeitoAlegado}>
+                                                    <div className="text-truncate" style={{maxWidth: '140px', fontSize: '0.8rem'}}>
                                                         {os.defeitoAlegado || 'N/A'}
                                                     </div>
                                                 </td>
-                                                <td>
-                                                    <div style={{maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis'}} title={os.defeitoConstatado}>
+                                                <td style={{padding: '8px'}} title={os.defeitoConstatado}>
+                                                    <div className="text-truncate" style={{maxWidth: '140px', fontSize: '0.8rem'}}>
                                                         {os.defeitoConstatado || 'N/A'}
                                                     </div>
                                                 </td>
-                                                <td>
-                                                    <div style={{maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis'}} title={os.servicoRealizar}>
+                                                <td style={{padding: '8px'}} title={os.servicoRealizar}>
+                                                    <div className="text-truncate" style={{maxWidth: '140px', fontSize: '0.8rem'}}>
                                                         {os.servicoRealizar || 'N/A'}
                                                     </div>
                                                 </td>
-                                                <td>{os.vendedor?.nome || 'N/A'}</td>
-                                                <td>{formatarData(os.dataEntrega)}</td>
-                                                <td>{formatarData(os.dataEquipamentoPronto)}</td>
-                                                <td>
-                                                    <strong className="text-success">
+                                                <td style={{padding: '8px'}} title={os.vendedor?.nome}>
+                                                    <small>{os.vendedor?.nome || 'N/A'}</small>
+                                                </td>
+                                                <td style={{padding: '8px', textAlign: 'center'}}>
+                                                    <small>{formatarData(os.dataEntrega)}</small>
+                                                </td>
+                                                <td style={{padding: '8px', textAlign: 'center'}}>
+                                                    <small>{formatarData(os.dataEquipamentoPronto)}</small>
+                                                </td>
+                                                <td style={{padding: '8px', textAlign: 'right'}}>
+                                                    <small className="text-success fw-bold">
                                                         {formatarValor(os.valor)}
-                                                    </strong>
+                                                    </small>
                                                 </td>
-                                                <td>
-                                                    <Badge bg="warning" text="dark">
-                                                        {os.urgencia?.urgencia || 'N/A'}
+                                                <td style={{padding: '8px', textAlign: 'center'}}>
+                                                    <Badge bg="warning" text="dark" className="small">
+                                                        {os.urgencia?.urgencia?.substring(0,3) || 'N/A'}
                                                     </Badge>
                                                 </td>
-                                                <td>{os.tipoAnalise?.tipo_analise || 'N/A'}</td>
-                                                <td>{os.notaFiscal || 'N/A'}</td>
-                                                <td>{os.pedidoCompras || 'N/A'}</td>
-                                                <td>
-                                                    <Badge bg="info">
-                                                        {os.diasReparo ? `${os.diasReparo}d` : 'N/A'}
+                                                <td style={{padding: '8px'}} title={os.tipoAnalise?.tipo_analise}>
+                                                    <small>{os.tipoAnalise?.tipo_analise || 'N/A'}</small>
+                                                </td>
+                                                <td style={{padding: '8px', textAlign: 'center'}}>
+                                                    <small>{os.notaFiscal || '-'}</small>
+                                                </td>
+                                                <td style={{padding: '8px', textAlign: 'center'}}>
+                                                    <small>{os.pedidoCompras || '-'}</small>
+                                                </td>
+                                                <td style={{padding: '8px', textAlign: 'center'}}>
+                                                    <Badge bg="info" className="small">
+                                                        {os.diasReparo ? `${os.diasReparo}d` : '-'}
                                                     </Badge>
                                                 </td>
-                                                <td>
+                                                <td style={{padding: '8px', textAlign: 'center'}}>
                                                     <Button 
                                                         variant="outline-primary" 
                                                         size="sm" 
                                                         title="Visualizar detalhes da OS"
                                                         onClick={() => window.open(`/cadastrar-ordem-servico/${os.id}`, '_blank')}
+                                                        style={{padding: '4px 8px'}}
                                                     >
-                                                        <FaEye size={12} />
+                                                        <FaEye size={10} />
                                                     </Button>
                                                 </td>
                                             </tr>

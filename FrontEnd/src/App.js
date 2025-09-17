@@ -20,7 +20,9 @@ import TelaCadTipoLimpeza from "./Components/Telas/TelaCadTipoLimpeza";
 import TelaCadTipoTransporte from "./Components/Telas/TelaCadTipoTransporte";
 import TelaCadFabricante from "./Components/Telas/TelaCadFabricante"; 
 import TelaCadDefeitoAlegado from "./Components/Telas/TelaCadDefeitoAlegado"; 
-import TelaCadClientePJ from "./Components/Telas/TelaCadClientePJ";
+import TelaCadastroClientes from "./Components/Telas/TelaCadastroClientes";
+import TelaAdministracaoCadastros from "./Components/Telas/TelaAdministracaoCadastros";
+import TelaAdministracaoUsuarios from "./Components/Telas/TelaAdministracaoUsuarios";
 import TelaCadServicoPadrao from "./Components/Telas/TelaCadServicoPadrao";
 import TelaRelatorioCompleto from "./Components/Telas/TelaRelatorioCompleto";
 
@@ -105,8 +107,10 @@ function AppContent() {
         <Route path="/cadastros/tipo-transporte" element={<TelaCadTipoTransporte />} />
         <Route path="/cadastros/fabricante" element={<TelaCadFabricante />} />
         <Route path="/cadastros/defeito-alegado" element={<TelaCadDefeitoAlegado />} />
-        <Route path="/cadastros/clientes" element={<TelaCadClientePJ />} />
+        <Route path="/cadastros/clientes" element={<TelaCadastroClientes />} />
         <Route path="/cadastros/servico-realizado" element={<TelaCadServicoPadrao />} />
+        <Route path="/admin/cadastros" element={<TelaAdministracaoCadastros />} />
+        <Route path="/admin/usuarios" element={<TelaAdministracaoUsuarios />} />
         <Route path="/sua-conta" element={<div>Tela Sua Conta (Em construção)</div>} />
         <Route path="/cadastrar-ordem-servico" element={<TelaCadOrdemServico />} />
         <Route path="/cadastrar-ordem-servico/:id" element={<TelaCadOrdemServico />} />

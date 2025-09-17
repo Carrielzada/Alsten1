@@ -2,17 +2,34 @@ import React, { useEffect } from 'react';
 
 const BlingSuccessPage = () => {
   useEffect(() => {
-    // Envia mensagem para a janela pai
-    if (window.opener) {
-      window.opener.postMessage('bling-auth-success', '*');
-    }
+    // Envia mensagem para a janela pai imediatamente e depois de um pequeno delay
+    const sendMessage = () => {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage('bling-auth-success', '*');
+      }
+    };
     
-    // Fecha a janela após 4 segundos
-    const timer = setTimeout(() => {
-      window.close();
-    }, 4000);
+    // Envia a mensagem imediatamente
+    sendMessage();
+    
+    // Tenta enviar novamente após 500ms (caso a primeira não chegue)
+    const messageTimer = setTimeout(sendMessage, 500);
+    
+    // Fecha a janela após 2 segundos (reduzido de 4 para 2)
+    const closeTimer = setTimeout(() => {
+      try {
+        window.close();
+      } catch (error) {
+        console.log('Tentando fechar janela:', error);
+        // Se não conseguir fechar, tenta redirecionar para uma página em branco
+        window.location.href = 'about:blank';
+      }
+    }, 2000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(messageTimer);
+      clearTimeout(closeTimer);
+    };
   }, []);
 
   return (

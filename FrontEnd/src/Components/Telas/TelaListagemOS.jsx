@@ -27,7 +27,11 @@ const ResizableHeader = ({ onResize, width, children, ...restProps }) => {
         />
       }
       onResize={onResize}
-      draggableOpts={{ enableUserSelectHack: false }}
+      draggableOpts={{ 
+        enableUserSelectHack: false,
+        grid: [1, 1],
+        handle: '.react-resizable-handle'
+      }}
     >
       <th {...restProps}>{children}</th>
     </Resizable>
@@ -269,17 +273,6 @@ const TelaListagemOS = () => {
         );
     };
 
-    // Estilos CSS inline
-    const tooltipStyles = {
-        cursor: 'pointer',
-        transition: 'all 0.2s ease'
-    };
-
-    const tooltipHoverStyles = {
-        backgroundColor: '#f8f9fa',
-        borderRadius: '4px',
-        padding: '2px 4px'
-    };
 
     if (loading) return <Layout>
          <div className="text-center my-5">
@@ -300,22 +293,33 @@ const TelaListagemOS = () => {
                     .resizable-table th {
                         position: relative !important;
                         background-clip: padding-box !important;
+                        user-select: none; /* Previne seleção de texto */
+                    }
+                    .resizable-table {
+                        user-select: none; /* Previne seleção de texto durante drag */
+                    }
+                    .resizable-table tbody {
+                        user-select: text; /* Permite seleção normal no corpo da tabela */
                     }
                     .react-resizable-handle {
                         position: absolute;
-                        right: 3px;
+                        right: 0;
+                        top: 0;
                         bottom: 0;
                         z-index: 100;
                         width: 10px;
-                        height: 100%;
                         cursor: col-resize;
-                        /* NEW: Add a visible white line as the handle */
+                        /* Visual indicator */
                         border-right: 3px solid rgba(255, 255, 255, 0.3);
                         transition: border-color 0.2s ease-in-out;
+                        user-select: none;
+                        /* Prevent text selection during drag */
+                        -webkit-user-select: none;
+                        -moz-user-select: none;
+                        -ms-user-select: none;
                     }
                     .react-resizable-handle:hover,
                     .react-resizable-handle:active {
-                        /* Make the line more prominent on hover/drag */
                         border-right-color: rgba(255, 255, 255, 0.8);
                     }
 
@@ -348,6 +352,27 @@ const TelaListagemOS = () => {
                     .action-btn:hover {
                         background-color: #e9ecef;
                         color: #212529;
+                    }
+                    
+                    /* Estilos para o hover do cliente */
+                    .cliente-hover {
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        border-radius: 4px;
+                        padding: 2px 4px;
+                        margin: -2px -4px;
+                    }
+                    .cliente-hover:hover {
+                        background-color: #f8f9fa !important;
+                        transform: scale(1.02);
+                    }
+                    
+                    /* Prevent text selection during column resize */
+                    .resizing * {
+                        user-select: none !important;
+                        -webkit-user-select: none !important;
+                        -moz-user-select: none !important;
+                        -ms-user-select: none !important;
                     }
                 `}</style>
                 <div className="mb-3">
@@ -447,19 +472,7 @@ const TelaListagemOS = () => {
                                                     </Tooltip>
                                                 }
                                             >
-                                                <div 
-                                                    style={tooltipStyles}
-                                                    onMouseEnter={(e) => {
-                                                        e.target.style.backgroundColor = tooltipHoverStyles.backgroundColor;
-                                                        e.target.style.borderRadius = tooltipHoverStyles.borderRadius;
-                                                        e.target.style.padding = tooltipHoverStyles.padding;
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.target.style.backgroundColor = '';
-                                                        e.target.style.borderRadius = '';
-                                                        e.target.style.padding = '';
-                                                    }}
-                                                >
+                                                <div className="cliente-hover">
                                                     {renderClienteInfo(os.cliente)}
                                                 </div>
                                             </OverlayTrigger>
