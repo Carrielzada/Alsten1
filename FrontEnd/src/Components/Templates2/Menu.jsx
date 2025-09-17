@@ -3,18 +3,18 @@ import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // Certifique-se de ter 'react-icons' instalado: npm install react-icons
 import { FaSignOutAlt, FaBell, FaBars } from "react-icons/fa";
 import { ContextoUsuarioLogado } from "../../App"; // Ajuste o caminho se necessário
 import logoImage from "../../assets/imagens/logoalsten.png"; // << AJUSTE O CAMINHO PARA SUA LOGO
 import Button from '../UI/Button'; // Nosso Button moderno
-import Breadcrumb from '../UI/Breadcrumb'; // Nosso Breadcrumb
+import Breadcrumb from '../UI/Breadcrumb';
 
 // Adicionamos 'toggleBarra' como propriedade (props)
 export default function Menu({ toggleBarra }) {
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation(); // removido - não utilizado
   const { usuarioLogado, setUsuarioLogado } = useContext(ContextoUsuarioLogado);
   const [mensagens, /*setMensagens*/] = useState([]);
   const [showNotificacoes, setShowNotificacoes] = useState(false);

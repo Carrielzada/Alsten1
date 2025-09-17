@@ -1,6 +1,5 @@
 import React from 'react';
 import { FaEye, FaDownload, FaTimes } from 'react-icons/fa';
-import Button from '../../UI/Button';
 
 const AnexoViewer = ({ arquivo, onView, onDownload, onDelete, className = '' }) => {
     const isImage = (filename) => {

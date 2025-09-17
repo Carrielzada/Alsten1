@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Form, Card, Row, Col, Badge, Spinner, InputGroup } from 'react-bootstrap';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Table, Form, Card, Row, Col, Badge, Spinner } from 'react-bootstrap';
 import Button from '../UI/Button';
-import { FaSearch, FaFilter, FaEye, FaDownload, FaTimes, FaTable, FaFileExport } from 'react-icons/fa';
+import { FaFilter, FaEye, FaTimes, FaTable, FaFileExport } from 'react-icons/fa';
 import Layout from '../Templates2/Layout';
 import { buscarTodasOrdensServico } from '../../Services/ordemServicoService';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
@@ -43,11 +43,7 @@ const TelaRelatorioCompleto = () => {
     const [totalPaginas, setTotalPaginas] = useState(1);
     const [totalRegistros, setTotalRegistros] = useState(0);
 
-    useEffect(() => {
-        fetchOrdensServico();
-    }, [paginaAtual, itensPorPagina]);
-
-    const fetchOrdensServico = async () => {
+    const fetchOrdensServico = useCallback(async () => {
         try {
             setLoading(true);
             // Filtro apenas OS concluídas
@@ -69,7 +65,11 @@ const TelaRelatorioCompleto = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filtros, paginaAtual, itensPorPagina]);
+
+    useEffect(() => {
+        fetchOrdensServico();
+    }, [fetchOrdensServico]);
 
     const handleFiltroChange = (e) => {
         const { name, value } = e.target;
@@ -83,12 +83,9 @@ const TelaRelatorioCompleto = () => {
         if (!loading) {
             fetchOrdensServico();
         }
-    }, [filtros, paginaAtual, itensPorPagina]);
+    }, [filtros, paginaAtual, itensPorPagina, loading, fetchOrdensServico]);
 
-    const aplicarFiltros = () => {
-        setPaginaAtual(1);
-        fetchOrdensServico();
-    };
+    // Função removida - filtros são aplicados automaticamente via useEffect
 
     const limparFiltros = () => {
         setFiltros({
@@ -115,7 +112,7 @@ const TelaRelatorioCompleto = () => {
             diasReparo: ''
         });
         setPaginaAtual(1);
-        fetchOrdensServico();
+        // fetchOrdensServico será chamado automaticamente pelo useEffect quando os filtros mudarem
     };
 
     const handleVerDetalhesCliente = (cliente) => {
