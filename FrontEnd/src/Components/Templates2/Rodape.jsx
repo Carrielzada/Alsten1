@@ -5,16 +5,16 @@ export default function Rodape(props) {
     return (
         <footer className="rodape-moderno">
             <div className="container-fluid px-4">
-                <div className="d-flex justify-content-between align-items-center flex-wrap">
+                <div className="d-flex justify-content-center align-items-center flex-wrap position-relative">
                     {/* Copyright */}
                     <div className="copyright">
                         <small>
-                            &copy; {new Date().getFullYear()} <span className="logo-text">Alsten</span>. Todos os direitos reservados.
+                            <span className="logo-text">Alsten</span> {new Date().getFullYear()} - Sistema Interno
                         </small>
                     </div>
 
                     {/* Ações */}
-                    <div className="footer-actions">
+                    <div className="footer-actions position-absolute" style={{right: '1rem'}}>
                         {/* Botão reportar problema */}
                         <a
                             href="https://wa.me/5515997723051?text=Ol%C3%A1!%20Preciso%20reportar%20um%20problema%20no%20sistema%20Alsten"
