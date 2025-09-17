@@ -22,6 +22,9 @@ rotaOrdemServico.get('/:id', ordemServicoCtrl.consultarPorId);
 // Aplica o middleware de upload antes do controlador
 rotaOrdemServico.post('/anexar-arquivo/:id', upload.single('arquivo'), ordemServicoCtrl.anexarArquivo);
 
+// Rota específica para anexar comprovante (UMA imagem)
+rotaOrdemServico.post('/anexar-comprovante/:id', upload.single('comprovante'), ordemServicoCtrl.anexarComprovante);
+
 // Rota para remover um arquivo de uma OS
 rotaOrdemServico.delete('/:id/arquivo/:nomeArquivo', ordemServicoCtrl.removerArquivo);
 

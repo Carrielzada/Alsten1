@@ -64,6 +64,21 @@ export const anexarArquivo = (osId, arquivo) => {
 };
 
 /**
+ * Anexa um comprovante (imagem) a uma Ordem de Serviço existente.
+ * @param {string|number} osId - O ID da Ordem de Serviço.
+ * @param {File} arquivo - O arquivo de imagem a ser anexado como comprovante.
+ */
+export const anexarComprovante = (osId, arquivo) => {
+    const formData = new FormData();
+    formData.append('comprovante', arquivo);
+
+    return fetchAutenticado(`/ordem-servico/anexar-comprovante/${osId}`, {
+        method: 'POST',
+        body: formData,
+    });
+};
+
+/**
  * Remove um arquivo de uma Ordem de Serviço.
  * @param {string|number} osId - O ID da Ordem de Serviço.
  * @param {string} nomeArquivo - O nome do arquivo a ser removido.

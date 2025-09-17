@@ -3,7 +3,7 @@ import { Resizable } from 'react-resizable';
 import { buscarTodasOrdensServico, consultarOrdemServicoPorId } from '../../Services/ordemServicoService';
 import Layout from '../Templates2/Layout';
 import { Modal as BootstrapModal, Badge, Tooltip, OverlayTrigger } from 'react-bootstrap';
-import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope, FaSearch, FaTimes } from 'react-icons/fa';
 import FormCadOrdemServico from './Formularios/FormCadOrdemServico';
 import TelaLogsOS from './TelaLogsOS';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
@@ -27,7 +27,11 @@ const ResizableHeader = ({ onResize, width, children, ...restProps }) => {
         />
       }
       onResize={onResize}
-      draggableOpts={{ enableUserSelectHack: false }}
+      draggableOpts={{ 
+        enableUserSelectHack: false,
+        grid: [1, 1],
+        handle: '.react-resizable-handle'
+      }}
     >
       <th {...restProps}>{children}</th>
     </Resizable>
@@ -269,17 +273,6 @@ const TelaListagemOS = () => {
         );
     };
 
-    // Estilos CSS inline
-    const tooltipStyles = {
-        cursor: 'pointer',
-        transition: 'all 0.2s ease'
-    };
-
-    const tooltipHoverStyles = {
-        backgroundColor: '#f8f9fa',
-        borderRadius: '4px',
-        padding: '2px 4px'
-    };
 
     if (loading) return <Layout>
          <div className="text-center my-5">
@@ -300,22 +293,33 @@ const TelaListagemOS = () => {
                     .resizable-table th {
                         position: relative !important;
                         background-clip: padding-box !important;
+                        user-select: none; /* Previne seleção de texto */
+                    }
+                    .resizable-table {
+                        user-select: none; /* Previne seleção de texto durante drag */
+                    }
+                    .resizable-table tbody {
+                        user-select: text; /* Permite seleção normal no corpo da tabela */
                     }
                     .react-resizable-handle {
                         position: absolute;
-                        right: 3px;
+                        right: 0;
+                        top: 0;
                         bottom: 0;
                         z-index: 100;
                         width: 10px;
-                        height: 100%;
                         cursor: col-resize;
-                        /* NEW: Add a visible white line as the handle */
+                        /* Visual indicator */
                         border-right: 3px solid rgba(255, 255, 255, 0.3);
                         transition: border-color 0.2s ease-in-out;
+                        user-select: none;
+                        /* Prevent text selection during drag */
+                        -webkit-user-select: none;
+                        -moz-user-select: none;
+                        -ms-user-select: none;
                     }
                     .react-resizable-handle:hover,
                     .react-resizable-handle:active {
-                        /* Make the line more prominent on hover/drag */
                         border-right-color: rgba(255, 255, 255, 0.8);
                     }
 
@@ -349,6 +353,27 @@ const TelaListagemOS = () => {
                         background-color: #e9ecef;
                         color: #212529;
                     }
+                    
+                    /* Estilos para o hover do cliente */
+                    .cliente-hover {
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        border-radius: 4px;
+                        padding: 2px 4px;
+                        margin: -2px -4px;
+                    }
+                    .cliente-hover:hover {
+                        background-color: #f8f9fa !important;
+                        transform: scale(1.02);
+                    }
+                    
+                    /* Prevent text selection during column resize */
+                    .resizing * {
+                        user-select: none !important;
+                        -webkit-user-select: none !important;
+                        -moz-user-select: none !important;
+                        -ms-user-select: none !important;
+                    }
                 `}</style>
                 <div className="mb-3">
                     <div className="d-flex justify-content-between align-items-center mb-3">
@@ -356,8 +381,8 @@ const TelaListagemOS = () => {
                             <FaEdit className="me-2" />
                             Listagem de Ordens de Serviço
                         </h2>
-                        <button className="btn btn-primary" onClick={handleNovaOS}>
-                            <FaPlus className="me-2" />
+                        <button className="btn btn-primary btn-sm" onClick={handleNovaOS}>
+                            <FaPlus />
                             Nova OS
                         </button>
                     </div>
@@ -379,22 +404,22 @@ const TelaListagemOS = () => {
                                     }}
                                 />
                                 <button 
-                                    className="btn btn-outline-secondary" 
+                                    className="btn btn-outline-secondary btn-sm" 
                                     type="button"
                                     onClick={() => fetchOrdensServico(1, itensPorPagina, termoBusca)}
                                 >
-                                    Buscar
+                                    <FaSearch />
                                 </button>
                                 {termoBusca && (
                                     <button 
-                                        className="btn btn-outline-secondary" 
+                                        className="btn btn-outline-danger btn-sm" 
                                         type="button"
                                         onClick={() => {
                                             setTermoBusca('');
                                             fetchOrdensServico(1, itensPorPagina, '');
                                         }}
                                     >
-                                        Limpar
+                                        <FaTimes />
                                     </button>
                                 )}
                             </div>
@@ -447,19 +472,7 @@ const TelaListagemOS = () => {
                                                     </Tooltip>
                                                 }
                                             >
-                                                <div 
-                                                    style={tooltipStyles}
-                                                    onMouseEnter={(e) => {
-                                                        e.target.style.backgroundColor = tooltipHoverStyles.backgroundColor;
-                                                        e.target.style.borderRadius = tooltipHoverStyles.borderRadius;
-                                                        e.target.style.padding = tooltipHoverStyles.padding;
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.target.style.backgroundColor = '';
-                                                        e.target.style.borderRadius = '';
-                                                        e.target.style.padding = '';
-                                                    }}
-                                                >
+                                                <div className="cliente-hover">
                                                     {renderClienteInfo(os.cliente)}
                                                 </div>
                                             </OverlayTrigger>

@@ -35,7 +35,7 @@ function realizarLogin(evento) {
           contexto.setUsuarioLogado(usuarioLogado);
           localStorage.setItem("usuarioLogado", JSON.stringify(usuarioLogado));
 
-          navigate("/ordens-servico");
+          navigate("/boas-vindas");
 
         } else {
           alert(resposta.mensagem);

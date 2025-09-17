@@ -58,9 +58,9 @@ class OrdemServicoDAO {
             cliente, modeloEquipamento, numeroSerie, dataCriacao, defeitoAlegado, fabricante, etapa, arquivosAnexados,
             vendedor_id, dias_pagamento_id, data_entrega, data_aprovacao_orcamento, dias_reparo, data_equipamento_pronto,
             informacoes_confidenciais, checklist_items, agendado, possui_acessorio, tipo_transporte_texto, transporte_cif_fob,
-            pedido_compras, defeito_constatado, servico_realizar, valor, etapa_id, comprovante_aprovacao, nota_fiscal
+            pedido_compras, defeito_constatado, servico_realizar, valor, etapa_id, comprovante_aprovacao, nota_fiscal, comprovante
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const valores = [
         ordemServico.urgencia?.id || ordemServico.urgencia,
@@ -95,7 +95,8 @@ class OrdemServicoDAO {
         ordemServico.valor,
         ordemServico.etapaId?.id || ordemServico.etapaId,
         ordemServico.comprovanteAprovacao,
-        ordemServico.notaFiscal
+        ordemServico.notaFiscal,
+        ordemServico.comprovante
     ];
     const resultado = await conexao.query(sql, valores);
     ordemServico.id = resultado[0].insertId;
@@ -109,7 +110,7 @@ class OrdemServicoDAO {
                     etapa = ?, arquivosAnexados = ?, vendedor_id = ?, dias_pagamento_id = ?, data_entrega = ?,
                     data_aprovacao_orcamento = ?, dias_reparo = ?, data_equipamento_pronto = ?, informacoes_confidenciais = ?,
                     checklist_items = ?, agendado = ?, possui_acessorio = ?, tipo_transporte_texto = ?, transporte_cif_fob = ?,
-                    pedido_compras = ?, defeito_constatado = ?, servico_realizar = ?, valor = ?, etapa_id = ?, comprovante_aprovacao = ?, nota_fiscal = ?
+                    pedido_compras = ?, defeito_constatado = ?, servico_realizar = ?, valor = ?, etapa_id = ?, comprovante_aprovacao = ?, nota_fiscal = ?, comprovante = ?
                     WHERE id = ?
                 `;
                 const valores = [
@@ -145,6 +146,7 @@ class OrdemServicoDAO {
                     ordemServico.etapaId?.id || ordemServico.etapaId,
                     ordemServico.comprovanteAprovacao,
                     ordemServico.notaFiscal,
+                    ordemServico.comprovante,
                     ordemServico.id
                 ];
 
@@ -260,7 +262,7 @@ class OrdemServicoDAO {
                     tipoLimpeza: registro.tipo_limpeza_id ? { id: registro.tipo_limpeza_id, tipo_limpeza: registro.tipo_limpeza } : null,
                     tipoTransporte: registro.tipo_transporte_id ? { id: registro.tipo_transporte_id, tipo_transporte: registro.tipo_transporte } : null,
                     formaPagamento: registro.pagamento_id ? { id: registro.pagamento_id, pagamento: registro.pagamento } : null,
-                    arquivosAnexados: registro.arquivosAnexados ? JSON.parse(registro.arquivosAnexados) : [],
+                    arquivosAnexados: parseJsonArrayOrEmpty(registro.arquivosAnexados),
                     etapa: registro.etapa,
                     dataCriacao: registro.dataCriacao,
                     vendedor: registro.vendedor_id ? { id: registro.vendedor_id, nome: registro.vendedor_nome } : null,
@@ -280,7 +282,8 @@ class OrdemServicoDAO {
                     servicoRealizar: registro.servico_realizar,
                     valor: registro.valor,
                     etapaId: registro.etapa_id ? { id: registro.etapa_id, nome: registro.etapa_nome } : null,
-                    notaFiscal: registro.nota_fiscal
+                    notaFiscal: registro.nota_fiscal,
+                    comprovante: registro.comprovante
                 };
                 listaOrdensServico.push(os);
             }
@@ -382,7 +385,7 @@ class OrdemServicoDAO {
                     tipoLimpeza: registro.tipo_limpeza_id ? { id: registro.tipo_limpeza_id, tipo_limpeza: registro.tipo_limpeza } : null,
                     tipoTransporte: registro.tipo_transporte_id ? { id: registro.tipo_transporte_id, tipo_transporte: registro.tipo_transporte } : null,
                     formaPagamento: registro.pagamento_id ? { id: registro.pagamento_id, pagamento: registro.pagamento } : null,
-                    arquivosAnexados: registro.arquivosAnexados ? JSON.parse(registro.arquivosAnexados) : [],
+                    arquivosAnexados: parseJsonArrayOrEmpty(registro.arquivosAnexados),
                     etapa: registro.etapa,
                     dataCriacao: registro.dataCriacao,
                     vendedor: registro.vendedor_id ? { id: registro.vendedor_id, nome: registro.vendedor_nome } : null,
@@ -402,7 +405,8 @@ class OrdemServicoDAO {
                     servicoRealizar: registro.servico_realizar,
                     valor: registro.valor,
                     etapaId: registro.etapa_id ? { id: registro.etapa_id, nome: registro.etapa_nome } : null,
-                    notaFiscal: registro.nota_fiscal
+                    notaFiscal: registro.nota_fiscal,
+                    comprovante: registro.comprovante
                 };
                 return os;
             } else {
@@ -499,6 +503,30 @@ class OrdemServicoDAO {
             return false;
         } catch (error) {
             console.error("Erro ao remover arquivo da Ordem de Serviço:", error);
+            throw error;
+        } finally {
+            conexao.release();
+        }
+    }
+
+    async atualizarComprovante(osId, nomeArquivo) {
+        const conexao = await conectar();
+        try {
+            // Primeiro, consulte se existe uma OS com este ID
+            const sqlVerificar = "SELECT id FROM ordem_servico WHERE id = ?";
+            const [resultado] = await conexao.query(sqlVerificar, [osId]);
+            
+            if (resultado.length === 0) {
+                return false; // OS não encontrada
+            }
+            
+            // Atualize o campo comprovante
+            const sql = "UPDATE ordem_servico SET comprovante = ? WHERE id = ?";
+            await conexao.query(sql, [nomeArquivo, osId]);
+            
+            return true;
+        } catch (error) {
+            console.error("Erro ao atualizar comprovante da Ordem de Serviço:", error);
             throw error;
         } finally {
             conexao.release();

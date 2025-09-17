@@ -112,3 +112,19 @@ export async function consultarPorRole(role_id) {
     return handleResponse(response);
 }
 
+// Buscar roles disponíveis
+export async function buscarRoles() {
+    // Retorna os roles fixos baseados na estrutura do banco
+    return {
+        status: true,
+        listaRoles: [
+            { id: 1, name: 'Admin' },
+            { id: 2, name: 'Diretoria' },
+            { id: 3, name: 'PCM' },
+            { id: 4, name: 'Comercial' },
+            { id: 5, name: 'Logística' },
+            { id: 6, name: 'Técnico' }
+        ]
+    };
+}
+
