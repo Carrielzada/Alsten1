@@ -3,7 +3,8 @@ import { Card, Container, Row, Col } from 'react-bootstrap';
 import Button from '../UI/Button';
 import { FaClipboardList, FaTools, FaFileAlt, FaUserCog, FaChartLine } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import Layout from '../Templates2/Layout';
+import LayoutModerno from '../LayoutModerno/LayoutModerno';
+import Breadcrumb from '../UI/Breadcrumb';
 
 const TelaBoasVindas = () => {
     const navigate = useNavigate();
@@ -47,8 +48,10 @@ const TelaBoasVindas = () => {
     ];
 
     return (
-        <Layout>
-            <Container className="py-5">
+        <LayoutModerno>
+            <div className="container-fluid px-4">
+                <Breadcrumb customItems={[{ title: 'Início' }]} />
+                <div className="py-3">
                 <Card className="shadow-sm mb-5">
                     <Card.Body className="text-center py-5">
                         <h1 className="display-4 mb-3">Bem-vindo ao Sistema Alsten</h1>
@@ -104,7 +107,8 @@ const TelaBoasVindas = () => {
                         </ul>
                     </Card.Body>
                 </Card>
-            </Container>
+                </div>
+            </div>
 
             <style jsx>{`
                 .hover-card {
@@ -115,7 +119,7 @@ const TelaBoasVindas = () => {
                     box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
                 }
             `}</style>
-        </Layout>
+        </LayoutModerno>
     );
 };
 

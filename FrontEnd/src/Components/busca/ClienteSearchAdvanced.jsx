@@ -77,8 +77,8 @@ const ClienteSearchAdvanced = ({ onClienteSelect, selectedCliente = null }) => {
     // Filtros compactos em dropdown
     const FiltrosDropdown = () => (
         <div className={`filtros-dropdown${showFilters ? ' open' : ''}`}> 
-            <button className="filtro-btn" onClick={() => setShowFilters(v => !v)}>
-                <FaFilter /> <span>Filtros</span> <FaChevronDown className="chevron" />
+            <button className="filtro-btn" onClick={() => setShowFilters(v => !v)} title="Filtros">
+                <FaFilter /> <FaChevronDown className="chevron" />
             </button>
             {showFilters && (
                 <div className="filtros-menu">

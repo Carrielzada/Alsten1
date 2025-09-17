@@ -61,19 +61,23 @@
 
 .filtros-dropdown {
     position: relative;
+    flex-shrink: 0;
 }
 .filtro-btn {
     background: #f5f7fa;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
-    padding: 6px 14px;
-    font-size: 0.97rem;
+    padding: 8px 10px;
+    font-size: 0.9rem;
     color: #374151;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 2px;
     cursor: pointer;
     transition: background 0.2s, border 0.2s;
+    white-space: nowrap;
+    min-width: 45px;
+    justify-content: center;
 }
 .filtro-btn:hover {
     background: #e0e7ef;

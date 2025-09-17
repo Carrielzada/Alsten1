@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Table, Form, Card, Row, Col, Badge, Spinner, Modal } from 'react-bootstrap';
 import Button from '../UI/Button';
 import { FaSearch, FaFilter, FaEye, FaDownload, FaTimes } from 'react-icons/fa';
-import Layout from '../Templates2/Layout';
+import LayoutModerno from '../LayoutModerno/LayoutModerno';
+import Breadcrumb from '../UI/Breadcrumb';
 import { buscarTodasOrdensServico } from '../../Services/ordemServicoService';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
 
@@ -266,8 +267,10 @@ const TelaOSConcluidas = () => {
     };
 
     return (
-        <Layout>
-            <Card className="mb-4 shadow-sm">
+        <LayoutModerno>
+            <div className="container-fluid px-4">
+                <Breadcrumb customItems={[{ title: 'OS Concluídas' }]} />
+                <Card className="mb-4 shadow-sm">
                 <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 className="mb-0">Ordens de Serviço Concluídas</h5>
                     <Button 
@@ -648,7 +651,8 @@ const TelaOSConcluidas = () => {
                     </Button>
                 </Modal.Footer>
             </Modal>
-        </Layout>
+            </div>
+        </LayoutModerno>
     );
 };
 

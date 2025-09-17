@@ -894,13 +894,15 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                         </Form.Group>
                     </Col>
                     <Col md={3} sm={6} xs={12}>
-                        <CampoValor
-                            label="Valor *"
-                            name="valor"
-                            value={ordemServico.valor || ''}
-                            onChange={handleInputChange}
-                            error={faltandoCampos.includes('valor')}
-                        />
+                        <Form.Group controlId="valor">
+                            <Form.Label className="fw-semibold">Valor *</Form.Label>
+                            <CampoValor
+                                name="valor"
+                                value={ordemServico.valor || ''}
+                                onChange={handleInputChange}
+                                style={faltandoCampos.includes('valor') ? { border: '2px solid red' } : {}}
+                            />
+                        </Form.Group>
                     </Col>
                     <Col md={6} xs={12}>
                         <ComprovanteUploadMelhorado

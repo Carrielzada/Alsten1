@@ -144,14 +144,9 @@ export default function Menu({ toggleBarra }) {
 
           </Navbar.Brand>
 
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
+          <div className="navbar-nav w-100">
             <Nav className="me-auto">
-              {usuarioLogado.logado && (
-                <Nav.Link as={Link} to="/ordens-servico">
-                  Ordens de Serviço
-                </Nav.Link>
-              )}
+              {/* Breadcrumb será renderizado nas páginas individuais */}
             </Nav>
 
             <Nav className="ms-auto">
@@ -222,7 +217,7 @@ export default function Menu({ toggleBarra }) {
                 </NavDropdown>
               )}
             </Nav>
-          </Navbar.Collapse>
+          </div>
         </Container>
       </Navbar>
 
