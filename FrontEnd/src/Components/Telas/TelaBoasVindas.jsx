@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Row, Col } from 'react-bootstrap';
 import Button from '../UI/Button';
-import DashboardStats from '../UI/DashboardStats';
+// import DashboardStats from '../UI/DashboardStats'; // Comentado: dados mock
 import { FaClipboardList, FaTools, FaFileAlt, FaUserCog, FaChartLine } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 // Layout será fornecido pelo LayoutModerno no App.js - não importar aqui
@@ -70,7 +70,8 @@ const TelaBoasVindas = () => {
                     </Card.Body>
                 </Card>
 
-                <DashboardStats />
+                {/* <DashboardStats /> */}
+                {/* ☝️ Comentado: Dashboard com dados falsos/mock - aguardando implementação de dados reais */}
 
                 <h2 className="text-center mb-4 mt-5">Principais Funcionalidades</h2>
                 

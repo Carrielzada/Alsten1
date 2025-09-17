@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Spinner, Alert } from 'react-bootstrap';
-import { FaShieldAlt, FaBolt, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaShieldAlt, FaBolt, FaCheck, FaTimes, FaStore } from 'react-icons/fa';
 import './BlingAuthModal.css';
 
 const BlingAuthModal = ({ show, onAuthenticate, isLoading }) => {
@@ -43,7 +43,7 @@ const BlingAuthModal = ({ show, onAuthenticate, isLoading }) => {
       <Modal.Header className="bling-modal-header" style={{ border: 'none' }}>
         <div className="d-flex align-items-center">
           <div className="bling-icon-container me-3">
-            <FaShieldAlt className="bling-icon" />
+            <FaStore className="bling-icon" />
           </div>
           <div>
             <Modal.Title className="bling-modal-title mb-1">
@@ -132,7 +132,7 @@ const BlingAuthModal = ({ show, onAuthenticate, isLoading }) => {
             ) : (
               <>
                 <FaBolt className="me-2" />
-                Conectar ao Bling
+                CONECTAR AO BLING
               </>
             )}
           </Button>

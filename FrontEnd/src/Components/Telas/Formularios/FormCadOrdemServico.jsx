@@ -19,7 +19,7 @@ import checklistItemService from '../../../Services/checklistItemService';
 import etapaOSService from '../../../Services/etapaOSService';
 import servicoPadraoService from '../../../Services/servicoPadraoService';
 import { buscarDefeitosAlegados } from '../../../Services/defeitoAlegadoService';
-import { consultarVendedores } from '../../../Services/usersService';
+import { consultarUsuarios } from '../../../Services/usersService';
 import CampoValor from './CampoValor';
 import ComprovanteUploadMelhorado from './ComprovanteUploadMelhorado';
 import AnexoViewer from './AnexoViewer';
@@ -262,7 +262,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     buscarTiposLimpeza(),
                     buscarTiposTransporte(),
                     buscarPagamento(),
-                    consultarVendedores(),
+                    consultarUsuarios(),
                     diasPagamentoService.buscarDiasPagamento(),
                     checklistItemService.buscarChecklistItems(),
                     etapaOSService.buscarEtapasOS(),
