@@ -47,9 +47,9 @@ const BlingAuthModal = ({ show, onAuthenticate, isLoading }) => {
           </div>
           <div>
             <Modal.Title className="bling-modal-title mb-1">
-              Integração Bling ERP
+              Conectar ao Bling ERP
             </Modal.Title>
-            <small className="text-muted">Conecte-se ao seu sistema Bling</small>
+            <small style={{ color: '#9ca3af', fontSize: '0.8125rem' }}>Integração com seu sistema</small>
           </div>
         </div>
       </Modal.Header>

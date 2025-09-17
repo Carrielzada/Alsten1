@@ -133,15 +133,39 @@ app.get('/', (_req, res) => {
     res.send('Servidor Alsten MVP rodando!');
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-    res.status(200).json({
+// Health check endpoint avançado
+app.get('/health', async (req, res) => {
+    const healthStatus = {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         environment: process.env.NODE_ENV || 'development',
-        version: '1.0.0'
-    });
+        version: '1.0.0',
+        memory: {
+            used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + 'MB',
+            total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + 'MB'
+        },
+        checks: {
+            database: 'checking',
+            server: 'healthy'
+        }
+    };
+
+    try {
+        // Testar conexão com banco de dados
+        const { default: conectar } = await import('./Service/conexao.js');
+        const conexao = await conectar();
+        await conexao.query('SELECT 1');
+        conexao.release();
+        healthStatus.checks.database = 'healthy';
+    } catch (error) {
+        healthStatus.checks.database = 'unhealthy';
+        healthStatus.status = 'unhealthy';
+        console.error('Health check - Database error:', error.message);
+        return res.status(503).json(healthStatus);
+    }
+
+    res.status(200).json(healthStatus);
 });
 
 app.listen(porta, host, () => {

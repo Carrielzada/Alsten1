@@ -5,10 +5,13 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { consultarOrdemServicoPorId, adquirirLockOS, liberarLockOS } from '../../Services/ordemServicoService';
 import { useToast } from '../../hooks/useToast';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import ErrorBoundary from '../ErrorBoundary';
 
 const TelaCadOrdemServico = () => {
     const { id } = useParams();
     const toast = useToast();
+    const { executeAsync } = useErrorHandler();
     const [ordemServicoEmEdicao, setOrdemServicoEmEdicao] = useState(null);
     const [loading, setLoading] = useState(false);
     const [lockError, setLockError] = useState(null);
@@ -17,30 +20,38 @@ const TelaCadOrdemServico = () => {
 
     useEffect(() => {
         let ignore = false;
-        async function fetchData() {
+        
+        const fetchData = async () => {
             if (id) {
                 setLoading(true);
-                try {
-                    // Tenta adquirir o lock primeiro
-                    await adquirirLockOS(id);
-                    lockAdquirido.current = true;
-                    const os = await consultarOrdemServicoPorId(id);
-                    if (!ignore) setOrdemServicoEmEdicao(os);
-                } catch (err) {
-                    lockAdquirido.current = false;
-                    const errorMessage = err?.message || 'Esta OS está sendo editada por outro usuário.';
-                    setLockError(errorMessage);
-                    toast.error(errorMessage);
-                } finally {
-                    setLoading(false);
-                }
+                await executeAsync(
+                    async () => {
+                        // Tenta adquirir o lock primeiro
+                        await adquirirLockOS(id);
+                        lockAdquirido.current = true;
+                        const os = await consultarOrdemServicoPorId(id);
+                        if (!ignore) setOrdemServicoEmEdicao(os);
+                        return os;
+                    },
+                    {
+                        showErrorAlert: false,
+                        fallbackMessage: 'Esta OS está sendo editada por outro usuário.',
+                        onError: (err, errorMessage) => {
+                            lockAdquirido.current = false;
+                            setLockError(errorMessage);
+                            toast.error(errorMessage);
+                        },
+                        onFinally: () => setLoading(false)
+                    }
+                ).catch(() => {}); // Ignorar erro já tratado
             } else {
                 setOrdemServicoEmEdicao(null);
             }
-        }
+        };
+        
         fetchData();
         return () => { ignore = true; };
-    }, [id]);
+    }, [id, executeAsync, toast]);
 
     useEffect(() => {
         // Ao desmontar, libera o lock se foi adquirido
@@ -94,7 +105,7 @@ const TelaCadOrdemServico = () => {
     );
 
     return (
-        <>
+        <ErrorBoundary>
             <FormCadOrdemServico
                 onFormSubmit={handleFormSubmit}
                 modoEdicao={!!id}
@@ -102,7 +113,7 @@ const TelaCadOrdemServico = () => {
                 onDirtyChange={setDirty}
             />
             <ToastContainer />
-        </>
+        </ErrorBoundary>
     );
 };
 

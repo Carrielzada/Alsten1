@@ -33,6 +33,7 @@ import LayoutModerno from "./Components/LayoutModerno/LayoutModerno";
 import { BlingAuthProvider, useBlingAuth } from './Components/busca/BlingAuthProvider';
 import BlingAuthModal from './Components/BlingAuthModal';
 import BlingSuccessPage from './Components/BlingSuccessPage';
+import ErrorBoundary from './Components/ErrorBoundary';
 
 export const ContextoUsuarioLogado = createContext(null);
 
@@ -173,9 +174,11 @@ function AppContent() {
 
 function App() {
   return (
-    <BlingAuthProvider>
-      <AppContent />
-    </BlingAuthProvider>
+    <ErrorBoundary>
+      <BlingAuthProvider>
+        <AppContent />
+      </BlingAuthProvider>
+    </ErrorBoundary>
   );
 }
 
