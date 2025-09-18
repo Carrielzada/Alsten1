@@ -76,17 +76,18 @@ app.use(
 
 // Lista de origens permitidas (pode ser sobrescrita por Environment Variable)
 const defaultWhiteList = [
-    'http://localhost:3000', 
-    'http://localhost:3001', 
-    'http://localhost:5173',
-    'http://31.97.151.181:3000',
-    'http://31.97.151.181:3001',
-    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3000',
-    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3001',
-    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io',
-    'http://og4o08cscgos0kgkkogk0k84.31.97.151.181.sslip.io', // FRONTEND ATUAL
-    'http://alsten.online', // DOMÍNIO PERSONALIZADO HTTP
-    'https://alsten.online', // DOMÍNIO PERSONALIZADO HTTPS
+    'http://localhost:3000', // LOCAL
+    'http://localhost:3001', // LOCAL
+    'http://localhost:5173', // LOCAL
+    'http://31.97.151.181:3000', // IP DA MÁQUINA NA HOSTINGER
+    'http://31.97.151.181:3001', // IP DA MÁQUINA NA HOSTINGER
+    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3000', // BACKEND ANTIGO
+    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3001', // BACKEND ANTIGO
+    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io', // BACKEND ANTIGO
+    'http://og4o08cscgos0kgkkogk0k84.31.97.151.181.sslip.io', // FRONTEND ANTIGO
+    'http://alsten.online', // DOMÍNIO FRONTEND HTTP
+    'https://alsten.online', // DOMÍNIO FRONTEND HTTPS
+    'https://api.alsten.online', // DOMÍNIO BACKEND HTTPS
 ];
 
 // Usar Environment Variable se disponível, senão usar lista padrão
