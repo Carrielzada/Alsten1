@@ -9,6 +9,19 @@ import fs from 'fs';
 // Carregar as variáveis de ambiente
 dotenv.config();
 
+// Validar variáveis críticas de ambiente
+const requiredEnvVars = ['CHAVE_SECRETA', 'DB_HOST', 'DB_USER', 'DB_SENHA', 'DB_NOME'];
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingVars.length > 0) {
+    console.error('❌ ERRO CRÍTICO: Variáveis de ambiente obrigatórias não configuradas:');
+    missingVars.forEach(varName => {
+        console.error(`   - ${varName}`);
+    });
+    console.error('Configure essas variáveis no arquivo .env antes de iniciar o servidor');
+    process.exit(1);
+}
+
 // Importações de rotas existentes
 import rotaAutenticacao from './Routers/rotaAutenticacao.js';
 import rotaUpload from './Routers/rotaUpload.js';
@@ -49,7 +62,7 @@ const app = express();
 // Configuração de sessão otimizada para produção
 app.use(
     session({
-        secret: process.env.CHAVE_SECRETA || 'sua_chave_secreta_padrao',
+        secret: process.env.CHAVE_SECRETA,
         resave: false,
         saveUninitialized: false,
         cookie: {
