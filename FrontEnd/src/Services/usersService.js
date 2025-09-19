@@ -59,7 +59,14 @@ export async function consultarUsuarios() {
             "Authorization": `Bearer ${token}`
         },
     });
-    return handleResponse(response);
+
+    const result = await handleResponse(response);
+
+    // Transforma a resposta da API no formato esperado pelo componente
+    return {
+        listaUsers: result.data,
+        meta: result.meta
+    };
 }
 
 // 📦 Nova função para consultar apenas vendedores/técnicos - acessível por PCM
