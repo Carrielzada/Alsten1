@@ -203,7 +203,35 @@ app.get('/health', async (req, res) => {
   res.status(200).json(healthStatus);
 });
 
+// ==== Middleware global de tratamento de erros ====
+app.use((err, req, res, next) => {
+  console.error('Erro não tratado:', err);
+  res.status(500).json({ error: 'Erro interno do servidor' });
+});
 
+/**
+ * ==== Middleware global de tratamento de erros ====
+ * Retorna JSON padronizado, sem vazar stack trace ou detalhes sensíveis.
+ */
+app.use((err, req, res, next) => {
+  // Loga o erro no servidor (sem enviar stack trace ao cliente)
+  console.error('Erro não tratado:', err);
+
+  // Monta resposta padronizada
+  const status = err.status && Number.isInteger(err.status) ? err.status : 500;
+  const message =
+    status === 500
+      ? 'Erro interno do servidor'
+      : err.message || 'Erro inesperado';
+
+  res.status(status).json({
+    success: false,
+    error: {
+      message,
+      code: status,
+    },
+  });
+});
 
 // ==== Inicializar servidor ====
 const host = '0.0.0.0';
