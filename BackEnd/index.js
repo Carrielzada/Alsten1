@@ -203,11 +203,6 @@ app.get('/health', async (req, res) => {
   res.status(200).json(healthStatus);
 });
 
-// ==== Middleware global de tratamento de erros ====
-app.use((err, req, res, next) => {
-  console.error('Erro não tratado:', err);
-  res.status(500).json({ error: 'Erro interno do servidor' });
-});
 
 /**
  * ==== Middleware global de tratamento de erros ====
