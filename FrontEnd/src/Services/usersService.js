@@ -52,7 +52,7 @@ export async function alterarSenha(email, senhaAtual, novaSenha, confirmarSenha)
 
 export async function consultarUsuarios() {
     const token = getToken();
-    const response = await fetch(`${API_URL}/users/`, {
+    const response = await fetch(`${API_URL}/users`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

@@ -159,7 +159,7 @@ export default class UsersDAO {
                 SELECT 
                     u.*,
                     r.name as role_nome,
-                    NULLL as role_descricao
+                    NULL as role_descricao
                 FROM users u
                 LEFT JOIN roles r ON u.role_id = r.id
                 ${whereClause}
