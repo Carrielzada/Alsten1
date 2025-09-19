@@ -34,36 +34,6 @@ app.use(
   })
 );
 
-// Rate limiting global
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 100,
-    message: { error: 'Muitas requisições deste IP, tente novamente mais tarde.' },
-    standardHeaders: true,
-    legacyHeaders: false,
-  })
-);
-
-// Configuração de sessão
-app.use(
-  session({
-    secret: process.env.CHAVE_SECRETA,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 2, // 2 horas
-    },
-  })
-);
-
-// Resolver path absoluto (__dirname em ESM)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // Lista padrão de origens permitidas
 const defaultWhiteList = [
   'http://localhost:3000',
@@ -101,7 +71,38 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
+// CORS deve vir ANTES do rate limiting para permitir requisições OPTIONS
 app.use(cors(corsOptions));
+
+// Rate limiting global
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 100,
+    message: { error: 'Muitas requisições deste IP, tente novamente mais tarde.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+);
+
+// Configuração de sessão
+app.use(
+  session({
+    secret: process.env.CHAVE_SECRETA,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60 * 2, // 2 horas
+    },
+  })
+);
+
+// Resolver path absoluto (__dirname em ESM)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Parsers padrão
 app.use(express.urlencoded({ extended: true }));
