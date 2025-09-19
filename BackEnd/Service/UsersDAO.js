@@ -158,8 +158,8 @@ export default class UsersDAO {
             const sqlMain = `
                 SELECT 
                     u.*,
-                    r.nome as role_nome,
-                    r.descricao as role_descricao
+                    r.name as role_nome,
+                    NULLL as role_descricao
                 FROM users u
                 LEFT JOIN roles r ON u.role_id = r.id
                 ${whereClause}
