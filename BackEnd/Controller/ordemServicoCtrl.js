@@ -140,22 +140,40 @@ class OrdemServicoCtrl {
         if (req.method === "GET") {
             const osDAO = new OrdemServicoDAO();
             try {
-                const termoBusca = req.query.termo || "";
-                const pagina = parseInt(req.query.pagina) || 1;
-                const itensPorPagina = parseInt(req.query.itensPorPagina) || 25;
+                // Detectar se é chamada legada (parâmetros antigos) ou nova (com filtros)
+                const isLegacyCall = req.query.termo !== undefined || req.query.pagina !== undefined;
                 
-                const resultado = await osDAO.consultar(termoBusca, pagina, itensPorPagina);
-                
-                res.status(200).json({
-                    status: true,
-                    listaOrdensServico: resultado.listaOrdensServico,
-                    paginacao: {
-                        pagina: resultado.pagina,
-                        itensPorPagina: resultado.itensPorPagina,
-                        totalRegistros: resultado.totalRegistros,
-                        totalPaginas: resultado.totalPaginas
+                if (isLegacyCall) {
+                    // Manter compatibilidade com chamadas antigas
+                    const termoBusca = req.query.termo || "";
+                    const pagina = parseInt(req.query.pagina) || 1;
+                    const itensPorPagina = parseInt(req.query.itensPorPagina) || 25;
+                    
+                    const resultado = await osDAO.consultar(termoBusca, pagina, itensPorPagina);
+                    
+                    res.status(200).json({
+                        status: true,
+                        listaOrdensServico: resultado.listaOrdensServico,
+                        paginacao: {
+                            pagina: resultado.pagina,
+                            itensPorPagina: resultado.itensPorPagina,
+                            totalRegistros: resultado.totalRegistros,
+                            totalPaginas: resultado.totalPaginas
+                        }
+                    });
+                } else {
+                    // Nova API com paginação avançada e filtros
+                    // Mapear parâmetro 'termo' para 'search' se existir
+                    if (req.query.termo) {
+                        req.query.search = req.query.termo;
                     }
-                });
+                    
+                    const resultado = await osDAO.consultarComPaginacao(req.query);
+                    
+                    // Resposta no novo formato padronizado
+                    res.status(200).json(resultado);
+                }
+                
             } catch (erro) {
                 res.status(500).json({
                     status: false,

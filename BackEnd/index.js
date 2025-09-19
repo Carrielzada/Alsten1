@@ -34,26 +34,41 @@ app.use(
   })
 );
 
-// Lista padrão de origens permitidas
-const defaultWhiteList = [
+// Lista padrão de origens permitidas (desenvolvimento)
+const developmentOrigins = [
   'http://localhost:3000',
-  'http://localhost:3001',
+  'http://localhost:3001', 
   'http://localhost:5173',
-  'http://31.97.151.181:3000',
-  'http://31.97.151.181:3001',
-  'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3000',
-  'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3001',
-  'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io',
-  'http://og4o08cscgos0kgkkogk0k84.31.97.151.181.sslip.io',
-  'http://alsten.online',
-  'https://alsten.online',
-  'https://api.alsten.online',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'http://127.0.0.1:5173'
 ];
 
-// Usar variável de ambiente CORS_ORIGIN se existir
-const whiteList = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((url) => url.trim())
-  : defaultWhiteList;
+// Lista de origens para produção
+const productionOrigins = [
+  'https://alsten.online',
+  'https://api.alsten.online'
+];
+
+// Determinar origens baseado no ambiente
+let allowedOrigins;
+if (process.env.NODE_ENV === 'production') {
+  // Em produção, usar apenas origens seguras ou CORS_ORIGIN personalizada
+  allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(url => url.trim())
+    : productionOrigins;
+} else {
+  // Em desenvolvimento, permitir origens locais + produção
+  const customOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(url => url.trim())
+    : [];
+  allowedOrigins = [...developmentOrigins, ...productionOrigins, ...customOrigins];
+}
+
+console.log(`\ud83c\udf0d CORS configurado para ambiente: ${process.env.NODE_ENV || 'development'}`);
+console.log(`\ud83d\udd12 Origens permitidas: ${allowedOrigins.join(', ')}`);
+
+const whiteList = allowedOrigins;
 
 // Configuração do CORS
 const corsOptions = {

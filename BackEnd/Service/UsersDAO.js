@@ -1,5 +1,12 @@
 import Users from '../Model/users.js';
 import conectar from './conexao.js';
+import { 
+    validatePaginationParams, 
+    buildPaginationMeta, 
+    validateUsersFilters, 
+    buildOrderBy,
+    logPaginationPerformance 
+} from './utils/paginationHelper.js';
 
 export default class UsersDAO {
     async incluir(users) {
@@ -65,7 +72,141 @@ export default class UsersDAO {
         }
         return listaUsers;
     }
-    
+    }
+
+    /**
+     * Método de consulta com paginação e filtros avançados para usuários
+     * 
+     * @param {Object} query - Parâmetros da query (page, limit, filtros)
+     * @returns {Object} Resultado paginado com metadata
+     */
+    async consultarComPaginacao(query = {}) {
+        const startTime = Date.now();
+        const conexao = await conectar();
+        
+        try {
+            // Validar parâmetros de paginação
+            const { page, limit, offset } = validatePaginationParams(query);
+            
+            // Validar e sanitizar filtros específicos de usuários
+            const filters = validateUsersFilters(query);
+            
+            // Construir condições WHERE dinâmicas
+            const whereConditions = [];
+            const queryParams = [];
+            
+            // Filtro por Role ID
+            if (filters.roleId) {
+                whereConditions.push('u.role_id = ?');
+                queryParams.push(filters.roleId);
+            }
+            
+            // Filtro por nome (busca parcial)
+            if (filters.nome) {
+                whereConditions.push('u.nome LIKE ?');
+                queryParams.push(`%${filters.nome}%`);
+            }
+            
+            // Filtro por email (busca parcial)
+            if (filters.email) {
+                whereConditions.push('u.email LIKE ?');
+                queryParams.push(`%${filters.email}%`);
+            }
+            
+            // Busca geral (nome OU email)
+            if (filters.search) {
+                whereConditions.push('(u.nome LIKE ? OR u.email LIKE ?)');
+                const searchTerm = `%${filters.search}%`;
+                queryParams.push(searchTerm, searchTerm);
+            }
+            
+            // Filtro por status ativo (futuro - se adicionarmos campo ativo)
+            if (filters.ativo !== undefined) {
+                whereConditions.push('u.ativo = ?');
+                queryParams.push(filters.ativo ? 1 : 0);
+            }
+            
+            // Montar cláusula WHERE final
+            const whereClause = whereConditions.length > 0 
+                ? `WHERE ${whereConditions.join(' AND ')}` 
+                : '';
+            
+            // Query para contar total de registros
+            const sqlCount = `
+                SELECT COUNT(*) as total
+                FROM users u
+                LEFT JOIN roles r ON u.role_id = r.id
+                ${whereClause}
+            `;
+            
+            const [countResult] = await conexao.query(sqlCount, queryParams);
+            const total = countResult[0].total;
+            
+            // Campos permitidos para ordenação
+            const allowedOrderFields = [
+                'nome', 'email', 'role_id', 'criado_em', 'atualizado_em', 'id'
+            ];
+            
+            // Construir ORDER BY dinâmico
+            const orderBy = buildOrderBy(
+                query.orderBy, 
+                query.orderDirection, 
+                allowedOrderFields, 
+                'u.nome ASC'
+            );
+            
+            // Query principal com LIMIT, OFFSET e JOIN com roles
+            const sqlMain = `
+                SELECT 
+                    u.*,
+                    r.nome as role_nome,
+                    r.descricao as role_descricao
+                FROM users u
+                LEFT JOIN roles r ON u.role_id = r.id
+                ${whereClause}
+                ORDER BY ${orderBy}
+                LIMIT ? OFFSET ?
+            `;
+            
+            const mainQueryParams = [...queryParams, limit, offset];
+            const [registros] = await conexao.query(sqlMain, mainQueryParams);
+            
+            // Processar registros (sem expor senhas)
+            const listaUsers = registros.map(row => ({
+                id: row.id,
+                nome: row.nome,
+                email: row.email,
+                role: {
+                    id: row.role_id,
+                    nome: row.role_nome || `Role ${row.role_id}`,
+                    descricao: row.role_descricao || ''
+                },
+                criadoEm: row.criado_em,
+                atualizadoEm: row.atualizado_em,
+                // Não expor senha por segurança
+                // password field is intentionally omitted
+            }));
+            
+            // Log de performance
+            logPaginationPerformance('Users.consultarComPaginacao', startTime, total, filters);
+            
+            // Construir metadata de paginação
+            const meta = buildPaginationMeta(total, page, limit);
+            
+            return {
+                success: true,
+                data: listaUsers,
+                meta,
+                filters: Object.keys(filters).length > 0 ? filters : undefined
+            };
+            
+        } catch (error) {
+            console.error("Erro ao consultar Usuários com paginação:", error);
+            throw error;
+        } finally {
+            global.poolConexoes.releaseConnection(conexao);
+        }
+    }
 
     async consultarPorRole(role_id) {
         const conexao = await conectar();

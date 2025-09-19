@@ -7,6 +7,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import BlingApiService from './blingApiService.js';
 import { blingAuth } from '../Routers/blingRoutes.js';
+import { 
+    validatePaginationParams, 
+    buildPaginationMeta, 
+    validateOrdemServicoFilters, 
+    buildOrderBy,
+    logPaginationPerformance 
+} from './utils/paginationHelper.js';
 
 // __dirname não é disponível em módulos ES6, então precisamos recriá-lo
 const __filename = fileURLToPath(import.meta.url);
@@ -155,6 +162,272 @@ class OrdemServicoDAO {
             return ordemServico;
         } catch (error) {
             console.error("Erro ao gravar Ordem de Serviço:", error);
+            throw error;
+        } finally {
+            conexao.release();
+        }
+    }
+
+    /**
+     * Método aprimorado de consulta com paginação e filtros avançados
+     * Preserva integração com API do Bling para dados de clientes
+     * 
+     * @param {Object} query - Parâmetros da query (page, limit, filtros)
+     * @returns {Object} Resultado paginado com metadata
+     */
+    async consultarComPaginacao(query = {}) {
+        const startTime = Date.now();
+        const conexao = await conectar();
+        
+        try {
+            // Validar parâmetros de paginação
+            const { page, limit, offset } = validatePaginationParams(query);
+            
+            // Validar e sanitizar filtros específicos de OS
+            const filters = validateOrdemServicoFilters(query);
+            
+            // Construir condições WHERE dinâmicas
+            const whereConditions = [];
+            const queryParams = [];
+            
+            // Busca geral (termo de busca livre)
+            if (filters.search) {
+                whereConditions.push(`(
+                    os.cliente LIKE ? OR 
+                    m.modelo LIKE ? OR 
+                    os.numeroSerie LIKE ? OR
+                    os.defeitoAlegado LIKE ?
+                )`);
+                const searchTerm = `%${filters.search}%`;
+                queryParams.push(searchTerm, searchTerm, searchTerm, searchTerm);
+            }
+            
+            // Filtro por Cliente ID (preserva integração Bling)
+            if (filters.clienteId) {
+                whereConditions.push('os.cliente = ?');
+                queryParams.push(filters.clienteId);
+            }
+            
+            // Filtro por Status (baseado na etapa)
+            if (filters.status && filters.status.length > 0) {
+                const statusPlaceholders = filters.status.map(() => '?').join(',');
+                whereConditions.push(`os.etapa IN (${statusPlaceholders})`);
+                queryParams.push(...filters.status);
+            }
+            
+            // Filtro por Etapa ID
+            if (filters.etapaId) {
+                whereConditions.push('os.etapa_id = ?');
+                queryParams.push(filters.etapaId);
+            }
+            
+            // Filtro por Urgência ID
+            if (filters.urgenciaId) {
+                whereConditions.push('os.urgencia_id = ?');
+                queryParams.push(filters.urgenciaId);
+            }
+            
+            // Filtro por período de criação
+            if (filters.dataInicio) {
+                whereConditions.push('DATE(os.dataCriacao) >= ?');
+                queryParams.push(filters.dataInicio);
+            }
+            
+            if (filters.dataFim) {
+                whereConditions.push('DATE(os.dataCriacao) <= ?');
+                queryParams.push(filters.dataFim);
+            }
+            
+            // Filtros de Range - Valor
+            if (filters.valorMin) {
+                whereConditions.push('os.valor >= ?');
+                queryParams.push(filters.valorMin);
+            }
+            
+            if (filters.valorMax) {
+                whereConditions.push('os.valor <= ?');
+                queryParams.push(filters.valorMax);
+            }
+            
+            // Filtros de Range - Dias de Reparo
+            if (filters.diasReparoMin) {
+                whereConditions.push('os.dias_reparo >= ?');
+                queryParams.push(filters.diasReparoMin);
+            }
+            
+            if (filters.diasReparoMax) {
+                whereConditions.push('os.dias_reparo <= ?');
+                queryParams.push(filters.diasReparoMax);
+            }
+            
+            // Montar cláusula WHERE final
+            const whereClause = whereConditions.length > 0 
+                ? `WHERE ${whereConditions.join(' AND ')}` 
+                : '';
+            
+            // Query para contar total de registros
+            const sqlCount = `
+                SELECT COUNT(*) as total
+                FROM ordem_servico os
+                LEFT JOIN modelo m ON os.modeloEquipamento = m.id OR os.modeloEquipamento = m.modelo
+                LEFT JOIN fabricante f ON os.fabricante = f.id OR os.fabricante = f.nome_fabricante
+                LEFT JOIN urgencia urg ON os.urgencia_id = urg.id
+                LEFT JOIN etapa_os eos ON os.etapa_id = eos.id
+                ${whereClause}
+            `;
+            
+            const [countResult] = await conexao.query(sqlCount, queryParams);
+            const total = countResult[0].total;
+            
+            // Campos permitidos para ordenação
+            const allowedOrderFields = [
+                'dataCriacao', 'cliente', 'etapa', 'urgencia_id', 
+                'valor', 'numeroSerie', 'id'
+            ];
+            
+            // Construir ORDER BY dinâmico (suporte para ?sort=campo:direção)
+            const orderBy = buildOrderBy(
+                query.orderBy, 
+                query.orderDirection, 
+                allowedOrderFields, 
+                'os.dataCriacao DESC',
+                query.sort
+            );
+            
+            // Query principal com LIMIT e OFFSET
+            const sqlMain = `
+                SELECT 
+                    os.*,
+                    m.modelo as modelo_nome,
+                    f.nome_fabricante as fabricante_nome,
+                    urg.urgencia,
+                    ta.tipo_analise,
+                    tl.tipo_lacre,
+                    tLimp.tipo_limpeza,
+                    tt.tipo_transporte,
+                    p.pagamento,
+                    u.nome as vendedor_nome,
+                    dp.dias as dias_pagamento_valor,
+                    eos.nome as etapa_nome
+                FROM ordem_servico os
+                LEFT JOIN modelo m ON os.modeloEquipamento = m.id OR os.modeloEquipamento = m.modelo
+                LEFT JOIN fabricante f ON os.fabricante = f.id OR os.fabricante = f.nome_fabricante
+                LEFT JOIN urgencia urg ON os.urgencia_id = urg.id
+                LEFT JOIN tipo_analise ta ON os.tipo_analise_id = ta.id
+                LEFT JOIN tipo_lacre tl ON os.tipo_lacre_id = tl.id
+                LEFT JOIN tipo_limpeza tLimp ON os.tipo_limpeza_id = tLimp.id
+                LEFT JOIN tipo_transporte tt ON os.tipo_transporte_id = tt.id
+                LEFT JOIN pagamento p ON os.pagamento_id = p.id
+                LEFT JOIN users u ON os.vendedor_id = u.id
+                LEFT JOIN dias_pagamento dp ON os.dias_pagamento_id = dp.id
+                LEFT JOIN etapa_os eos ON os.etapa_id = eos.id
+                ${whereClause}
+                ORDER BY ${orderBy}
+                LIMIT ? OFFSET ?
+            `;
+            
+            const mainQueryParams = [...queryParams, limit, offset];
+            const [registros] = await conexao.query(sqlMain, mainQueryParams);
+            
+            // Processar registros e buscar dados do Bling (PRESERVANDO INTEGRAÇÃO ORIGINAL)
+            const listaOrdensServico = [];
+            for (const registro of registros) {
+                let clienteData = { 
+                    id: registro.cliente, 
+                    nome: `Cliente ${registro.cliente}`, 
+                    numeroDocumento: registro.cliente 
+                };
+                
+                // Se o cliente parece ser um ID numérico, buscar do Bling com delay
+                // (MANTENDO LÓGICA ORIGINAL INTACTA)
+                if (registro.cliente && /^\d+$/.test(registro.cliente)) {
+                    try {
+                        const blingResponse = await this.blingService.getContato(registro.cliente);
+                        if (blingResponse.success && blingResponse.data) {
+                            clienteData = {
+                                id: blingResponse.data.id,
+                                nome: blingResponse.data.nome,
+                                numeroDocumento: blingResponse.data.numeroDocumento,
+                                telefone: blingResponse.data.telefone,
+                                email: blingResponse.data.email,
+                                tipo: blingResponse.data.tipo
+                            };
+                        }
+                    } catch (error) {
+                        console.log(`Não foi possível buscar cliente ${registro.cliente} no Bling:`, error.message);
+                    }
+                    // Delay de 80ms entre requisições ao Bling (PRESERVANDO ORIGINAL)
+                    await sleep(80);
+                }
+                
+                // Montar objeto OS (MANTENDO ESTRUTURA ORIGINAL)
+                const os = {
+                    id: registro.id,
+                    cliente: clienteData,
+                    modeloEquipamento: registro.modelo_nome ? { 
+                        id: registro.modeloEquipamento, 
+                        modelo: registro.modelo_nome 
+                    } : { 
+                        id: registro.modeloEquipamento, 
+                        modelo: registro.modeloEquipamento || `Modelo ${registro.modeloEquipamento}` 
+                    },
+                    defeitoAlegado: registro.defeitoAlegado,
+                    numeroSerie: registro.numeroSerie,
+                    fabricante: registro.fabricante_nome ? { 
+                        id: registro.fabricante, 
+                        nome_fabricante: registro.fabricante_nome 
+                    } : { 
+                        id: registro.fabricante, 
+                        nome_fabricante: registro.fabricante || `Fabricante ${registro.fabricante}` 
+                    },
+                    urgencia: registro.urgencia_id ? { id: registro.urgencia_id, urgencia: registro.urgencia } : null,
+                    tipoAnalise: registro.tipo_analise_id ? { id: registro.tipo_analise_id, tipo_analise: registro.tipo_analise } : null,
+                    tipoLacre: registro.tipo_lacre_id ? { id: registro.tipo_lacre_id, tipo_lacre: registro.tipo_lacre } : null,
+                    tipoLimpeza: registro.tipo_limpeza_id ? { id: registro.tipo_limpeza_id, tipo_limpeza: registro.tipo_limpeza } : null,
+                    tipoTransporte: registro.tipo_transporte_id ? { id: registro.tipo_transporte_id, tipo_transporte: registro.tipo_transporte } : null,
+                    formaPagamento: registro.pagamento_id ? { id: registro.pagamento_id, pagamento: registro.pagamento } : null,
+                    arquivosAnexados: parseJsonArrayOrEmpty(registro.arquivosAnexados),
+                    etapa: registro.etapa,
+                    dataCriacao: registro.dataCriacao,
+                    vendedor: registro.vendedor_id ? { id: registro.vendedor_id, nome: registro.vendedor_nome } : null,
+                    diasPagamento: registro.dias_pagamento_id ? { id: registro.dias_pagamento_id, dias: registro.dias_pagamento_valor } : null,
+                    dataEntrega: registro.data_entrega,
+                    dataAprovacaoOrcamento: registro.data_aprovacao_orcamento,
+                    diasReparo: registro.dias_reparo,
+                    dataEquipamentoPronto: registro.data_equipamento_pronto,
+                    informacoesConfidenciais: registro.informacoes_confidenciais,
+                    checklistItems: parseJsonArrayOrEmpty(registro.checklist_items),
+                    agendado: !!registro.agendado,
+                    possuiAcessorio: !!registro.possui_acessorio,
+                    tipoTransporteTexto: registro.tipo_transporte_texto,
+                    transporteCifFob: registro.transporte_cif_fob,
+                    pedidoCompras: registro.pedido_compras,
+                    defeitoConstatado: registro.defeito_constatado,
+                    servicoRealizar: registro.servico_realizar,
+                    valor: registro.valor,
+                    etapaId: registro.etapa_id ? { id: registro.etapa_id, nome: registro.etapa_nome } : null,
+                    notaFiscal: registro.nota_fiscal,
+                    comprovante: registro.comprovante
+                };
+                
+                listaOrdensServico.push(os);
+            }
+            
+            // Log de performance
+            logPaginationPerformance('OrdemServico.consultarComPaginacao', startTime, total, filters);
+            
+            // Construir metadata de paginação
+            const meta = buildPaginationMeta(total, page, limit);
+            
+            return {
+                success: true,
+                data: listaOrdensServico,
+                meta,
+                filters: Object.keys(filters).length > 0 ? filters : undefined
+            };
+            
+        } catch (error) {
+            console.error("Erro ao consultar Ordens de Serviço com paginação:", error);
             throw error;
         } finally {
             conexao.release();
