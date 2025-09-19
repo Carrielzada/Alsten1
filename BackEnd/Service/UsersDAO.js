@@ -72,7 +72,6 @@ export default class UsersDAO {
         }
         return listaUsers;
     }
-    }
 
     /**
      * Método de consulta com paginação e filtros avançados para usuários
@@ -184,7 +183,6 @@ export default class UsersDAO {
                 criadoEm: row.criado_em,
                 atualizadoEm: row.atualizado_em,
                 // Não expor senha por segurança
-                // password field is intentionally omitted
             }));
             
             // Log de performance
@@ -226,51 +224,50 @@ export default class UsersDAO {
     }
     
     async atualizarDadosUsuario(id, dados) {
-    const conexao = await conectar();
-    
-    // Construir a query dinamicamente com base nos campos fornecidos
-    let sqlCampos = [];
-    let valores = [];
-    
-    if (dados.nome !== undefined) {
-        sqlCampos.push("nome = ?");
-        valores.push(dados.nome);
-    }
-    
-    if (dados.email !== undefined) {
-        sqlCampos.push("email = ?");
-        valores.push(dados.email);
-    }
-    
-    if (dados.role_id !== undefined) {
-        sqlCampos.push("role_id = ?");
-        valores.push(dados.role_id);
-    }
-    
-    // Se não há campos para atualizar, retornar
-    if (sqlCampos.length === 0) {
-        global.poolConexoes.releaseConnection(conexao);
-        return;
-    }
-    
-    // Adicionar o id ao final do array de valores
-    valores.push(id);
-    
-    const sql = `UPDATE users SET ${sqlCampos.join(", ")}, atualizado_em = NOW() WHERE id = ?`;
-    
-    try {
-        const [resultado] = await conexao.query(sql, valores);
+        const conexao = await conectar();
         
-        if (resultado.affectedRows === 0) {
-            throw new Error("Usuário não encontrado.");
+        // Construir a query dinamicamente com base nos campos fornecidos
+        let sqlCampos = [];
+        let valores = [];
+        
+        if (dados.nome !== undefined) {
+            sqlCampos.push("nome = ?");
+            valores.push(dados.nome);
         }
         
-        return resultado;
-    } finally {
-        global.poolConexoes.releaseConnection(conexao);
+        if (dados.email !== undefined) {
+            sqlCampos.push("email = ?");
+            valores.push(dados.email);
+        }
+        
+        if (dados.role_id !== undefined) {
+            sqlCampos.push("role_id = ?");
+            valores.push(dados.role_id);
+        }
+        
+        // Se não há campos para atualizar, retornar
+        if (sqlCampos.length === 0) {
+            global.poolConexoes.releaseConnection(conexao);
+            return;
+        }
+        
+        // Adicionar o id ao final do array de valores
+        valores.push(id);
+        
+        const sql = `UPDATE users SET ${sqlCampos.join(", ")}, atualizado_em = NOW() WHERE id = ?`;
+        
+        try {
+            const [resultado] = await conexao.query(sql, valores);
+            
+            if (resultado.affectedRows === 0) {
+                throw new Error("Usuário não encontrado.");
+            }
+            
+            return resultado;
+        } finally {
+            global.poolConexoes.releaseConnection(conexao);
+        }
     }
-}
-
 
     async consultarPorId(id) {
         const conexao = await conectar();
@@ -293,7 +290,6 @@ export default class UsersDAO {
             row.atualizado_em
         );
     }
-    
 
     async consultarPorEmail(email) {
         const conexao = await conectar();
@@ -316,6 +312,5 @@ export default class UsersDAO {
             row.atualizado_em
         );
     }
-    
 }
 
