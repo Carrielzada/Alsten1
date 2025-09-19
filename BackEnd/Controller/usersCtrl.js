@@ -123,25 +123,48 @@ export default class UsersCtrl {
     
     
 
-    consultar(requisicao, resposta) {
-        resposta.type("application/json");
+    async consultar(req, res) {
+        res.type("application/json");
 
-        if (requisicao.method === "GET") {
-            const termo = requisicao.query.termo || "";
-            const users = new Users();
-            users.consultar(termo).then((users) => {
-                resposta.status(200).json({
-                    status: true,
-                    listaUsers: users
-                });
-            }).catch((erro) => {
-                resposta.status(500).json({
+        if (req.method === "GET") {
+            try {
+                const usersDAO = new UsersDAO();
+                
+                // Detectar se é chamada legada (parâmetro 'termo') ou nova (com filtros)
+                const isLegacyCall = req.query.termo !== undefined;
+                
+                if (isLegacyCall) {
+                    // Manter compatibilidade com chamadas antigas
+                    const termo = req.query.termo || "";
+                    const users = new Users();
+                    const listaUsers = await users.consultar(termo);
+                    
+                    res.status(200).json({
+                        status: true,
+                        listaUsers: listaUsers
+                    });
+                } else {
+                    // Nova API com paginação avançada e filtros
+                    // Mapear parâmetro 'termo' para 'search' se existir
+                    if (req.query.termo) {
+                        req.query.search = req.query.termo;
+                    }
+                    
+                    const resultado = await usersDAO.consultarComPaginacao(req.query);
+                    
+                    // Resposta no novo formato padronizado
+                    res.status(200).json(resultado);
+                }
+                
+            } catch (erro) {
+                console.error('Erro ao consultar usuários:', erro);
+                res.status(500).json({
                     status: false,
-                    mensagem: erro.message
+                    mensagem: "Erro ao consultar usuários: " + erro.message
                 });
-            });
+            }
         } else {
-            resposta.status(400).json({
+            res.status(400).json({
                 status: false,
                 mensagem: "Método não permitido! Consulte a documentação da API."
             });
@@ -184,6 +207,8 @@ export default class UsersCtrl {
         }
     }
     
+    // Método consultarVendedores removido - usando consultar() diretamente com permissões adequadas
+
     async atualizarDadosUsuario(req, res) {
     res.type("application/json");
 

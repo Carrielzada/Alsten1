@@ -5,6 +5,7 @@ import { useState, useEffect, useContext, useRef } from "react";
 import { buscarMensagem, excluirMensagem, atualizarStatusMensagem } from "../../Services/mensagemService";
 import { ContextoUsuarioLogado } from "../../App.js";
 import { FaTrash, FaUndo } from "react-icons/fa";
+import Button from '../UI/Button';
 
 export default function TelaCadMensagem(props) {
   const contextoUsuario = useContext(ContextoUsuarioLogado);
@@ -125,20 +126,20 @@ export default function TelaCadMensagem(props) {
               md={4}
               className="text-end d-flex align-items-center justify-content-end"
             >
-              <button
+              <Button
                 className="btn btn-warning btn-sm d-flex align-items-center justify-content-center me-2"
                 onClick={handleMarcarComoNaoLida}
               >
                 <FaUndo className="me-1" />
                 Não Lida
-              </button>
-              <button
+              </Button>
+              <Button
                 className="btn btn-danger btn-sm d-flex align-items-center justify-content-center"
                 onClick={handleExcluirSelecionados}
               >
                 <FaTrash className="me-1" />
                 Excluir
-              </button>
+              </Button>
             </Col>
           </Row>
         </Container>

@@ -1,30 +1,45 @@
-import { FaWhatsapp } from "react-icons/fa";
+import { FaWhatsapp, FaBug } from "react-icons/fa";
+import './Rodape.css';
 
 export default function Rodape(props) {
     return (
-        <footer className="footer mt-0 pb-3 bg-light shadow">
-            <div className="container d-flex justify-content-between align-items-center">
-                {/* Copyright centralizado */}
-                <div className="text-center w-100">
-                    <small className="text-muted">
-                        &copy; {new Date().getFullYear()} Alsten. Todos os direitos reservados.
-                    </small>
-                </div>
+        <footer className="rodape-moderno">
+            <div className="container-fluid px-4">
+                <div className="d-flex justify-content-center align-items-center flex-wrap position-relative">
+                    {/* Copyright */}
+                    <div className="copyright">
+                        <small>
+                            <span className="logo-text">Alsten</span> {new Date().getFullYear()} - Sistema Interno
+                        </small>
+                    </div>
 
-                {/* Ícones de redes sociais no canto direito */}
-                <div className="d-flex gap-3" style={{ marginRight: "1rem" }}>
-                    {/* WhatsApp */}
-                    <a
-                        href="https://wa.me/5515997723051"
-                        title="WhatsApp"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-success icon-hover"
-                        aria-label="WhatsApp"
-                        style={{ display: "inline-block" }}
-                    >
-                        <FaWhatsapp style={{ fontSize: "1.8rem" }} />
-                    </a>
+                    {/* Ações */}
+                    <div className="footer-actions position-absolute" style={{right: '1rem'}}>
+                        {/* Botão reportar problema */}
+                        <a
+                            href="https://wa.me/5515997723051?text=Ol%C3%A1!%20Preciso%20reportar%20um%20problema%20no%20sistema%20Alsten"
+                            title="Reportar problema via WhatsApp"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="footer-btn"
+                            aria-label="Reportar problema"
+                        >
+                            <FaBug className="me-1" />
+                            <span>Reportar Problema</span>
+                        </a>
+                        
+                        {/* WhatsApp direto */}
+                        <a
+                            href="https://wa.me/5515997723051"
+                            title="Suporte via WhatsApp"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="footer-whatsapp"
+                            aria-label="WhatsApp"
+                        >
+                            <FaWhatsapp />
+                        </a>
+                    </div>
                 </div>
             </div>
         </footer>

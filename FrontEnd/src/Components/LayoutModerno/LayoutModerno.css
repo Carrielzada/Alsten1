@@ -1,6 +1,7 @@
 /* Estilo base para o container do layout */
 .layout-moderno {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
@@ -42,4 +43,49 @@
 /* Estilo para o Conteudo Principal quando a barra está oculta */
 .conteudo-principal.sem-barra {
   margin-left: 0; /* Remove a margem esquerda */
+}
+
+/* Container principal que contém sidebar e conteúdo */
+.layout-main {
+  display: flex;
+  flex: 1;
+  position: relative;
+}
+
+/* RESPONSIVIDADE MELHORADA */
+@media (max-width: 768px) {
+  .barra-lateral {
+    width: 100vw;
+    transform: translateX(-100%);
+    z-index: 1050;
+  }
+  
+  .conteudo-principal {
+    margin-left: 0 !important; /* Remove margem em mobile */
+    padding: 15px;
+    padding-top: 70px; /* Apenas espaço para o header */
+    width: 100%;
+  }
+  
+  .conteudo-principal.sem-barra {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .conteudo-principal {
+    padding: 10px;
+    padding-top: 65px;
+  }
+}
+
+/* Melhoria para desktop */
+@media (min-width: 1200px) {
+  .barra-lateral {
+    width: 280px;
+  }
+  
+  .conteudo-principal {
+    margin-left: 280px;
+  }
 }

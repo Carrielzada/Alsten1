@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Form, Row, Col, Button, Container } from "react-bootstrap";
+import { Form, Row, Col, Container } from "react-bootstrap";
 import { FaSave, FaTimes, FaPaperclip, FaEye, FaVial } from "react-icons/fa";
+import Button from '../../UI/Button'; // Nosso Button moderno que substitui o Bootstrap
 import CaixaSelecaoPesquisavel from '../../busca/CaixaSelecaoPesquisavel';
 import { buscarFabricantes } from '../../../Services/fabricanteService';
 import { buscarModelo } from '../../../Services/modeloService';
@@ -26,22 +27,134 @@ import ClienteSearchAdvanced from '../../busca/ClienteSearchAdvanced';
 import '../../busca/ClienteSelector.css';
 import './FormCadOrdemServico.css';
 
-// Mapeamento dos campos obrigatórios por etapa (usando nomes exatos do banco de dados)
+// Mapeamento dos campos obrigatórios por etapa (baseado nas regras detalhadas do usuário)
 const obrigatoriosPorEtapa = {
-    "PREVISTO": ["cliente", "modeloEquipamento", "defeitoAlegado"],
-    "RECEBIDO": ["numeroSerie", "arquivosAnexados", "fabricante", "dataEntrega"],
-    "EM ANÁLISE": ["tipoAnalise", "checklistItems", "tipoLimpeza", "defeitoConstatado", "servicoRealizar", "diasReparo", "informacoesConfidenciais"],
+    // PREVISTO: nome do cliente, modelo do equipamento, fabricante e defeito alegado
+    "PREVISTO": ["cliente", "modeloEquipamento", "fabricante", "defeitoAlegado"],
+    
+    // RECEBIDO: fotos do equipamento anexadas (arquivosAnexados)
+    "RECEBIDO": ["arquivosAnexados"],
+    
+    // EM ANÁLISE: tipo de análise, checklist, tipo de limpeza, defeito constatado, serviço a ser realizado e os dias para reparo
+    "EM ANÁLISE": ["tipoAnalise", "checklistItems", "tipoLimpeza", "defeitoConstatado", "servicoRealizar", "diasReparo"],
+    
+    // ANALISADO: Setor comercial segue com orçamento (valor)
     "ANALISADO": ["valor"],
-    "AGUARDANDO APROVAÇÃO": ["pedidoCompras", "comprovanteAprovacao", "tipoTransporte", "transporteCifFob"],
-    "PRÉ-APROVADO": [],
-    "APROVADO": [],
+    
+    // AGUARDANDO APROVAÇÃO: Comprovante obrigatório + informações comerciais
+    "AGUARDANDO APROVAÇÃO": ["comprovanteAprovacao"],
+    
+    // PRÉ-APROVADO: Comprovante obrigatório (aprovação com pendência)
+    "PRÉ-APROVADO": ["comprovanteAprovacao"],
+    
+    // APROVADO: Comprovante obrigatório (aprovação sem pendência)
+    "APROVADO": ["comprovanteAprovacao"],
+    
+    // REPROVADO: Comprovante obrigatório (reprovação)
     "REPROVADO": ["comprovanteAprovacao"],
-    "AGUARDANDO INFORMAÇÃO": ["comprovanteAprovacao", "pedidoCompras"],
+    
+    // AGUARDANDO INFORMAÇÃO: Para cobrar pedido ou pagamento
+    "AGUARDANDO INFORMAÇÃO": [],
+    
+    // SEM CUSTO: Não é necessário anexo de comprovante
     "SEM CUSTO": [],
+    
+    // EXPEDIÇÃO: Técnico finalizou reparo e comercial finalizou negociação
     "EXPEDIÇÃO": [],
+    
+    // DESPACHO: Logística segue com retorno do equipamento
     "DESPACHO": [],
+    
+    // CONCLUÍDO: Logística conclui quando equipamento é enviado
     "CONCLUÍDO": [],
 };
+
+// Controle de acesso por nível de usuário (baseado nas roles do sistema)
+const acessoPorNivel = {
+    // Role 1 - Admin/Diretoria: Acesso total
+    1: {
+        etapasPermitidas: ["PREVISTO", "RECEBIDO", "EM ANÁLISE", "ANALISADO", "AGUARDANDO APROVAÇÃO", "PRÉ-APROVADO", "APROVADO", "REPROVADO", "AGUARDANDO INFORMAÇÃO", "SEM CUSTO", "EXPEDIÇÃO", "DESPACHO", "CONCLUÍDO"],
+        podeExcluir: true,
+        podeCriar: true,
+        podeEditarTudo: true
+    },
+    // Role 2 - Diretoria: Acesso total (mesmo que admin)
+    2: {
+        etapasPermitidas: ["PREVISTO", "RECEBIDO", "EM ANÁLISE", "ANALISADO", "AGUARDANDO APROVAÇÃO", "PRÉ-APROVADO", "APROVADO", "REPROVADO", "AGUARDANDO INFORMAÇÃO", "SEM CUSTO", "EXPEDIÇÃO", "DESPACHO", "CONCLUÍDO"],
+        podeExcluir: true,
+        podeCriar: true,
+        podeEditarTudo: true
+    },
+    // Role 3 - PCM: Todas as etapas exceto exclusão
+    3: {
+        etapasPermitidas: ["PREVISTO", "RECEBIDO", "EM ANÁLISE", "ANALISADO", "AGUARDANDO APROVAÇÃO", "PRÉ-APROVADO", "APROVADO", "REPROVADO", "AGUARDANDO INFORMAÇÃO", "SEM CUSTO", "EXPEDIÇÃO", "DESPACHO", "CONCLUÍDO"],
+        podeExcluir: false,
+        podeCriar: true,
+        podeEditarTudo: true
+    },
+    // Role 4 - Comercial: Todas as etapas exceto exclusão
+    4: {
+        etapasPermitidas: ["PREVISTO", "RECEBIDO", "EM ANÁLISE", "ANALISADO", "AGUARDANDO APROVAÇÃO", "PRÉ-APROVADO", "APROVADO", "REPROVADO", "AGUARDANDO INFORMAÇÃO", "SEM CUSTO", "EXPEDIÇÃO", "DESPACHO", "CONCLUÍDO"],
+        podeExcluir: false,
+        podeCriar: true,
+        podeEditarTudo: true
+    },
+    // Role 5 - Logística: OS de terceiro, previsto, recebido, expedição, despacho e concluído
+    5: {
+        etapasPermitidas: ["PREVISTO", "RECEBIDO", "EXPEDIÇÃO", "DESPACHO", "CONCLUÍDO"],
+        podeExcluir: false,
+        podeCriar: true, // Pode criar OS de terceiro
+        podeEditarTudo: false
+    },
+    // Role 6 - Técnico: Em análise, analisado, expedição e incluir OS de terceiro
+    6: {
+        etapasPermitidas: ["EM ANÁLISE", "ANALISADO", "EXPEDIÇÃO"],
+        podeExcluir: false,
+        podeCriar: true, // Pode criar OS de terceiro
+        podeEditarTudo: false
+    }
+};
+
+// Função para verificar se o usuário tem acesso a uma etapa
+function usuarioPodeAcessarEtapa(userRole, etapa) {
+    const acesso = acessoPorNivel[userRole];
+    if (!acesso) return false;
+    return acesso.etapasPermitidas.includes(etapa);
+}
+
+// Função para obter etapas permitidas para o usuário
+function getEtapasPermitidas(userRole) {
+    const acesso = acessoPorNivel[userRole];
+    return acesso ? acesso.etapasPermitidas : [];
+}
+
+// Função para calcular data de entrega baseada em dias úteis
+function calcularDataEntregaUteis(dataAprovacao, diasReparo) {
+    if (!dataAprovacao || !diasReparo || diasReparo <= 0) {
+        return null;
+    }
+    
+    const dataInicial = new Date(dataAprovacao);
+    let diasAdicionados = 0;
+    let dataCalculada = new Date(dataInicial);
+    
+    // Avançar para o próximo dia útil se a aprovação foi em fim de semana
+    while (dataCalculada.getDay() === 0 || dataCalculada.getDay() === 6) {
+        dataCalculada.setDate(dataCalculada.getDate() + 1);
+    }
+    
+    // Contar apenas dias úteis (segunda a sexta)
+    while (diasAdicionados < diasReparo) {
+        dataCalculada.setDate(dataCalculada.getDate() + 1);
+        
+        // Verificar se é dia útil (1=segunda, 2=terça, ..., 5=sexta)
+        if (dataCalculada.getDay() >= 1 && dataCalculada.getDay() <= 5) {
+            diasAdicionados++;
+        }
+    }
+    
+    return dataCalculada.toISOString().split('T')[0];
+}
 
 // Lista ordenada das etapas conforme o fluxo do processo
 const ordemEtapas = [
@@ -185,6 +298,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     });
     const [dirty, setDirty] = useState(false);
     const [faltandoCampos, setFaltandoCampos] = useState([]);
+    const [loadingFormData, setLoadingFormData] = useState(true);
+    const [savingForm, setSavingForm] = useState(false);
 
     // Detecta alterações no formulário
     useEffect(() => {
@@ -206,6 +321,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     const [comprovanteFile, setComprovanteFile] = useState(null);
     const [comprovantePreview, setComprovantePreview] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false); // Para controlar se pode editar o ID
+    const [userRole, setUserRole] = useState(null); // Nível de acesso do usuário
+    const [etapasPermitidas, setEtapasPermitidas] = useState([]); // Etapas que o usuário pode acessar
     
     // Novos estados para os novos campos
     const [vendedores, setVendedores] = useState([]);
@@ -214,17 +331,33 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     const [etapasOS, setEtapasOS] = useState([]);
     const [servicosPadrao, setServicosPadrao] = useState([]);
     const [defeitosPadrao, setDefeitosPadrao] = useState([]);
-
+    
+    // Controle para evitar múltiplas execuções
+    const dadosCarregados = useRef(false);
+    
     useEffect(() => {
+        // Se os dados já foram carregados, não executar novamente
+        if (dadosCarregados.current) {
+            console.log("Dados já carregados, pulando execução...");
+            return;
+        }
         const carregarDadosCadastrais = async () => {
             try {
-                const token = localStorage.getItem('token');
-                const usuarioLogado = localStorage.getItem('usuarioLogado');
+                setLoadingFormData(true);
+                const usuarioLogadoStr = localStorage.getItem('usuarioLogado');
+                let usuarioLogado = null;
+                let token = null;
                 
-                console.log("Token encontrado:", !!token);
-                console.log("Usuário logado encontrado:", !!usuarioLogado);
+                if (usuarioLogadoStr) {
+                    try {
+                        usuarioLogado = JSON.parse(usuarioLogadoStr);
+                        token = usuarioLogado?.token;
+                    } catch (error) {
+                        console.error('Erro ao fazer parse do usuário logado:', error);
+                    }
+                }
                 
-                if (!token && !usuarioLogado) {
+                if (!token || !usuarioLogado) {
                     toast.error("Você precisa estar logado para acessar esta página.");
                     setTimeout(() => {
                         window.location.href = '/';
@@ -232,7 +365,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     return;
                 }
 
-                console.log("Iniciando carregamento de dados...");
+                console.log("Iniciando carregamento de dados cadastrais...");
 
                 const [
                     fabricantesData,
@@ -266,22 +399,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     buscarDefeitosAlegados()
                 ]);
 
-                console.log("Dados recebidos:", {
-                    fabricantesData,
-                    modelosData,
-                    urgenciasData,
-                    tiposAnaliseData,
-                    tiposLacreData,
-                    tiposLimpezaData,
-                    tiposTransporteData,
-                    pagamentosData,
-                    vendedoresData,
-                    diasPagamentoData,
-                    checklistItemsData,
-                    etapasOSData,
-                    servicosPadraoData,
-                    defeitosAlegadosData
-                });
+                // Dados carregados com sucesso
 
                 setFabricantes(fabricantesData.listaFabricantes);
                 setModelos(modelosData.listaModelos);
@@ -297,27 +415,17 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                 setEtapasOS(etapasOSData.listaEtapasOS || []);
                 setServicosPadrao(servicosPadraoData.listaServicosPadrao || []);
                 setDefeitosPadrao(defeitosAlegadosData.listaDefeitosAlegados || []); // Usando os mesmos dados por enquanto
+                
+                // Marcar como carregado para evitar nova execução
+                dadosCarregados.current = true;
 
-                console.log("Estados atualizados:", {
-                    fabricantes: fabricantesData.listaFabricantes,
-                    modelos: modelosData.listaModelos,
-                    urgencias: urgenciasData.listaUrgencias,
-                    tiposAnalise: tiposAnaliseData.listaTiposAnalise,
-                    tiposLacre: tiposLacreData.listaTiposLacre,
-                    tiposLimpeza: tiposLimpezaData.listaTiposLimpeza,
-                    tiposTransporte: tiposTransporteData.listaTiposTransporte,
-                    formasPagamento: pagamentosData.listaPagamentos,
-                    vendedores: vendedoresData.listaUsers || [],
-                    diasPagamento: diasPagamentoData.listaDiasPagamento || [],
-                    checklistItems: checklistItemsData.listaChecklistItems || [],
-                    etapasOS: etapasOSData.listaEtapasOS || [],
-                    servicosPadrao: servicosPadraoData.listaServicosPadrao || [],
-                    defeitosPadrao: defeitosAlegadosData.listaDefeitosAlegados || []
-                });
+                console.log("Dados cadastrais carregados com sucesso");
 
             } catch (error) {
                 console.error("Erro ao carregar dados dos cadastros:", error);
                 toast.error("Erro ao carregar dados dos cadastros.");
+            } finally {
+                setLoadingFormData(false);
             }
         };
 
@@ -360,20 +468,85 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     }, [modoEdicao, ordemServicoEmEdicao]);
 
     useEffect(() => {
-        // Verificar se o usuário é admin
-        const checkAdminStatus = () => {
-            const token = localStorage.getItem('token');
-            if (token) {
+        // Verificar nível do usuário e definir permissões
+        const checkUserPermissions = () => {
+            const usuarioLogadoStr = localStorage.getItem('usuarioLogado');
+            if (usuarioLogadoStr) {
                 try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    setIsAdmin(payload.role === 1); // Role 1 = Admin
+                    const usuarioLogado = JSON.parse(usuarioLogadoStr);
+                    const token = usuarioLogado?.token;
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        const role = payload.role;
+                        
+                        setUserRole(role);
+                        setIsAdmin(role === 1 || role === 2); // Admin ou Diretoria
+                        setEtapasPermitidas(getEtapasPermitidas(role));
+                        
+                        console.log('Usuário logado - Role:', role, 'Etapas permitidas:', getEtapasPermitidas(role));
+                    }
                 } catch (error) {
                     console.error('Erro ao decodificar token:', error);
                 }
             }
         };
-        checkAdminStatus();
+        checkUserPermissions();
     }, []);
+
+    // 📦 Definir vendedor automaticamente baseado no usuário logado (se não for edição)
+    useEffect(() => {
+        if (!modoEdicao && vendedores.length > 0 && !ordemServico.vendedor) {
+            const usuarioLogadoStr = localStorage.getItem('usuarioLogado');
+            if (usuarioLogadoStr) {
+                try {
+                    const usuarioLogado = JSON.parse(usuarioLogadoStr);
+                    const token = usuarioLogado?.token;
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        const usuarioLogadoId = payload.id;
+                        
+                        // Encontrar o usuário logado na lista de vendedores
+                        const vendedorLogado = vendedores.find(vendedor => vendedor.id === usuarioLogadoId);
+                        
+                        if (vendedorLogado) {
+                            console.log('Definindo vendedor automaticamente:', vendedorLogado);
+                            setOrdemServico(prevState => ({
+                                ...prevState,
+                                vendedor: vendedorLogado
+                            }));
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao decodificar token para definir vendedor:', error);
+                }
+            }
+        }
+    }, [vendedores, modoEdicao, ordemServico.vendedor]);
+
+    // 📅 Cálculo automático da data de entrega
+    useEffect(() => {
+        if (ordemServico.dataAprovacaoOrcamento && ordemServico.diasReparo && ordemServico.diasReparo > 0) {
+            const novaDataEntrega = calcularDataEntregaUteis(
+                ordemServico.dataAprovacaoOrcamento, 
+                parseInt(ordemServico.diasReparo)
+            );
+            
+            if (novaDataEntrega && novaDataEntrega !== ordemServico.dataEquipamentoPronto) {
+                console.log('Cálculo automático:', {
+                    aprovacao: ordemServico.dataAprovacaoOrcamento,
+                    diasReparo: ordemServico.diasReparo,
+                    dataCalculada: novaDataEntrega
+                });
+                
+                setOrdemServico(prevState => ({
+                    ...prevState,
+                    dataEquipamentoPronto: novaDataEntrega
+                }));
+                markDirty();
+            }
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ordemServico.dataAprovacaoOrcamento, ordemServico.diasReparo]);
 
     const handleInputChange = (e) => {
         markDirty();
@@ -637,6 +810,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         console.log('Dados da OS processados:', dadosProcessados);
 
         try {
+            setSavingForm(true);
             const response = await gravarOrdemServico(dadosProcessados);
 
             if (response.status) {
@@ -654,6 +828,44 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         } catch (error) {
             console.error("Erro ao salvar a Ordem de Serviço:", error);
             toast.error(error.message || "Não foi possível conectar com o servidor.");
+        } finally {
+            setSavingForm(false);
+        }
+    };
+
+    // Funções para geração de PDF
+    // eslint-disable-next-line no-unused-vars
+    const gerarPDF = async (opcoes = {}) => {
+        if (!ordemServico.id) {
+            toast.warn('Salve a OS primeiro para gerar o PDF.');
+            return;
+        }
+
+        try {
+            const { incluirVendedor = true, incluirTecnico = true, acao = 'download' } = opcoes;
+            
+            const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+            const url = `${baseUrl}/pdf/orcamento/${ordemServico.id}${
+                acao === 'visualizar' ? '/visualizar' : ''
+            }?incluirVendedor=${incluirVendedor}&incluirTecnico=${incluirTecnico}&formato=${acao === 'visualizar' ? 'inline' : 'download'}`;
+            
+            if (acao === 'visualizar') {
+                // Abrir em nova aba para visualizar
+                window.open(url, '_blank');
+                toast.info('PDF aberto em nova aba!');
+            } else {
+                // Download direto
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `Orcamento_OS_${ordemServico.id}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                toast.success('PDF baixado com sucesso!');
+            }
+        } catch (error) {
+            console.error('Erro ao gerar PDF:', error);
+            toast.error('Erro ao gerar PDF.');
         }
     };
 
@@ -708,6 +920,17 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
       return d.toISOString().slice(0, 10);
     }
 
+    if (loadingFormData) {
+        return (
+            <Container className="p-3 bg-white border rounded shadow-sm mx-auto form-cad-os text-center">
+                <div className="spinner-border text-primary my-5" role="status">
+                    <span className="visually-hidden">Carregando...</span>
+                </div>
+                <p className="mt-2">Carregando dados do formulário...</p>
+            </Container>
+        );
+    }
+
     return (
         <Container className="p-3 bg-white border rounded shadow-sm mx-auto form-cad-os">
             <Form onSubmit={handleSubmit} className="small">
@@ -723,7 +946,9 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             <Form.Label className="fw-semibold">ID da Ordem de Serviço</Form.Label>
                             <Form.Control
                                 type="text"
+                                name="id"
                                 value={ordemServico.id || ''}
+                                onChange={isAdmin ? handleInputChange : undefined}
                                 readOnly={!isAdmin}
                                 disabled={!isAdmin}
                                 className={!isAdmin ? 'bg-light' : ''}
@@ -738,23 +963,42 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Col>
                     <Col md={6} sm={12}>
                         <Form.Group controlId="vendedor">
-                            <Form.Label className="fw-semibold">Vendedor</Form.Label>
-                            <CaixaSelecaoPesquisavel
-                                dados={vendedores}
-                                campoChave="id"
-                                campoExibir="nome"
-                                valorSelecionado={ordemServico.vendedor?.id || ''}
-                                onChange={handleSelectChange}
-                                name="vendedor"
-                                style={faltandoCampos.includes('vendedor') ? { border: '2px solid red' } : {}}
-                            />
+                            <Form.Label className="fw-semibold">
+                                Vendedor/Técnico {!isAdmin && '(Automatico)'}
+                            </Form.Label>
+                            {isAdmin ? (
+                                <CaixaSelecaoPesquisavel
+                                    dados={vendedores}
+                                    campoChave="id"
+                                    campoExibir="nome"
+                                    valorSelecionado={ordemServico.vendedor?.id || ''}
+                                    onChange={handleSelectChange}
+                                    name="vendedor"
+                                    style={faltandoCampos.includes('vendedor') ? { border: '2px solid red' } : {}}
+                                />
+                            ) : (
+                                <Form.Control
+                                    type="text"
+                                    value={ordemServico.vendedor?.nome || 'Carregando...'}
+                                    readOnly
+                                    disabled
+                                    className="bg-light"
+                                    size="sm"
+                                    style={faltandoCampos.includes('vendedor') ? { border: '2px solid red' } : {}}
+                                />
+                            )}
+                            {!isAdmin && (
+                                <Form.Text className="text-muted">
+                                    <small>📄 Definido automaticamente pelo seu usuário logado</small>
+                                </Form.Text>
+                            )}
                         </Form.Group>
                     </Col>
                 </Row>
 
                 {/* Seção 2: Cliente, Pagamento e Data de Entrega */}
                 <Row className="mb-4">
-                    <Col md={4} sm={12}>
+                    <Col md={5} sm={12}>
                         <Form.Group controlId="cliente">
                             <Form.Label className="fw-semibold">Cliente (Bling) *</Form.Label>
                             <div 
@@ -768,7 +1012,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                             </div>
                         </Form.Group>
                     </Col>
-                    <Col md={4} sm={12}>
+                    <Col md={3} sm={12}>
                         <Form.Group controlId="formaPagamento">
                             <Form.Label className="fw-semibold">Pagamento</Form.Label>
                             <CaixaSelecaoPesquisavel
@@ -893,13 +1137,15 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                         </Form.Group>
                     </Col>
                     <Col md={3} sm={6} xs={12}>
-                        <CampoValor
-                            label="Valor *"
-                            name="valor"
-                            value={ordemServico.valor || ''}
-                            onChange={handleInputChange}
-                            error={faltandoCampos.includes('valor')}
-                        />
+                        <Form.Group controlId="valor">
+                            <Form.Label className="fw-semibold">Valor *</Form.Label>
+                            <CampoValor
+                                name="valor"
+                                value={ordemServico.valor || ''}
+                                onChange={handleInputChange}
+                                style={faltandoCampos.includes('valor') ? { border: '2px solid red' } : {}}
+                            />
+                        </Form.Group>
                     </Col>
                     <Col md={6} xs={12}>
                         <ComprovanteUploadMelhorado
@@ -1048,6 +1294,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                     <Button 
                                         variant="outline-danger" 
                                         size="sm"
+                                        title="Remover imagem"
                                         onClick={() => {
                                             markDirty();
                                             setOrdemServico(prevState => ({
@@ -1096,13 +1343,31 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                 <Row className="mb-3">
                     <Col md={6}>
                         <Form.Group controlId="dataEquipamentoPronto">
-                            <Form.Label>Data do Equipamento Pronto</Form.Label>
+                            <Form.Label>
+                                Data do Equipamento Pronto 
+                                {ordemServico.dataAprovacaoOrcamento && ordemServico.diasReparo && (
+                                    <small className="text-success ms-2">
+                                        📅 (Calculado automaticamente)
+                                    </small>
+                                )}
+                            </Form.Label>
                             <Form.Control
                                 type="date"
                                 name="dataEquipamentoPronto"
                                 value={toInputDateString(ordemServico.dataEquipamentoPronto)}
                                 onChange={handleInputChange}
+                                style={{
+                                    backgroundColor: ordemServico.dataAprovacaoOrcamento && ordemServico.diasReparo ? '#f8f9fa' : 'white',
+                                    borderColor: ordemServico.dataAprovacaoOrcamento && ordemServico.diasReparo ? '#28a745' : '#ced4da'
+                                }}
                             />
+                            {ordemServico.dataAprovacaoOrcamento && ordemServico.diasReparo && (
+                                <Form.Text className="text-success">
+                                    <small>
+                                        ℹ️ Data calculada: {ordemServico.dataAprovacaoOrcamento} + {ordemServico.diasReparo} dias úteis
+                                    </small>
+                                </Form.Text>
+                            )}
                         </Form.Group>
                     </Col>
                 </Row>
@@ -1125,9 +1390,18 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Col>
                     <Col md={4} sm={6} xs={12}>
                         <Form.Group controlId="etapaId">
-                            <Form.Label className="fw-semibold">Situação/Etapa</Form.Label>
+                            <Form.Label className="fw-semibold">
+                                Situação/Etapa
+                                {userRole && (
+                                    <small className="text-muted ms-2">
+                                        (Nível: {userRole === 1 ? 'Admin' : userRole === 2 ? 'Diretoria' : userRole === 3 ? 'PCM' : userRole === 4 ? 'Comercial' : userRole === 5 ? 'Logística' : userRole === 6 ? 'Técnico' : 'Usuário'})
+                                    </small>
+                                )}
+                            </Form.Label>
                             <CaixaSelecaoPesquisavel
-                                dados={etapasOS}
+                                dados={etapasOS.filter(etapa => 
+                                    userRole ? usuarioPodeAcessarEtapa(userRole, etapa.nome) : true
+                                )}
                                 campoChave="id"
                                 campoExibir="nome"
                                 valorSelecionado={ordemServico.etapaId?.id || ''}
@@ -1135,6 +1409,11 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                 name="etapaId"
                                 style={faltandoCampos.includes('etapaId') ? { border: '2px solid red' } : {}}
                             />
+                            {userRole && etapasPermitidas.length > 0 && (
+                                <Form.Text className="text-muted">
+                                    <small>Etapas disponíveis: {etapasPermitidas.join(', ')}</small>
+                                </Form.Text>
+                            )}
                         </Form.Group>
                     </Col>
                     <Col md={4} sm={12} xs={12}>
@@ -1373,7 +1652,12 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                         </Form.Group>
                     </Col>
                     <Col xs="auto">
-                        <Button variant="outline-secondary" onClick={handleAnexarArquivo} disabled={!ordemServico.id} size="sm">
+                        <Button 
+                            variant="outline-secondary" 
+                            onClick={handleAnexarArquivo} 
+                            disabled={!ordemServico.id} 
+                            size="sm"
+                        >
                             <FaPaperclip /> Anexar
                         </Button>
                     </Col>
@@ -1398,8 +1682,22 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                                     <AnexoViewer
                                         key={index}
                                         arquivo={arquivo}
-                                        onRemover={() => handleRemoverArquivo(arquivo)}
-                                        ordemServicoId={ordemServico.id}
+                                        onDelete={() => handleRemoverArquivo(arquivo)}
+                                        onView={(arq) => {
+                                            // Abrir arquivo em nova aba
+                                            const url = `${process.env.REACT_APP_API_URL}/uploads/${arq}`;
+                                            window.open(url, '_blank');
+                                        }}
+                                        onDownload={(arq) => {
+                                            // Download do arquivo
+                                            const url = `${process.env.REACT_APP_API_URL}/uploads/${arq}`;
+                                            const link = document.createElement('a');
+                                            link.href = url;
+                                            link.download = arq;
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        }}
                                     />
                                 ))}
                             </div>
@@ -1407,33 +1705,44 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     </Row>
                 )}
                 
-                {/* Botões de Ação Otimizados */}
+                {/* Botões de Ação Modernos */}
                 <Row className="mt-4 mb-3">
                     <Col className="d-flex justify-content-center align-items-center gap-3 flex-wrap">
                         <Button 
                             type="submit" 
-                            variant="primary" 
-                            size="lg"
-                            className="px-4 py-2"
+                            variant="success"
+                            size="md"
+                            disabled={savingForm}
                         >
-                            <FaSave className="me-2" />
-                            {modoEdicao ? 'Atualizar OS' : 'Salvar Ordem de Serviço'}
+                            {savingForm ? (
+                                <>
+                                    <div className="spinner-border spinner-border-sm me-2" role="status">
+                                        <span className="visually-hidden">Salvando...</span>
+                                    </div>
+                                    Salvando...
+                                </>
+                            ) : (
+                                <>
+                                    <FaSave className="me-2" />
+                                    {modoEdicao ? 'Atualizar OS' : 'Salvar OS'}
+                                </>
+                            )}
                         </Button>
                         
                         <Button
                             variant="outline-info"
-                            size="md"
+                            size="sm"
                             onClick={testarValidacao}
                             title="Verificar campos obrigatórios"
                         >
                             <FaVial className="me-2" />
-                            Validar Campos
+                            Validar
                         </Button>
                         
                         {!modoEdicao && (
                             <Button
                                 variant="outline-danger"
-                                size="md"
+                                size="sm"
                                 onClick={resetForm}
                                 title="Limpar formulário"
                             >

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Badge } from 'react-bootstrap';
+import { Table, Modal, Badge } from 'react-bootstrap';
+import Button from '../UI/Button';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { buscarLogsOrdemServico } from '../../Services/ordemServicoService';
@@ -49,18 +50,44 @@ const TelaListagemLogsOS = () => {
 
     const getCampoLabel = (campo) => {
         const labels = {
+            // Campos básicos
             'cliente': 'Cliente',
             'modeloEquipamento': 'Modelo do Equipamento',
             'defeitoAlegado': 'Defeito Alegado',
             'numeroSerie': 'Número de Série',
             'fabricante': 'Fabricante',
-            'urgencia': 'Urgência',
+            'urgencia': 'Nível de Urgência',
             'tipoAnalise': 'Tipo de Análise',
             'tipoLacre': 'Tipo de Lacre',
             'tipoLimpeza': 'Tipo de Limpeza',
             'tipoTransporte': 'Tipo de Transporte',
             'formaPagamento': 'Forma de Pagamento',
-            'etapa': 'Etapa'
+            'etapa': 'Etapa',
+            
+            // Novos campos
+            'vendedor': 'Vendedor',
+            'diasPagamento': 'Dias de Pagamento',
+            'dataEntrega': 'Data de Entrega',
+            'dataAprovacaoOrcamento': 'Data de Aprovação do Orçamento',
+            'diasReparo': 'Dias de Reparo',
+            'dataEquipamentoPronto': 'Data do Equipamento Pronto',
+            'informacoesConfidenciais': 'Informações Confidenciais',
+            'checklistItems': 'Itens do Checklist',
+            'agendado': 'Agendado',
+            'possuiAcessorio': 'Possui Acessório',
+            'tipoTransporteTexto': 'Observações do Transporte',
+            'transporteCifFob': 'Transporte CIF/FOB',
+            'pedidoCompras': 'Pedido de Compras',
+            'defeitoConstatado': 'Defeito Constatado',
+            'servicoRealizar': 'Serviço a Realizar',
+            'valor': 'Valor',
+            'etapaId': 'Etapa Atual',
+            'comprovanteAprovacao': 'Comprovante de Aprovação',
+            'notaFiscal': 'Nota Fiscal',
+            'comprovante': 'Comprovante',
+            
+            // Ações especiais
+            'criacao': 'Criação da OS'
         };
         return labels[campo] || campo;
     };
@@ -157,41 +184,41 @@ const TelaListagemLogsOS = () => {
                     {logSelecionado && (
                         <div>
                             <div className="row mb-3">
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Data/Hora:</strong>
                                     <p>{formatarData(logSelecionado.data_alteracao)}</p>
                                 </div>
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Usuário:</strong>
                                     <p>{logSelecionado.nome_usuario || 'Usuário não identificado'}</p>
                                 </div>
                             </div>
                             <div className="row mb-3">
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>OS ID:</strong>
                                     <p>{logSelecionado.ordem_servico_id}</p>
                                 </div>
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>ID do Log:</strong>
                                     <p>{logSelecionado.id}</p>
                                 </div>
                             </div>
                             <div className="row mb-3">
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Campo Alterado:</strong>
                                     <p>{getCampoLabel(logSelecionado.campo_alterado)}</p>
                                 </div>
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Campo Original:</strong>
                                     <p>{logSelecionado.campo_alterado}</p>
                                 </div>
                             </div>
                             <div className="row mb-3">
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Valor Anterior:</strong>
                                     <p className="text-muted">{logSelecionado.valor_anterior || 'N/A'}</p>
                                 </div>
-                                <div className="col-md-6">
+                                <div className="col-12 col-md-6">
                                     <strong>Novo Valor:</strong>
                                     <p className="text-success fw-bold">{logSelecionado.valor_novo || 'N/A'}</p>
                                 </div>

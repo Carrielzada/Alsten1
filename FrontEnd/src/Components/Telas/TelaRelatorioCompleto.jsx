@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Form, Button, Card, Row, Col, Badge, Spinner, InputGroup } from 'react-bootstrap';
-import { FaSearch, FaFilter, FaEye, FaDownload, FaTimes, FaTable, FaFileExport } from 'react-icons/fa';
-import Layout from '../Templates2/Layout';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Table, Form, Card, Row, Col, Badge, Spinner } from 'react-bootstrap';
+import Button from '../UI/Button';
+import { FaFilter, FaEye, FaTimes, FaTable, FaFileExport } from 'react-icons/fa';
+// Layout será fornecido pelo LayoutModerno - não importar aqui
 import { buscarTodasOrdensServico } from '../../Services/ordemServicoService';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
+import { useToast } from '../../hooks/useToast';
 
 const TelaRelatorioCompleto = () => {
+    const toast = useToast();
     const [ordensServico, setOrdensServico] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -42,11 +45,7 @@ const TelaRelatorioCompleto = () => {
     const [totalPaginas, setTotalPaginas] = useState(1);
     const [totalRegistros, setTotalRegistros] = useState(0);
 
-    useEffect(() => {
-        fetchOrdensServico();
-    }, [paginaAtual, itensPorPagina]);
-
-    const fetchOrdensServico = async () => {
+    const fetchOrdensServico = useCallback(async () => {
         try {
             setLoading(true);
             // Filtro apenas OS concluídas
@@ -64,11 +63,21 @@ const TelaRelatorioCompleto = () => {
             
             setError(null);
         } catch (err) {
-            setError(err.message);
+            console.error('Erro ao carregar relatório:', err);
+            const errorMessage = err?.response?.data?.mensagem || 
+                               err?.message || 
+                               'Erro ao carregar relatório completo';
+            setError(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filtros, paginaAtual, itensPorPagina]);
+
+    useEffect(() => {
+        fetchOrdensServico();
+    }, [fetchOrdensServico]);
 
     const handleFiltroChange = (e) => {
         const { name, value } = e.target;
@@ -82,12 +91,9 @@ const TelaRelatorioCompleto = () => {
         if (!loading) {
             fetchOrdensServico();
         }
-    }, [filtros, paginaAtual, itensPorPagina]);
+    }, [filtros, paginaAtual, itensPorPagina, loading, fetchOrdensServico]);
 
-    const aplicarFiltros = () => {
-        setPaginaAtual(1);
-        fetchOrdensServico();
-    };
+    // Função removida - filtros são aplicados automaticamente via useEffect
 
     const limparFiltros = () => {
         setFiltros({
@@ -114,7 +120,8 @@ const TelaRelatorioCompleto = () => {
             diasReparo: ''
         });
         setPaginaAtual(1);
-        fetchOrdensServico();
+        toast.info('Filtros limpos - exibindo todos os resultados');
+        // fetchOrdensServico será chamado automaticamente pelo useEffect quando os filtros mudarem
     };
 
     const handleVerDetalhesCliente = (cliente) => {
@@ -175,6 +182,8 @@ const TelaRelatorioCompleto = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        toast.success(`Relatório exportado com sucesso! ${ordensServico.length} registros salvos em CSV.`);
     };
 
     const renderPaginacao = () => {
@@ -247,7 +256,7 @@ const TelaRelatorioCompleto = () => {
     };
 
     return (
-        <Layout>
+        <>
             <Card className="shadow-sm">
                 <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
                     <div className="d-flex align-items-center">
@@ -279,7 +288,7 @@ const TelaRelatorioCompleto = () => {
                     {showFiltros && (
                         <div className="filtros-container mb-4 p-3" style={{ backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
                             <Row>
-                                <Col md={3}>
+                                <Col xs={12} sm={6} md={3}>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Cliente</Form.Label>
                                         <Form.Control 
@@ -292,7 +301,7 @@ const TelaRelatorioCompleto = () => {
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col md={3}>
+                                <Col xs={12} sm={6} md={3}>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Modelo</Form.Label>
                                         <Form.Control 
@@ -305,7 +314,7 @@ const TelaRelatorioCompleto = () => {
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col md={3}>
+                                <Col xs={12} sm={6} md={3}>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Nº Série</Form.Label>
                                         <Form.Control 
@@ -318,7 +327,7 @@ const TelaRelatorioCompleto = () => {
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col md={3}>
+                                <Col xs={12} sm={6} md={3}>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Fabricante</Form.Label>
                                         <Form.Control 
@@ -637,7 +646,7 @@ const TelaRelatorioCompleto = () => {
                 cliente={clienteSelecionado} 
                 title="Detalhes do Cliente"
             />
-        </Layout>
+        </>
     );
 };
 

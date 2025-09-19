@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Resizable } from 'react-resizable';
-import { buscarTodasOrdensServico, consultarOrdemServicoPorId } from '../../Services/ordemServicoService';
-import Layout from '../Templates2/Layout';
+import { buscarTodasOrdensServico } from '../../Services/ordemServicoService';
+// Layout será fornecido pelo LayoutModerno - não importar aqui
 import { Modal as BootstrapModal, Badge, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope, FaSearch, FaTimes } from 'react-icons/fa';
 import FormCadOrdemServico from './Formularios/FormCadOrdemServico';
 import TelaLogsOS from './TelaLogsOS';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
+import { useToast } from '../../hooks/useToast';
 
 // Ensure you have run: npm install react-resizable
 import 'react-resizable/css/styles.css';
@@ -39,11 +40,13 @@ const ResizableHeader = ({ onResize, width, children, ...restProps }) => {
 };
 
 const TelaListagemOS = () => {
+    const toast = useToast();
     const [ordensServico, setOrdensServico] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showLogsModal, setShowLogsModal] = useState(false);
+    // eslint-disable-next-line no-unused-vars
     const [ordemServicoEmEdicao, setOrdemServicoEmEdicao] = useState(null);
     const [osIdParaLogs, setOsIdParaLogs] = useState(null);
     const [showClienteModal, setShowClienteModal] = useState(false);
@@ -89,6 +92,7 @@ const TelaListagemOS = () => {
     useEffect(() => {
         // Iniciar com a primeira página e poucos itens para carregamento rápido
         fetchOrdensServico(1, itensPorPagina, '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [itensPorPagina]); // Dependência adicionada para recarregar quando o número de itens por página mudar
 
     const fetchOrdensServico = async (pagina = paginaAtual, itens = itensPorPagina, termo = termoBusca) => {
@@ -105,8 +109,18 @@ const TelaListagemOS = () => {
             }
             
             setError(null);
+            
+            // Mostrar toast de sucesso apenas se foi uma busca específica
+            if (termo && termo.trim()) {
+                toast.success(`Encontrados ${data.listaOrdensServico?.length || 0} resultados para "${termo}"`);
+            }
         } catch (err) {
-            setError(err.message);
+            console.error('Erro ao buscar ordens de serviço:', err);
+            const errorMessage = err?.response?.data?.mensagem || 
+                               err?.message || 
+                               'Erro ao carregar ordens de serviço';
+            setError(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -127,6 +141,7 @@ const TelaListagemOS = () => {
         setOrdemServicoEmEdicao(null);
         setFormDirty(false);
         fetchOrdensServico();
+        toast.success('Ordem de Serviço salva com sucesso!');
     };
 
     const handleCloseEditModal = () => {
@@ -274,20 +289,19 @@ const TelaListagemOS = () => {
     };
 
 
-    if (loading) return <Layout>
-         <div className="text-center my-5">
-             <div className="spinner-border text-primary" role="status">
-                 <span className="visually-hidden">Carregando...</span>
-             </div>
-             <p className="mt-2">Carregando ordens de serviço (página {paginaAtual})...</p>
-             <p className="text-muted small">Mostrando {itensPorPagina} registros por página para um equilíbrio entre desempenho e usabilidade</p>
-         </div>
-     </Layout>;
-    if (error) return <Layout><p>Erro ao carregar ordens de serviço: {error}</p></Layout>;
+    if (loading) return (
+        <div className="text-center my-5">
+            <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Carregando...</span>
+            </div>
+            <p className="mt-2">Carregando ordens de serviço (página {paginaAtual})...</p>
+            <p className="text-muted small">Mostrando {itensPorPagina} registros por página para um equilíbrio entre desempenho e usabilidade</p>
+        </div>
+    );
+    if (error) return <p>Erro ao carregar ordens de serviço: {error}</p>;
 
     return (
-        <Layout>
-            <div className="container-fluid">
+        <div className="container-fluid">
                 <style>{`
                     /* Resizable handle styles */
                     .resizable-table th {
@@ -417,6 +431,7 @@ const TelaListagemOS = () => {
                                         onClick={() => {
                                             setTermoBusca('');
                                             fetchOrdensServico(1, itensPorPagina, '');
+                                            toast.info('Filtros limpos - exibindo todas as ordens de serviço');
                                         }}
                                     >
                                         <FaTimes />
@@ -665,8 +680,7 @@ const TelaListagemOS = () => {
                     cliente={clienteSelecionado}
                     title="Detalhes do Cliente"
                 />
-            </div>
-        </Layout>
+        </div>
     );
 };
 

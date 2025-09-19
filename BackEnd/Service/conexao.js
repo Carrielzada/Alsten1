@@ -20,8 +20,8 @@ export default async function conectar() {
             user: process.env.DB_USER || 'admin',
             password: process.env.DB_SENHA || '',
             database: process.env.DB_NOME || 'alsten_os',
-            connectionLimit: 50,
-            maxIdle: 30,
+            connectionLimit: 15, // Otimizado para VPS (era 50)
+            maxIdle: 5, // Reduzido para economizar memória (era 30)
             idleTimeout: 60000,
             queueLimit: 0,
             enableKeepAlive: true,

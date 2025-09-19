@@ -4,12 +4,129 @@ import session from 'express-session';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
-// Carregar as variáveis de ambiente
+// Carregar variáveis de ambiente
 dotenv.config();
 
-// Importações de rotas existentes
+// Validar variáveis críticas
+const requiredEnvVars = ['CHAVE_SECRETA', 'DB_HOST', 'DB_USER', 'DB_SENHA', 'DB_NOME'];
+const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+
+if (missingVars.length > 0) {
+  console.error('❌ ERRO CRÍTICO: Variáveis de ambiente obrigatórias não configuradas:');
+  missingVars.forEach((varName) => {
+    console.error(`   - ${varName}`);
+  });
+  console.error('Configure essas variáveis no arquivo .env antes de iniciar o servidor');
+  process.exit(1);
+}
+
+// Criação do app Express
+const app = express();
+
+// Segurança HTTP com Helmet
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // ajuste se React der erro em dev
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+// Lista padrão de origens permitidas (desenvolvimento)
+const developmentOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001', 
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'http://127.0.0.1:5173'
+];
+
+// Lista de origens para produção
+const productionOrigins = [
+  'https://alsten.online',
+  'https://api.alsten.online'
+];
+
+// Determinar origens baseado no ambiente
+let allowedOrigins;
+if (process.env.NODE_ENV === 'production') {
+  // Em produção, usar apenas origens seguras ou CORS_ORIGIN personalizada
+  allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(url => url.trim())
+    : productionOrigins;
+} else {
+  // Em desenvolvimento, permitir origens locais + produção
+  const customOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(url => url.trim())
+    : [];
+  allowedOrigins = [...developmentOrigins, ...productionOrigins, ...customOrigins];
+}
+
+console.log(`\ud83c\udf0d CORS configurado para ambiente: ${process.env.NODE_ENV || 'development'}`);
+console.log(`\ud83d\udd12 Origens permitidas: ${allowedOrigins.join(', ')}`);
+
+const whiteList = allowedOrigins;
+
+// Configuração do CORS
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    } // permitir mobile/postman
+    if (whiteList.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origem não permitida: ${origin}`));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+// CORS deve vir ANTES do rate limiting para permitir requisições OPTIONS
+app.use(cors(corsOptions));
+
+// Rate limiting global
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 100,
+    message: { error: 'Muitas requisições deste IP, tente novamente mais tarde.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+);
+
+// Configuração de sessão
+app.use(
+  session({
+    secret: process.env.CHAVE_SECRETA,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60 * 2, // 2 horas
+    },
+  })
+);
+
+// Resolver path absoluto (__dirname em ESM)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Parsers padrão
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Arquivos estáticos (uploads)
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
+// ==== Importar Rotas ==== //
 import rotaAutenticacao from './Routers/rotaAutenticacao.js';
 import rotaUpload from './Routers/rotaUpload.js';
 import rotaModelo from './Routers/rotaModelo.js';
@@ -25,84 +142,19 @@ import rotaDefeitoAlegado from './Routers/rotaDefeitoAlegado.js';
 import rotaClientePJ from './Routers/rotaClientePJ.js';
 import rotaUsers from './Routers/rotaUsers.js';
 import rotaLogs from './Routers/rotaLogs.js';
-
-// Novas rotas para os novos recursos
+// Novos recursos
 import rotaDiasPagamento from './Routers/rotaDiasPagamento.js';
 import rotaChecklistItem from './Routers/rotaChecklistItem.js';
 import rotaEtapaOS from './Routers/rotaEtapaOS.js';
 import rotaServicoPadrao from './Routers/rotaServicoPadrao.js';
-
-// Importações das novas rotas do Bling
+// Bling
 import blingRoutes from './Routers/blingRoutes.js';
 import contatosRoutes from './Routers/contatosRoutes.js';
 
+// Middleware de autenticação
 import { verificarAutenticacao } from './Security/autenticar.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const host = '0.0.0.0';
-const porta = process.env.PORT || 4000;
-
-const app = express();
-
-// Configuração de sessão otimizada para produção
-app.use(
-    session({
-        secret: process.env.CHAVE_SECRETA || 'sua_chave_secreta_padrao',
-        resave: false,
-        saveUninitialized: false,
-        cookie: {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 1000 * 60 * 60 * 2, // 2 horas
-        },
-    })
-);
-
-// Lista de origens permitidas (pode ser sobrescrita por Environment Variable)
-const defaultWhiteList = [
-    'http://localhost:3000', 
-    'http://localhost:3001', 
-    'http://localhost:5173',
-    'http://31.97.151.181:3000',
-    'http://31.97.151.181:3001',
-    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3000',
-    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io:3001',
-    'http://s044wssc4wow4cs8s48ok48o.31.97.151.181.sslip.io',
-    'http://og4o08cscgos0kgkkogk0k84.31.97.151.181.sslip.io', // FRONTEND ATUAL
-    'http://alsten.online', // DOMÍNIO PERSONALIZADO HTTP
-    'https://alsten.online', // DOMÍNIO PERSONALIZADO HTTPS
-];
-
-// Usar Environment Variable se disponível, senão usar lista padrão
-const whiteList = process.env.CORS_ORIGIN ? 
-    process.env.CORS_ORIGIN.split(',').map(url => url.trim()) : 
-    defaultWhiteList;
-
-const corsOptions = {
-    origin: function (origin, callback) {
-        // Permite requisições sem origin (ex: mobile, Postman, testes)
-        if (!origin) return callback(null, true);
-        if (whiteList.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error(`Origem não permitida: ${origin}`));
-        }
-    },
-    credentials: true,
-    optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-
-// Suas rotas continuam aqui...
+// ==== Rotas protegidas ====
 app.use('/users', rotaUsers);
 app.use('/autenticacao', rotaAutenticacao);
 app.use('/upload', verificarAutenticacao, rotaUpload);
@@ -119,32 +171,84 @@ app.use('/defeito-alegado', verificarAutenticacao, rotaDefeitoAlegado);
 app.use('/clientepj', verificarAutenticacao, rotaClientePJ);
 app.use('/logs', verificarAutenticacao, rotaLogs);
 
-// Novas rotas para os novos recursos
 app.use('/dias-pagamento', verificarAutenticacao, rotaDiasPagamento);
 app.use('/checklist-item', verificarAutenticacao, rotaChecklistItem);
 app.use('/etapa-os', verificarAutenticacao, rotaEtapaOS);
 app.use('/servico-padrao', verificarAutenticacao, rotaServicoPadrao);
 
-// Rotas do Bling
+// Bling Routes
 app.use('/bling', blingRoutes);
 app.use('/bling/contatos', contatosRoutes);
 
+// ==== Rotas auxiliares ====
 app.get('/', (_req, res) => {
-    res.send('Servidor Alsten MVP rodando!');
+  res.send('Servidor Alsten MVP rodando!');
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-    res.status(200).json({
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: process.env.NODE_ENV || 'development',
-        version: '1.0.0'
-    });
+// Health check
+app.get('/health', async (req, res) => {
+  const healthStatus = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    version: '1.0.0',
+    memory: {
+      used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + 'MB',
+      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + 'MB',
+    },
+    checks: {
+      database: 'checking',
+      server: 'healthy',
+    },
+  };
+
+  try {
+    const { default: conectar } = await import('./Service/conexao.js');
+    const conexao = await conectar();
+    await conexao.query('SELECT 1');
+    conexao.release();
+    healthStatus.checks.database = 'healthy';
+  } catch (error) {
+    healthStatus.checks.database = 'unhealthy';
+    healthStatus.status = 'unhealthy';
+    console.error('Health check - Database error:', error.message);
+    return res.status(503).json(healthStatus);
+  }
+
+  res.status(200).json(healthStatus);
 });
+
+
+/**
+ * ==== Middleware global de tratamento de erros ====
+ * Retorna JSON padronizado, sem vazar stack trace ou detalhes sensíveis.
+ */
+app.use((err, req, res, next) => {
+  // Loga o erro no servidor (sem enviar stack trace ao cliente)
+  console.error('Erro não tratado:', err);
+
+  // Monta resposta padronizada
+  const status = err.status && Number.isInteger(err.status) ? err.status : 500;
+  const message =
+    status === 500
+      ? 'Erro interno do servidor'
+      : err.message || 'Erro inesperado';
+
+  res.status(status).json({
+    success: false,
+    error: {
+      message,
+      code: status,
+    },
+  });
+});
+
+// ==== Inicializar servidor ====
+const host = '0.0.0.0';
+const porta = process.env.PORT || 4000;
 
 app.listen(porta, host, () => {
-    console.log(`Servidor escutando em http://${host}:${porta}`);
-    console.log(`Health check disponível em: http://${host}:${porta}/health`);
+  console.log(`✅ Servidor escutando em http://${host}:${porta}`);
+  console.log(`💓 Health check disponível em: http://${host}:${porta}/health`);
 });

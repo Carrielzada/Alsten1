@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Container, Card, Row, Col, Table, Button, Modal, Alert, Badge, Form, InputGroup } from 'react-bootstrap';
+import { Container, Card, Row, Col, Table, Modal, Alert, Badge, Form, InputGroup } from 'react-bootstrap';
+import Button from '../UI/Button'; // Nosso Button moderno
 import { 
     FaUserShield, FaPlus, FaEdit, FaTrash, FaSearch, FaTimes, 
     FaUser, FaEnvelope, FaClock, FaFilter 
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import Layout from '../Templates2/Layout.jsx';
+// Layout será fornecido pelo LayoutModerno - não importar aqui
 import FormUsuario from '../Formularios/FormUsuario';
 import { ContextoUsuarioLogado } from '../../App';
 import { 
@@ -42,6 +43,7 @@ const TelaAdministracaoUsuarios = () => {
     useEffect(() => {
         // Aplicar filtros
         aplicarFiltros();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [usuarios, filtros]);
 
     const carregarDados = async () => {
@@ -187,20 +189,17 @@ const TelaAdministracaoUsuarios = () => {
 
     if (loading) {
         return (
-            <Layout>
-                <div className="text-center py-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Carregando...</span>
-                    </div>
-                    <p className="mt-2">Carregando usuários...</p>
+            <div className="text-center py-5">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Carregando...</span>
                 </div>
-            </Layout>
+                <p className="mt-2">Carregando usuários...</p>
+            </div>
         );
     }
 
     return (
-        <Layout>
-            <Container fluid className="py-4">
+        <Container fluid className="py-4">
                 {/* Cabeçalho */}
                 <Row className="mb-4">
                     <Col>
@@ -220,6 +219,12 @@ const TelaAdministracaoUsuarios = () => {
                                         variant="light"
                                         onClick={handleNovoUsuario}
                                         className="px-4"
+                                        style={{ 
+                                            backgroundColor: 'white', 
+                                            color: '#dc3545', 
+                                            border: '2px solid white',
+                                            fontWeight: '600'
+                                        }}
                                     >
                                         <FaPlus className="me-2" />
                                         Novo Usuário
@@ -246,7 +251,7 @@ const TelaAdministracaoUsuarios = () => {
                     </Card.Header>
                     <Card.Body>
                         <Row>
-                            <Col md={6}>
+                            <Col xs={12} md={6}>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Buscar usuários</Form.Label>
                                     <InputGroup>
@@ -263,7 +268,7 @@ const TelaAdministracaoUsuarios = () => {
                                     </InputGroup>
                                 </Form.Group>
                             </Col>
-                            <Col md={4}>
+                            <Col xs={12} sm={8} md={4}>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Filtrar por nível</Form.Label>
                                     <Form.Select
@@ -280,7 +285,7 @@ const TelaAdministracaoUsuarios = () => {
                                     </Form.Select>
                                 </Form.Group>
                             </Col>
-                            <Col md={2} className="d-flex align-items-end">
+                            <Col xs={12} sm={4} md={2} className="d-flex align-items-end">
                                 <Button
                                     variant="outline-secondary"
                                     onClick={limparFiltros}
@@ -294,38 +299,28 @@ const TelaAdministracaoUsuarios = () => {
                     </Card.Body>
                 </Card>
 
-                {/* Estatísticas */}
-                <Row className="mb-4">
-                    <Col md={3}>
-                        <Card className="border-primary">
-                            <Card.Body className="text-center">
-                                <FaUser size={24} className="text-primary mb-2" />
-                                <h4 className="fw-bold text-primary">{usuarios.length}</h4>
-                                <small className="text-muted">Total de Usuários</small>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col md={3}>
-                        <Card className="border-danger">
-                            <Card.Body className="text-center">
-                                <FaUserShield size={24} className="text-danger mb-2" />
-                                <h4 className="fw-bold text-danger">
-                                    {usuarios.filter(u => u.role_id === 1).length}
-                                </h4>
-                                <small className="text-muted">Administradores</small>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col md={3}>
-                        <Card className="border-success">
-                            <Card.Body className="text-center">
-                                <FaFilter size={24} className="text-success mb-2" />
-                                <h4 className="fw-bold text-success">{usuariosFiltrados.length}</h4>
-                                <small className="text-muted">Filtrados</small>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
+                {/* Estatísticas - Badges compactos */}
+                <div className="d-flex flex-wrap gap-3 mb-4 justify-content-center justify-content-md-start">
+                    <div className="d-flex align-items-center bg-primary bg-opacity-10 rounded-pill px-3 py-2">
+                        <FaUser size={16} className="text-primary me-2" />
+                        <span className="fw-semibold text-primary me-2">{usuarios.length}</span>
+                        <small className="text-muted">Total de Usuários</small>
+                    </div>
+                    
+                    <div className="d-flex align-items-center bg-danger bg-opacity-10 rounded-pill px-3 py-2">
+                        <FaUserShield size={16} className="text-danger me-2" />
+                        <span className="fw-semibold text-danger me-2">
+                            {usuarios.filter(u => u.role_id === 1).length}
+                        </span>
+                        <small className="text-muted">Administradores</small>
+                    </div>
+                    
+                    <div className="d-flex align-items-center bg-success bg-opacity-10 rounded-pill px-3 py-2">
+                        <FaFilter size={16} className="text-success me-2" />
+                        <span className="fw-semibold text-success me-2">{usuariosFiltrados.length}</span>
+                        <small className="text-muted">Filtrados</small>
+                    </div>
+                </div>
 
                 {/* Tabela de usuários */}
                 <Card>
@@ -472,8 +467,7 @@ const TelaAdministracaoUsuarios = () => {
                         </Button>
                     </Modal.Footer>
                 </Modal>
-            </Container>
-        </Layout>
+        </Container>
     );
 };
 

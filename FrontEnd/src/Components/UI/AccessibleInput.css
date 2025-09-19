@@ -1,0 +1,398 @@
+/* ===== INPUT ACESSÍVEL MODERNO ===== */
+
+.accessible-input-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+/* Label acessível */
+.accessible-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-size: 0.9rem;
+}
+
+.required-indicator {
+  color: #dc3545;
+  font-weight: bold;
+  margin-left: 0.25rem;
+}
+
+/* Container do input */
+.input-group-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.input-group-container:focus-within {
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+}
+
+.input-group-container.has-error:focus-within {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+
+.input-group-container.has-success:focus-within {
+  box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.25);
+}
+
+/* Input principal */
+.accessible-input {
+  border: 2px solid #ced4da;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: all 0.2s ease-in-out;
+  background-color: #fff;
+  color: #495057;
+  width: 100%;
+}
+
+/* Estados do input */
+.accessible-input:focus {
+  border-color: #0d6efd;
+  outline: none;
+  box-shadow: none; /* Removido para usar o do container */
+}
+
+.accessible-input.is-invalid,
+.accessible-input:invalid {
+  border-color: #dc3545;
+}
+
+.accessible-input.is-valid {
+  border-color: #198754;
+}
+
+.accessible-input.disabled,
+.accessible-input:disabled {
+  background-color: #e9ecef;
+  color: #6c757d;
+  border-color: #ced4da;
+  cursor: not-allowed;
+}
+
+.accessible-input::placeholder {
+  color: #6c757d;
+  opacity: 0.8;
+}
+
+/* Tamanhos */
+.accessible-input.size-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.accessible-input.size-lg {
+  padding: 1rem 1.25rem;
+  font-size: 1.125rem;
+}
+
+/* Variantes */
+.accessible-input.variant-filled {
+  background-color: #f8f9fa;
+  border-color: transparent;
+}
+
+.accessible-input.variant-outlined {
+  background-color: transparent;
+  border-width: 2px;
+}
+
+/* Ícones */
+.input-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-size: 1rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.input-icon.left {
+  left: 1rem;
+}
+
+.input-icon.right {
+  right: 1rem;
+}
+
+/* Ajuste do input quando há ícone */
+.input-group-container .accessible-input {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.input-group-container.has-left-icon .accessible-input {
+  padding-left: 3rem;
+}
+
+.input-group-container.has-right-icon .accessible-input {
+  padding-right: 3rem;
+}
+
+/* Ícones de validação */
+.validation-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  font-size: 1rem;
+}
+
+.validation-icon.error {
+  color: #dc3545;
+}
+
+.validation-icon.success {
+  color: #198754;
+}
+
+/* Toggle de senha */
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0.25rem;
+  z-index: 4;
+  border-radius: 0.25rem;
+  transition: color 0.2s ease-in-out;
+}
+
+.password-toggle:hover {
+  color: #495057;
+}
+
+.password-toggle:focus {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+.password-toggle:disabled {
+  color: #adb5bd;
+  cursor: not-allowed;
+}
+
+/* Contador de caracteres */
+.char-count {
+  position: absolute;
+  right: 0.5rem;
+  top: -1.5rem;
+  font-size: 0.75rem;
+  color: #6c757d;
+  background: #fff;
+  padding: 0 0.25rem;
+  z-index: 1;
+}
+
+.char-count.near-limit {
+  color: #fd7e14;
+}
+
+.char-count.over-limit {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* Texto de ajuda */
+.help-text {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+/* Mensagens de feedback */
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+}
+
+.success-message {
+  color: #198754;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+}
+
+/* Animações */
+.accessible-input,
+.validation-icon,
+.error-message,
+.success-message {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Responsividade */
+@media (max-width: 576px) {
+  .accessible-input {
+    font-size: 16px; /* Evita zoom em iOS */
+    padding: 0.75rem;
+  }
+  
+  .accessible-input.size-sm {
+    padding: 0.5rem;
+  }
+  
+  .accessible-input.size-lg {
+    padding: 1rem;
+  }
+  
+  .char-count {
+    position: static;
+    text-align: right;
+    margin-top: 0.25rem;
+    background: none;
+  }
+}
+
+/* Alto contraste para acessibilidade */
+@media (prefers-contrast: high) {
+  .accessible-input {
+    border-width: 3px;
+    border-color: #000;
+  }
+  
+  .accessible-input:focus {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px #0066cc;
+  }
+  
+  .accessible-input.is-invalid {
+    border-color: #cc0000;
+  }
+  
+  .accessible-input.is-valid {
+    border-color: #006600;
+  }
+  
+  .accessible-label {
+    color: #000;
+    font-weight: 700;
+  }
+  
+  .error-message {
+    color: #cc0000;
+    font-weight: 700;
+  }
+  
+  .success-message {
+    color: #006600;
+    font-weight: 700;
+  }
+}
+
+/* Redução de movimento */
+@media (prefers-reduced-motion: reduce) {
+  .accessible-input,
+  .input-group-container,
+  .validation-icon,
+  .password-toggle,
+  .error-message,
+  .success-message {
+    transition: none;
+  }
+}
+
+/* Tema escuro */
+@media (prefers-color-scheme: dark) {
+  .accessible-input {
+    background-color: #212529;
+    border-color: #495057;
+    color: #f8f9fa;
+  }
+  
+  .accessible-input:focus {
+    border-color: #0d6efd;
+  }
+  
+  .accessible-input::placeholder {
+    color: #adb5bd;
+  }
+  
+  .accessible-input.disabled,
+  .accessible-input:disabled {
+    background-color: #343a40;
+    color: #adb5bd;
+  }
+  
+  .accessible-label {
+    color: #f8f9fa;
+  }
+  
+  .help-text {
+    color: #adb5bd;
+  }
+  
+  .input-icon,
+  .password-toggle {
+    color: #adb5bd;
+  }
+  
+  .password-toggle:hover {
+    color: #f8f9fa;
+  }
+  
+  .char-count {
+    background: #212529;
+    color: #adb5bd;
+  }
+}
+
+/* Estados de foco melhorados */
+.accessible-input:focus-visible {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+/* Melhor suporte a screen readers */
+.accessible-input-container [aria-live] {
+  position: relative;
+}
+
+/* Indicador visual para campos obrigatórios */
+.accessible-input-container:has(.accessible-input[required]) .accessible-label::after {
+  content: '';
+  position: absolute;
+  left: -0.5rem;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: #0d6efd;
+  border-radius: 1.5px;
+}
+
+/* Otimizações para touch */
+@media (pointer: coarse) {
+  .password-toggle {
+    padding: 0.5rem;
+    font-size: 1.125rem;
+  }
+  
+  .accessible-input {
+    min-height: 44px; /* Mínimo recomendado para touch targets */
+  }
+}

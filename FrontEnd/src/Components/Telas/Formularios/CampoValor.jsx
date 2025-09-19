@@ -50,6 +50,7 @@ const CampoValor = ({ value, onChange, name, style, className = '', placeholder 
     // Inicializar display value
     useEffect(() => {
         setDisplayValue(formatarParaExibicao(value));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleChange = (e) => {

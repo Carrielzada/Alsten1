@@ -3,31 +3,24 @@ import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
 import { Link, useNavigate } from "react-router-dom";
 // Certifique-se de ter 'react-icons' instalado: npm install react-icons
 import { FaSignOutAlt, FaBell, FaBars } from "react-icons/fa";
 import { ContextoUsuarioLogado } from "../../App"; // Ajuste o caminho se necessário
-import { alterarSenha } from "../../Services/usersService"; // Ajuste o caminho se necessário
 import logoImage from "../../assets/imagens/logoalsten.png"; // << AJUSTE O CAMINHO PARA SUA LOGO
+import Button from '../UI/Button'; // Nosso Button moderno
+import Breadcrumb from '../UI/Breadcrumb';
 
 // Adicionamos 'toggleBarra' como propriedade (props)
 export default function Menu({ toggleBarra }) {
   const navigate = useNavigate();
+  // const location = useLocation(); // removido - não utilizado
   const { usuarioLogado, setUsuarioLogado } = useContext(ContextoUsuarioLogado);
-  const [showModal, setShowModal] = useState(false);
   const [mensagens, /*setMensagens*/] = useState([]);
   const [showNotificacoes, setShowNotificacoes] = useState(false);
   const [quantidadeMensagensPendentes, /*setQuantidadeMensagensPendentes*/] = useState(0);
   const [carregandoMensagens, /*setCarregandoMensagens*/] = useState(false);
-  const [carregandoSenha, setCarregandoSenha] = useState(false);
 
-  const [senha, setSenha] = useState({
-    senhaAtual: "",
-    novaSenha: "",
-    confirmarSenha: "",
-  });
 
   // Carregar mensagens quando abrir notificações
   useEffect(() => {
@@ -54,56 +47,6 @@ export default function Menu({ toggleBarra }) {
     navigate("/");
   }
 
-  // Manipular mudanças nos campos de senha
-  const handleChangeSenha = (e) => {
-    const { name, value } = e.target;
-    setSenha({ ...senha, [name]: value });
-  };
-
-  // Salvar nova senha
-  const handleSaveSenha = async () => {
-    if (!senha.senhaAtual || !senha.novaSenha || !senha.confirmarSenha) {
-      alert("Todos os campos são obrigatórios.");
-      return;
-    }
-    if (senha.novaSenha !== senha.confirmarSenha) {
-      alert("A nova senha e a confirmação não conferem.");
-      return;
-    }
-    if (senha.novaSenha.length < 6) {
-      alert("A nova senha deve ter pelo menos 6 caracteres.");
-      return;
-    }
-    setCarregandoSenha(true);
-    try {
-      const resultado = await alterarSenha(
-        usuarioLogado.token,
-        usuarioLogado.email,
-        senha.senhaAtual,
-        senha.novaSenha,
-        senha.confirmarSenha
-      );
-      alert(resultado.mensagem || "Senha alterada com sucesso!");
-      if (resultado.status) {
-        handleLogout();
-      }
-    } catch (error) {
-      console.error("Erro ao alterar senha:", error);
-      alert(error.response?.data?.mensagem || error.message || "Erro ao alterar senha. Verifique a senha atual e tente novamente.");
-    } finally {
-      setCarregandoSenha(false);
-    }
-  };
-
-  // Fechar modal e limpar campos
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSenha({
-      senhaAtual: "",
-      novaSenha: "",
-      confirmarSenha: "",
-    });
-  };
 
   // Marcar mensagem como lida
   const marcarComoLida = async (mensagemId) => {
@@ -112,24 +55,7 @@ export default function Menu({ toggleBarra }) {
     // carregarMensagens();
   };
 
-  // Menu de cadastros
-  const cadastrosMVP = (
-    <NavDropdown title="Cadastros" id="cadastros-mvp-nav-dropdown">
-      <NavDropdown.Item as={Link} to="/cadastros/modelo-equipamento">
-        Modelos de Equipamentos
-      </NavDropdown.Item>
-      <NavDropdown.Item as={Link} to="/cadastros/pagamento">
-        Tipos de Pagamento
-      </NavDropdown.Item>
-      <NavDropdown.Item as={Link} to="/cadastros/urgencia">
-        Níveis de Urgência
-      </NavDropdown.Item>
-      <NavDropdown.Divider />
-      <NavDropdown.Item as={Link} to="/cadastros/usuarios">
-        Usuários
-      </NavDropdown.Item>
-    </NavDropdown>
-  );
+  // Breadcrumb será renderizado no lugar do dropdown
 
   return (
     <>
@@ -160,14 +86,12 @@ export default function Menu({ toggleBarra }) {
 
           </Navbar.Brand>
 
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
+          <div className="navbar-nav w-100">
             <Nav className="me-auto">
-              {usuarioLogado.logado && cadastrosMVP}
               {usuarioLogado.logado && (
-                <Nav.Link as={Link} to="/ordens-servico">
-                  Ordens de Serviço
-                </Nav.Link>
+                <div className="d-flex align-items-center">
+                  <Breadcrumb />
+                </div>
               )}
             </Nav>
 
@@ -229,8 +153,8 @@ export default function Menu({ toggleBarra }) {
                   id="usuario-nav-dropdown"
                   align="end"
                 >
-                  <NavDropdown.Item onClick={() => setShowModal(true)}>
-                    Alterar Senha
+                  <NavDropdown.Item as={Link} to="/meu-perfil">
+                    Meu Perfil
                   </NavDropdown.Item>
                   <NavDropdown.Divider />
                   <NavDropdown.Item onClick={handleLogout}>
@@ -239,72 +163,9 @@ export default function Menu({ toggleBarra }) {
                 </NavDropdown>
               )}
             </Nav>
-          </Navbar.Collapse>
+          </div>
         </Container>
       </Navbar>
-
-      <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Alteração de Senha</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <form>
-            <div className="mb-3">
-              <label className="form-label">Senha Atual *</label>
-              <input
-                type="password"
-                className="form-control"
-                name="senhaAtual"
-                value={senha.senhaAtual}
-                onChange={handleChangeSenha}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Nova Senha *</label>
-              <input
-                type="password"
-                className="form-control"
-                name="novaSenha"
-                value={senha.novaSenha}
-                onChange={handleChangeSenha}
-                minLength={6}
-                required
-              />
-              <small className="form-text text-muted">
-                Mínimo de 6 caracteres
-              </small>
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Confirmar Nova Senha *</label>
-              <input
-                type="password"
-                className="form-control"
-                name="confirmarSenha"
-                value={senha.confirmarSenha}
-                onChange={handleChangeSenha}
-                required
-              />
-            </div>
-          </form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="primary"
-            onClick={handleSaveSenha}
-            disabled={carregandoSenha}
-          >
-            {carregandoSenha ? "Alterando..." : "Alterar Senha"}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleCloseModal}
-            disabled={carregandoSenha}
-          >
-            Cancelar
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </>
   );
 }

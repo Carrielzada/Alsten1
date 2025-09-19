@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Form, Row, Col, Button, Alert } from 'react-bootstrap';
 import { FaSave, FaTimes, FaUser, FaEnvelope, FaLock, FaUserShield } from 'react-icons/fa';
 import { buscarRoles } from '../../Services/usersService';
@@ -52,7 +52,7 @@ const FormUsuario = ({
         }
     }, [modoEdicao, usuario]);
 
-    const handleChange = (e) => {
+    const handleChange = useCallback((e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -66,53 +66,53 @@ const FormUsuario = ({
                 [name]: ''
             }));
         }
-    };
+    }, [errors]);
 
-    const validateForm = () => {
-        const newErrors = {};
 
-        if (!formData.nome.trim()) {
-            newErrors.nome = 'Nome é obrigatório';
-        }
-
-        if (!formData.email.trim()) {
-            newErrors.email = 'Email é obrigatório';
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Email inválido';
-        }
-
-        if (!modoEdicao) {
-            if (!formData.password) {
-                newErrors.password = 'Senha é obrigatória';
-            } else if (formData.password.length < 6) {
-                newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
-            }
-
-            if (!formData.confirmPassword) {
-                newErrors.confirmPassword = 'Confirmação de senha é obrigatória';
-            } else if (formData.password !== formData.confirmPassword) {
-                newErrors.confirmPassword = 'Senhas não conferem';
-            }
-        } else if (formData.password) {
-            // Se estiver editando e forneceu nova senha
-            if (formData.password.length < 6) {
-                newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
-            }
-            if (formData.password !== formData.confirmPassword) {
-                newErrors.confirmPassword = 'Senhas não conferem';
-            }
-        }
-
-        if (!formData.role_id) {
-            newErrors.role_id = 'Nível de acesso é obrigatório';
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleSubmit = (e) => {
+    const handleSubmit = useCallback((e) => {
         e.preventDefault();
+
+        const validateForm = () => {
+            const newErrors = {};
+    
+            if (!formData.nome.trim()) {
+                newErrors.nome = 'Nome é obrigatório';
+            }
+    
+            if (!formData.email.trim()) {
+                newErrors.email = 'Email é obrigatório';
+            } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+                newErrors.email = 'Email inválido';
+            }
+    
+            if (!modoEdicao) {
+                if (!formData.password) {
+                    newErrors.password = 'Senha é obrigatória';
+                } else if (formData.password.length < 6) {
+                    newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
+                }
+    
+                if (!formData.confirmPassword) {
+                    newErrors.confirmPassword = 'Confirmação de senha é obrigatória';
+                } else if (formData.password !== formData.confirmPassword) {
+                    newErrors.confirmPassword = 'Senhas não conferem';
+                }
+            } else if (formData.password) {
+                if (formData.password.length < 6) {
+                    newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
+                }
+                if (formData.password !== formData.confirmPassword) {
+                    newErrors.confirmPassword = 'Senhas não conferem';
+                }
+            }
+    
+            if (!formData.role_id) {
+                newErrors.role_id = 'Nível de acesso é obrigatório';
+            }
+    
+            setErrors(newErrors);
+            return Object.keys(newErrors).length === 0;
+        };
 
         if (!validateForm()) {
             return;
@@ -130,9 +130,9 @@ const FormUsuario = ({
         }
 
         onSubmit(dadosParaEnvio);
-    };
+    }, [formData, modoEdicao, onSubmit]);
 
-    const handleReset = () => {
+    const handleReset = useCallback(() => {
         setFormData({
             nome: '',
             email: '',
@@ -141,14 +141,17 @@ const FormUsuario = ({
             role_id: ''
         });
         setErrors({});
-    };
+    }, []);
 
-    const getRoleName = (roleId) => {
-        const role = roles.find(r => r.id === roleId);
-        return role ? role.name : 'N/A';
-    };
+    // Memoizar funções que são chamadas no render
+    const getRoleName = useMemo(() => {
+        return (roleId) => {
+            const role = roles.find(r => r.id === roleId);
+            return role ? role.name : 'N/A';
+        };
+    }, [roles]);
 
-    const getRoleBadgeColor = (roleId) => {
+    const getRoleBadgeColor = useMemo(() => {
         const colors = {
             1: 'danger',
             2: 'primary',
@@ -157,8 +160,8 @@ const FormUsuario = ({
             5: 'warning',
             6: 'secondary'
         };
-        return colors[roleId] || 'secondary';
-    };
+        return (roleId) => colors[roleId] || 'secondary';
+    }, []);
 
     if (loadingRoles) {
         return (
@@ -343,4 +346,4 @@ const FormUsuario = ({
     );
 };
 
-export default FormUsuario;
+export default React.memo(FormUsuario);

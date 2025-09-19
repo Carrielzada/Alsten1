@@ -22,15 +22,18 @@ import TelaCadFabricante from "./Components/Telas/TelaCadFabricante";
 import TelaCadDefeitoAlegado from "./Components/Telas/TelaCadDefeitoAlegado"; 
 import TelaCadastroClientes from "./Components/Telas/TelaCadastroClientes";
 import TelaAdministracaoCadastros from "./Components/Telas/TelaAdministracaoCadastros";
+import TelaCadastros from "./Components/Telas/TelaCadastros";
 import TelaAdministracaoUsuarios from "./Components/Telas/TelaAdministracaoUsuarios";
 import TelaCadServicoPadrao from "./Components/Telas/TelaCadServicoPadrao";
 import TelaRelatorioCompleto from "./Components/Telas/TelaRelatorioCompleto";
+import TelaPerfil from "./Components/Telas/TelaPerfil";
 
 // Novo Layout
 import LayoutModerno from "./Components/LayoutModerno/LayoutModerno";
 import { BlingAuthProvider, useBlingAuth } from './Components/busca/BlingAuthProvider';
 import BlingAuthModal from './Components/BlingAuthModal';
 import BlingSuccessPage from './Components/BlingSuccessPage';
+import ErrorBoundary from './Components/ErrorBoundary';
 
 export const ContextoUsuarioLogado = createContext(null);
 
@@ -109,9 +112,19 @@ function AppContent() {
         <Route path="/cadastros/defeito-alegado" element={<TelaCadDefeitoAlegado />} />
         <Route path="/cadastros/clientes" element={<TelaCadastroClientes />} />
         <Route path="/cadastros/servico-realizado" element={<TelaCadServicoPadrao />} />
-        <Route path="/admin/cadastros" element={<TelaAdministracaoCadastros />} />
-        <Route path="/admin/usuarios" element={<TelaAdministracaoUsuarios />} />
-        <Route path="/sua-conta" element={<div>Tela Sua Conta (Em construção)</div>} />
+        <Route path="/cadastros" element={<TelaCadastros />} />
+        {/* Rotas administrativas protegidas - apenas para Admin (role 1) */}
+        <Route path="/admin/cadastros" element={
+          <ProtectedComponent allowedRoles={[1]} usuarioLogado={usuarioLogado}>
+            <TelaAdministracaoCadastros />
+          </ProtectedComponent>
+        } />
+        <Route path="/admin/usuarios" element={
+          <ProtectedComponent allowedRoles={[1]} usuarioLogado={usuarioLogado}>
+            <TelaAdministracaoUsuarios />
+          </ProtectedComponent>
+        } />
+        <Route path="/meu-perfil" element={<TelaPerfil />} />
         <Route path="/cadastrar-ordem-servico" element={<TelaCadOrdemServico />} />
         <Route path="/cadastrar-ordem-servico/:id" element={<TelaCadOrdemServico />} />
         <Route path="/ordem-servico/:id/logs" element={<TelaListagemLogsOS />} />
@@ -137,12 +150,8 @@ function AppContent() {
           <Route path="/login" element={<TelaLogin />} />
           <Route path="/bling/success" element={<BlingSuccessPage />} />
           
-          {/* Rota raiz - redireciona para login se não estiver logado */}
-          <Route path="/" element={
-            usuarioLogado.logado ? 
-              <Navigate to="/boas-vindas" /> : 
-              <Navigate to="/login" />
-          } />
+          {/* Rota raiz - redireciona sempre para login */}
+          <Route path="/" element={<Navigate to="/login" />} />
           
           {/* Rotas protegidas para todos os usuários logados */}
           {usuarioLogado.logado && (
@@ -165,9 +174,11 @@ function AppContent() {
 
 function App() {
   return (
-    <BlingAuthProvider>
-      <AppContent />
-    </BlingAuthProvider>
+    <ErrorBoundary>
+      <BlingAuthProvider>
+        <AppContent />
+      </BlingAuthProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Card, Row, Col } from 'react-bootstrap';
 import { FaHammer, FaCogs, FaRocket, FaInfoCircle } from 'react-icons/fa';
-import Layout from '../Templates2/Layout.jsx';
+// Layout será fornecido pelo componente pai - não importar aqui
 
 const TelaWorkInProgress = ({ 
     title = "Funcionalidade em Desenvolvimento", 
@@ -11,7 +11,7 @@ const TelaWorkInProgress = ({
     features = []
 }) => {
     return (
-        <Layout>
+        <>
             <Container className="py-5">
                 <Row className="justify-content-center">
                     <Col lg={8} md={10}>
@@ -67,9 +67,9 @@ const TelaWorkInProgress = ({
                         </Card>
                     </Col>
                 </Row>
-            </Container>
-            
-            <style jsx>{`
+        </Container>
+        
+        <style jsx>{`
                 @keyframes pulse {
                     0% { transform: scale(1); }
                     50% { transform: scale(1.05); }
@@ -89,8 +89,8 @@ const TelaWorkInProgress = ({
                     transform: translateY(-2px);
                     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
                 }
-            `}</style>
-        </Layout>
+        `}</style>
+        </>
     );
 };
 

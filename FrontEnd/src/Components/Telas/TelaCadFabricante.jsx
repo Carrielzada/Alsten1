@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import CardModerno from '../LayoutModerno/CardModerno';
-import { Form, Button, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import { Form, Table, Container, Row, Col, Alert } from 'react-bootstrap';
+import Button from '../UI/Button'; // Nosso Button moderno
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import { buscarFabricantes, adicionarFabricante, atualizarFabricante, excluirFabricante } from '../../Services/fabricanteService.js'; // Caminho corrigido e real
 
 // Fim dos mocks removidos
@@ -160,11 +162,21 @@ const TelaCadFabricante = () => {
                         <td>{fab.id}</td>
                         <td>{fab.nome_fabricante}</td>
                         <td>
-                          <Button variant="warning" size="sm" onClick={() => handleEditar(fab)} className="me-1">
-                            Editar
+                          <Button 
+                            variant="warning" 
+                            onClick={() => handleEditar(fab)} 
+                            className="btn-icon me-1"
+                            title="Editar"
+                          >
+                            <FaEdit />
                           </Button>
-                          <Button variant="danger" size="sm" onClick={() => handleExcluir(fab.id)}>
-                            Excluir
+                          <Button 
+                            variant="danger" 
+                            onClick={() => handleExcluir(fab.id)}
+                            className="btn-icon"
+                            title="Excluir"
+                          >
+                            <FaTrash />
                           </Button>
                         </td>
                       </tr>

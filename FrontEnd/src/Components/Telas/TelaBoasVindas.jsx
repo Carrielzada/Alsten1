@@ -1,8 +1,11 @@
 import React from 'react';
-import { Card, Container, Row, Col, Button } from 'react-bootstrap';
+import { Card, Row, Col } from 'react-bootstrap';
+import Button from '../UI/Button';
+// import DashboardStats from '../UI/DashboardStats'; // Comentado: dados mock
 import { FaClipboardList, FaTools, FaFileAlt, FaUserCog, FaChartLine } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import Layout from '../Templates2/Layout';
+import './TelaBoasVindas.css';
+// Layout será fornecido pelo LayoutModerno no App.js - não importar aqui
 
 const TelaBoasVindas = () => {
     const navigate = useNavigate();
@@ -30,11 +33,11 @@ const TelaBoasVindas = () => {
             rota: '/cadastrar-ordem-servico'
         },
         {
-            titulo: 'Administrar Cadastros',
-            descricao: 'Mantenha atualizados os cadastros de clientes (integrado com Bling), modelos de equipamentos, tipos de serviço e fornecedores.',
+            titulo: 'Gerenciar Cadastros',
+            descricao: 'Acesse a central de cadastros organizada por categorias: clientes, equipamentos, processos técnicos e configurações comerciais.',
             icone: <FaUserCog size={40} className="mb-3 text-info" />,
-            botao: 'Acessar Cadastros',
-            rota: '/cadastros/clientes'
+            botao: 'Central de Cadastros',
+            rota: '/cadastros'
         },
         {
             titulo: 'Relatórios Completos',
@@ -46,8 +49,9 @@ const TelaBoasVindas = () => {
     ];
 
     return (
-        <Layout>
-            <Container className="py-5">
+        <>
+            <div className="container-fluid px-4">
+                <div className="py-3">
                 <Card className="shadow-sm mb-5">
                     <Card.Body className="text-center py-5">
                         <h1 className="display-4 mb-3">Bem-vindo ao Sistema Alsten</h1>
@@ -67,11 +71,14 @@ const TelaBoasVindas = () => {
                     </Card.Body>
                 </Card>
 
-                <h2 className="text-center mb-4">Principais Funcionalidades</h2>
+                {/* <DashboardStats /> */}
+                {/* ☝️ Comentado: Dashboard com dados falsos/mock - aguardando implementação de dados reais */}
+
+                <h2 className="text-center mb-4 mt-5">Principais Funcionalidades</h2>
                 
                 <Row>
                     {funcionalidades.map((item, index) => (
-                        <Col md={4} key={index} className="mb-4">
+                        <Col xs={12} sm={6} lg={4} key={index} className="mb-4">
                             <Card className="h-100 shadow-sm hover-card">
                                 <Card.Body className="text-center p-4">
                                     {item.icone}
@@ -103,18 +110,10 @@ const TelaBoasVindas = () => {
                         </ul>
                     </Card.Body>
                 </Card>
-            </Container>
+                </div>
+            </div>
 
-            <style jsx>{`
-                .hover-card {
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
-                }
-                .hover-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-                }
-            `}</style>
-        </Layout>
+        </>
     );
 };
 

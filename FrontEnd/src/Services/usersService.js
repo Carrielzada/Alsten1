@@ -52,7 +52,20 @@ export async function alterarSenha(email, senhaAtual, novaSenha, confirmarSenha)
 
 export async function consultarUsuarios() {
     const token = getToken();
-    const response = await fetch(`${API_URL}/users/`, {
+    const response = await fetch(`${API_URL}/users`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+    });
+    return handleResponse(response);
+}
+
+// 📦 Nova função para consultar apenas vendedores/técnicos - acessível por PCM
+export async function consultarVendedores() {
+    const token = getToken();
+    const response = await fetch(`${API_URL}/users/vendedores`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

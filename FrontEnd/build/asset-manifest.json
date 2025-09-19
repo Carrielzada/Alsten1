@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/static/css/main.b28c1ebf.css",
+    "main.js": "/static/js/main.3c10fc49.js",
+    "static/media/logoalsten.png": "/static/media/logoalsten.891041513dc78610c2da.png",
+    "static/media/pagina404.png": "/static/media/pagina404.4bf0805d8d55a31c5142.png",
+    "index.html": "/index.html"
+  },
+  "entrypoints": [
+    "static/css/main.b28c1ebf.css",
+    "static/js/main.3c10fc49.js"
+  ]
+}

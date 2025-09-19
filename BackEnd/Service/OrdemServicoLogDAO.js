@@ -6,7 +6,7 @@ class OrdemServicoLogDAO {
         try {
             const sql = `
                 INSERT INTO ordem_servico_log 
-                (ordem_servico_id, user_id, campo_alterado, valor_anterior, valor_novo, data_alteracao, descricao)
+                (os_id, usuario_id, campo_alterado, valor_antigo, valor_novo, data_alteracao, descricao)
                 VALUES (?, ?, ?, ?, ?, NOW(), ?)
             `;
             const valores = [os_id, usuario_id, campo_alterado, valor_antigo, valor_novo, descricao];
@@ -26,16 +26,17 @@ class OrdemServicoLogDAO {
             const sql = `
                 SELECT 
                     osl.id,
-                    osl.ordem_servico_id,
-                    osl.user_id,
+                    osl.os_id as ordem_servico_id,
+                    osl.usuario_id,
                     osl.campo_alterado,
-                    osl.valor_anterior,
+                    osl.valor_antigo,
                     osl.valor_novo,
                     osl.data_alteracao,
+                    osl.descricao,
                     u.nome as nome_usuario
                 FROM ordem_servico_log osl
-                LEFT JOIN users u ON osl.user_id = u.id
-                WHERE osl.ordem_servico_id = ?
+                LEFT JOIN users u ON osl.usuario_id = u.id
+                WHERE osl.os_id = ?
                 ORDER BY osl.data_alteracao DESC
             `;
             const [registros] = await conexao.query(sql, [os_id]);
@@ -54,15 +55,16 @@ class OrdemServicoLogDAO {
             const sql = `
                 SELECT 
                     osl.id,
-                    osl.ordem_servico_id,
-                    osl.user_id,
+                    osl.os_id as ordem_servico_id,
+                    osl.usuario_id,
                     osl.campo_alterado,
-                    osl.valor_anterior,
+                    osl.valor_antigo,
                     osl.valor_novo,
                     osl.data_alteracao,
+                    osl.descricao,
                     u.nome as nome_usuario
                 FROM ordem_servico_log osl
-                LEFT JOIN users u ON osl.user_id = u.id
+                LEFT JOIN users u ON osl.usuario_id = u.id
                 ORDER BY osl.data_alteracao DESC
             `;
             const [registros] = await conexao.query(sql);

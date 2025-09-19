@@ -1,0 +1,284 @@
+/* ===== TELA DE CADASTROS - ESTILO ESPECÍFICO ===== */
+
+/* Banner principal da Central de Cadastros */
+.cadastros-header-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.cadastros-header-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+  pointer-events: none;
+}
+
+.cadastros-header-card .card-body {
+  position: relative;
+  z-index: 1;
+}
+
+/* Evita sobreposições de outros CSS */
+.cadastros-header-card .card-body * {
+  color: white !important;
+}
+
+/* Efeito hover sutil no banner */
+.cadastros-header-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cadastros-header-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Responsividade do banner */
+@media (max-width: 768px) {
+  .cadastros-header-card .card-body {
+    padding: 2rem 1rem;
+  }
+  
+  .cadastros-header-card h2 {
+    font-size: 1.5rem;
+  }
+  
+  .cadastros-header-card .lead {
+    font-size: 1rem;
+  }
+}
+
+/* Melhorias visuais para os cards de cadastro */
+.cadastros-section {
+  margin-bottom: 3rem;
+}
+
+.cadastros-section h4 {
+  border-bottom: 2px solid;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Animação sutil para os cards */
+.cadastros-section .card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cadastros-section .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para área administrativa */
+.admin-section {
+  border: 2px dashed #dc3545;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0.02) 100%);
+}
+
+.admin-section .alert {
+  border: none;
+  background: rgba(220, 53, 69, 0.1);
+  color: #721c24;
+}
+
+/* Dica profissional no rodapé */
+.dica-profissional {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  position: relative;
+}
+
+.dica-profissional::before {
+  content: '💡';
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+}
+
+.dica-profissional .card-body {
+  padding-left: 4rem;
+}
+
+/* Remove qualquer filtro branco que possa estar sendo aplicado */
+.cadastros-header-card,
+.cadastros-header-card *,
+.cadastros-header-card::before,
+.cadastros-header-card::after {
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Garante que o gradiente seja visível */
+.cadastros-header-card {
+  background-color: transparent !important;
+  background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* ===== ESTILOS AVANÇADOS PARA SEÇÕES DE CADASTROS ===== */
+
+/* Seções de cadastros com visual moderno */
+.cadastros-section {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,249,250,0.95) 100%);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 32px !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.08);
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+}
+
+/* Borda colorida no topo de cada seção */
+.cadastros-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    #667eea 0%, 
+    #17a2b8 25%, 
+    #28a745 50%, 
+    #ffc107 75%, 
+    #dc3545 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+/* Títulos das seções aprimorados */
+.cadastros-section h4 {
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 24px !important;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(0,0,0,0.1);
+  font-weight: 700;
+}
+
+/* Cards dentro das seções com melhor hover */
+.cadastros-section .card {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.98);
+  backdrop-filter: blur(15px);
+  position: relative;
+}
+
+.cadastros-section .card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cadastros-section .card:hover::before {
+  opacity: 1;
+}
+
+.cadastros-section .card:hover {
+  transform: translateY(-6px) scale(1.025);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08);
+  z-index: 10;
+}
+
+.cadastros-section .card-body {
+  position: relative;
+  z-index: 2;
+  padding: 1.5rem;
+}
+
+/* Animação de entrada escalonada */
+@keyframes sectionSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cadastros-section {
+  animation: sectionSlideIn 0.7s ease-out;
+  animation-fill-mode: both;
+}
+
+.cadastros-section:nth-child(3) { animation-delay: 0.1s; }
+.cadastros-section:nth-child(4) { animation-delay: 0.2s; }
+.cadastros-section:nth-child(5) { animation-delay: 0.3s; }
+.cadastros-section:nth-child(6) { animation-delay: 0.4s; }
+.cadastros-section:nth-child(7) { animation-delay: 0.5s; }
+
+/* Melhor estilo para área administrativa */
+.admin-section.cadastros-section {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.03) 0%, rgba(248, 249, 250, 0.95) 100%);
+  border: 2px solid rgba(220, 53, 69, 0.15);
+}
+
+.admin-section.cadastros-section::before {
+  background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+}
+
+.admin-section .alert-danger {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.12) 0%, rgba(248, 249, 250, 0.8) 100%);
+  border: 1px solid rgba(220, 53, 69, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(220, 53, 69, 0.1);
+  color: #721c24;
+}
+
+/* Responsividade aprimorada */
+@media (max-width: 768px) {
+  .cadastros-section {
+    padding: 22px 18px;
+    border-radius: 12px;
+    margin-bottom: 28px !important;
+  }
+  
+  .cadastros-section h4 {
+    font-size: 1.15rem;
+    margin-bottom: 20px !important;
+    padding-bottom: 8px;
+  }
+  
+  .cadastros-section .card-body {
+    padding: 1.25rem;
+  }
+  
+  .cadastros-section .card:hover {
+    transform: translateY(-3px) scale(1.015);
+  }
+}
+
+@media (max-width: 576px) {
+  .cadastros-section {
+    padding: 18px 15px;
+    margin-bottom: 24px !important;
+  }
+  
+  .cadastros-section h4 {
+    font-size: 1.1rem;
+  }
+}

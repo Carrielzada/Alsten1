@@ -67,7 +67,12 @@ router.get('/callback', async (req, res) => {
         console.log('Autenticação realizada com sucesso');
         
         // Redireciona para o frontend com sucesso
-        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/bling/success`);
+        // URLs de produção da VPS
+        const frontendUrl = process.env.FRONTEND_URL || 
+                           'http://og4o08cscgos0kgkkogk0k84.31.97.151.181.sslip.io';
+        
+        console.log(`Redirecionando para: ${frontendUrl}/bling/success`);
+        res.redirect(`${frontendUrl}/bling/success`);
         
     } catch (error) {
         console.error('Erro no callback do Bling:', error);
@@ -96,14 +101,6 @@ router.get('/status', (req, res) => {
     }
 });
 
-// Rota de status para integração Bling
-router.get('/status', async (req, res) => {
-  try {
-    res.json({ status: 'ok' });
-  } catch (err) {
-    res.status(200).json({ status: 'offline', error: err.message });
-  }
-});
 
 // Rota para fazer logout (limpar tokens)
 router.post('/logout', (req, res) => {

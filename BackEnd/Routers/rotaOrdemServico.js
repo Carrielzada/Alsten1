@@ -1,6 +1,6 @@
 import { Router } from "express";
 import OrdemServicoCtrl from "../Controller/ordemServicoCtrl.js";
-import { verificarAutenticacao } from '../Security/autenticar.js';
+import { verificarAutenticacao, verificarRole } from '../Security/autenticar.js';
 import upload from '../Service/uploadService.js';
 
 const rotaOrdemServico = new Router();
@@ -28,8 +28,8 @@ rotaOrdemServico.post('/anexar-comprovante/:id', upload.single('comprovante'), o
 // Rota para remover um arquivo de uma OS
 rotaOrdemServico.delete('/:id/arquivo/:nomeArquivo', ordemServicoCtrl.removerArquivo);
 
-// Rota de exclusão de OS
-rotaOrdemServico.delete("/:id", ordemServicoCtrl.excluir);
+// Rota de exclusão de OS - apenas Admin e Diretoria
+rotaOrdemServico.delete("/:id", verificarRole([1, 2]), ordemServicoCtrl.excluir);
 
 // Rota para consultar logs de uma OS
 rotaOrdemServico.get("/:id/logs", ordemServicoCtrl.consultarLogs);

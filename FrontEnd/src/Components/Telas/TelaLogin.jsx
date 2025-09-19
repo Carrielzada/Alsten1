@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import "./TelaLogin.css";
 import { ContextoUsuarioLogado } from "../../App";
 import { login } from "../../Services/loginService";
@@ -6,20 +6,33 @@ import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { registrar } from "../../Services/usersService";
 import logoImage from "../../assets/imagens/logoalsten.png";
 import { useNavigate } from "react-router-dom";
+import Button from '../UI/Button';
+import { useToast } from "../../hooks/useToast";
 
 export default function TelaLogin() {
   const contexto = useContext(ContextoUsuarioLogado);
   const navigate = useNavigate();
+  const toast = useToast();
   const [usuario, setUsuario] = useState({
     usuario: "",
     senha: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  // Se o usuário já estiver logado, redirecionar para boas-vindas
+  useEffect(() => {
+    if (contexto.usuarioLogado?.logado) {
+      navigate("/boas-vindas");
+    }
+  }, [contexto.usuarioLogado, navigate]);
 
 function realizarLogin(evento) {
     evento.preventDefault();
 
+    setIsLoading(true);
     login(usuario.usuario, usuario.senha)
       .then((resposta) => {
         if (resposta?.status) {
@@ -35,20 +48,25 @@ function realizarLogin(evento) {
           contexto.setUsuarioLogado(usuarioLogado);
           localStorage.setItem("usuarioLogado", JSON.stringify(usuarioLogado));
 
+          toast.success(`Bem-vindo, ${resposta.nome}!`);
           navigate("/boas-vindas");
 
         } else {
-          alert(resposta.mensagem);
+          toast.error(resposta.mensagem || "Credenciais inválidas");
         }
       })
       .catch((erro) => {
-        alert("Erro ao realizar login: " + erro.message);
+        toast.error("Erro ao realizar login: " + erro.message);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }
 
 function realizarCadastro(evento) {
     evento.preventDefault();
 
+    setIsRegistering(true);
     const dadosCadastro = {
         nome: usuario.nome,
         email: usuario.usuario,
@@ -59,14 +77,19 @@ function realizarCadastro(evento) {
     registrar(dadosCadastro.nome, dadosCadastro.email, dadosCadastro.password, dadosCadastro.role_id)
         .then((resposta) => {
             if (resposta?.status) {
-                alert("Usuário cadastrado com sucesso!");
+                toast.success("Usuário cadastrado com sucesso! Agora você pode fazer login.");
                 setIsSignUpMode(false); // Alternar para a tela de login
+                // Limpar o formulário
+                setUsuario({ usuario: "", senha: "", nome: "" });
             } else {
-                alert(resposta.mensagem);
+                toast.error(resposta.mensagem || "Erro ao cadastrar usuário");
             }
         })
         .catch((erro) => {
-            alert("Erro ao registrar usuário: " + erro.message);
+            toast.error("Erro ao registrar usuário: " + erro.message);
+        })
+        .finally(() => {
+            setIsRegistering(false);
         });
 }
 
@@ -113,7 +136,16 @@ function realizarCadastro(evento) {
               />
             </div>
 
-            <input type="submit" value="Entrar" className="btn solid" />
+            <input 
+              type="submit" 
+              value={isLoading ? "Entrando..." : "Entrar"} 
+              className="btn solid" 
+              disabled={isLoading || isRegistering}
+              style={{ 
+                opacity: isLoading || isRegistering ? 0.6 : 1,
+                cursor: isLoading || isRegistering ? 'not-allowed' : 'pointer'
+              }}
+            />
           </form>
 
           {/* Formulário de Cadastro */}
@@ -152,7 +184,16 @@ function realizarCadastro(evento) {
                     onChange={manipularMudanca}
                 />
             </div>
-            <input type="submit" className="btn" value="Cadastrar" />
+            <input 
+              type="submit" 
+              className="btn" 
+              value={isRegistering ? "Cadastrando..." : "Cadastrar"}
+              disabled={isLoading || isRegistering}
+              style={{ 
+                opacity: isLoading || isRegistering ? 0.6 : 1,
+                cursor: isLoading || isRegistering ? 'not-allowed' : 'pointer'
+              }}
+            />
         </form>
 
         </div>
@@ -166,13 +207,13 @@ function realizarCadastro(evento) {
             <p>
               Bem-vindo! Faça parte do nosso sistema se cadastrando abaixo:
             </p>
-            <button
+            <Button
               className="btn transparent"
               id="sign-up-btn"
               onClick={() => setIsSignUpMode(true)}
             >
               Cadastre-se
-            </button>
+            </Button>
           </div>
           <img src="/log.svg" className="image" alt="Log in" />
         </div>
@@ -183,13 +224,13 @@ function realizarCadastro(evento) {
               Entre no sistema utilizando suas credenciais para acessar nossas
               funcionalidades.
             </p>
-            <button
+            <Button
               className="btn transparent"
               id="sign-in-btn"
               onClick={() => setIsSignUpMode(false)}
             >
               Entrar
-            </button>
+            </Button>
           </div>
           <img src="/register.svg" className="image" alt="Sign up" />
         </div>

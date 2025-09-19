@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { getBlingSuccessUrl, getEnvironmentInfo } from '../../utils/urlUtils';
+import { getEnvironmentInfo } from '../../utils/urlUtils';
 
 // Configuração base do axios para a API do Bling
 const blingApi = axios.create({
@@ -81,10 +81,21 @@ export const useBling = () => {
                     'bling-auth',
                     'width=600,height=700,scrollbars=yes,resizable=yes'
                 );
+                
+                // TIMEOUT para evitar loading infinito
+                const authTimeout = setTimeout(() => {
+                    console.log('Timeout de autenticação atingido');
+                    setIsLoading(false);
+                    if (authWindow && !authWindow.closed) {
+                        authWindow.close();
+                    }
+                }, 60000); // 60 segundos timeout
 
                 // Listener para receber mensagem da popup
                 const handleMessage = (event) => {
                     if (event.data === 'bling-auth-success') {
+                        clearTimeout(authTimeout);
+                        clearInterval(checkClosed);
                         window.removeEventListener('message', handleMessage);
                         if (authWindow && !authWindow.closed) authWindow.close();
                         setTimeout(() => {
@@ -94,11 +105,14 @@ export const useBling = () => {
                 };
                 window.addEventListener('message', handleMessage);
 
-                // Fallback: monitora o fechamento da janela (caso o postMessage não funcione)
+                // Monitora o fechamento da janela - COM TIMEOUT
                 const checkClosed = setInterval(() => {
-                    if (authWindow.closed) {
+                    if (!authWindow || authWindow.closed) {
+                        clearTimeout(authTimeout);
                         clearInterval(checkClosed);
                         window.removeEventListener('message', handleMessage);
+                        console.log('Janela de autenticação fechada');
+                        setIsLoading(false); // IMPORTANTE: parar o loading
                         setTimeout(() => {
                             checkAuthStatus();
                         }, 1000);
@@ -110,10 +124,12 @@ export const useBling = () => {
                 throw new Error('Não foi possível obter URL de autenticação');
             }
         } catch (err) {
+            console.error('Erro na autenticação:', err);
             setError(err.response?.data?.message || 'Erro ao iniciar autenticação');
             return false;
         } finally {
-            setIsLoading(false);
+            // Garantir que o loading pare mesmo em caso de erro
+            setTimeout(() => setIsLoading(false), 1000);
         }
     }, [checkAuthStatus]);
 

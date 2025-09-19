@@ -1,4 +1,5 @@
-import { Button, Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
+import Button from '../UI/Button';
 import Pagina from "../Templates2/Pagina.jsx";
 import FormCadTipoLacre from "./Formularios/FormCadTipoLacre.jsx";
 import TabelaTipoLacre from "./Tabelas/TabelaTipoLacre.jsx";
