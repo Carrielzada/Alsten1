@@ -51,11 +51,19 @@ const TelaAdministracaoUsuarios = () => {
             setLoading(true);
             
             const [usuariosResponse, rolesResponse] = await Promise.all([
-                consultarUsuarios(),
+                consultarUsuarios({ 
+                    // Tentar usar API paginada primeiro
+                    page: 1, 
+                    limit: 100,
+                    // Se não funcionar, usar método legado
+                    termo: ''
+                }),
                 buscarRoles()
             ]);
 
-            setUsuarios(usuariosResponse.listaUsers || []);
+            // Verificar se a resposta tem dados paginados ou legados
+            const usuariosData = usuariosResponse.data || usuariosResponse.listaUsers || [];
+            setUsuarios(usuariosData);
             setRoles(rolesResponse.listaRoles || []);
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
@@ -159,9 +167,27 @@ const TelaAdministracaoUsuarios = () => {
         }
     };
 
-    const getRoleName = (roleId) => {
+    const getRoleName = (roleId, usuario = null) => {
+        // Primeiro tentar encontrar nos roles carregados
         const role = roles.find(r => r.id === roleId);
-        return role ? role.name : 'N/A';
+        if (role) return role.name;
+        
+        // Se não encontrar, verificar se o usuário tem info de role
+        if (usuario && usuario.role && usuario.role.nome) {
+            return usuario.role.nome;
+        }
+        
+        // Fallback para nomes conhecidos
+        const roleNames = {
+            1: 'Admin',
+            2: 'Diretoria', 
+            3: 'PCM',
+            4: 'Comercial',
+            5: 'Logística',
+            6: 'Técnico'
+        };
+        
+        return roleNames[roleId] || `Role ${roleId}`;
     };
 
     const getRoleBadgeColor = (roleId) => {
@@ -373,11 +399,11 @@ const TelaAdministracaoUsuarios = () => {
                                                 <td>{usuario.email}</td>
                                                 <td>
                                                     <Badge bg={getRoleBadgeColor(usuario.role_id)}>
-                                                        {getRoleName(usuario.role_id)}
+                                                        {getRoleName(usuario.role_id, usuario)}
                                                     </Badge>
                                                 </td>
                                                 <td>
-                                                    <small>{formatarData(usuario.criado_em)}</small>
+                                                    <small>{formatarData(usuario.criado_em || usuario.criadoEm)}</small>
                                                 </td>
                                                 <td>
                                                     <div className="d-flex gap-2">
@@ -447,7 +473,7 @@ const TelaAdministracaoUsuarios = () => {
                         <p className="text-muted small">
                             Email: {usuarioParaExcluir?.email}<br />
                             Nível: <Badge bg={getRoleBadgeColor(usuarioParaExcluir?.role_id)}>
-                                {getRoleName(usuarioParaExcluir?.role_id)}
+                                {getRoleName(usuarioParaExcluir?.role_id, usuarioParaExcluir)}
                             </Badge>
                         </p>
                     </Modal.Body>

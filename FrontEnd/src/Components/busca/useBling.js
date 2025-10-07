@@ -38,9 +38,20 @@ export const useBling = () => {
                 setError(null);
                 return;
             }
+
+            const usuario = JSON.parse(usuarioSalvo);
+            const userId = usuario?.id;
+            
+            if (!userId) {
+                setIsAuthenticated(false);
+                setTokenInfo(null);
+                setError(null);
+                return;
+            }
             
             setIsLoading(true);
-            const response = await blingApi.get('/bling/status');
+            // Verificar status específico do usuário
+            const response = await blingApi.get(`/bling/status?userId=${userId}`);
             
             if (response.data.success) {
                 setIsAuthenticated(response.data.isAuthenticated);

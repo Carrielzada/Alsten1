@@ -86,9 +86,18 @@ router.get('/callback', async (req, res) => {
 // Rota para verificar status da autenticação
 router.get('/status', (req, res) => {
     try {
+        const userId = req.query.userId;
+        
+        // Para implementação futura: verificar autenticação por usuário
+        // Por enquanto, manter comportamento atual mas logar o userId
+        if (userId) {
+            console.log(`Verificando status do Bling para usuário: ${userId}`);
+        }
+        
         const tokenInfo = blingAuth.getTokenInfo();
         res.json({
             success: true,
+            userId: userId, // Retornar o userId para controle no frontend
             ...tokenInfo,
             message: tokenInfo.isAuthenticated ? 'Autenticado no Bling' : 'Não autenticado no Bling'
         });

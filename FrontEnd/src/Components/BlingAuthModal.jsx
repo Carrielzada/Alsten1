@@ -15,11 +15,29 @@ const BlingAuthModal = ({ show, onAuthenticate, isLoading }) => {
       // Verifica se o usuário está realmente logado antes de mostrar o modal
       const usuarioSalvo = localStorage.getItem("usuarioLogado");
       if (usuarioSalvo) {
-        // Atrasa a exibição do modal para dar tempo de verificar o status do Bling
-        const timer = setTimeout(() => {
-          setShouldShow(true);
-        }, 800); // Reduzido de 1000ms para 800ms
-        return () => clearTimeout(timer);
+        try {
+          const usuario = JSON.parse(usuarioSalvo);
+          const userId = usuario?.id;
+          
+          // Verifica se já foi autenticado para este usuário
+          const blingAuthKey = `bling_auth_${userId}`;
+          const blingAuthStatus = localStorage.getItem(blingAuthKey);
+          
+          if (blingAuthStatus === 'authenticated') {
+            // Já autenticado, não mostrar modal
+            setShouldShow(false);
+            return;
+          }
+          
+          // Atrasa a exibição do modal para dar tempo de verificar o status do Bling
+          const timer = setTimeout(() => {
+            setShouldShow(true);
+          }, 1200); // Aumentado para dar mais tempo para verificação
+          return () => clearTimeout(timer);
+        } catch (error) {
+          console.error('Erro ao verificar status do Bling:', error);
+          setShouldShow(false);
+        }
       }
     } else {
       setShouldShow(false);
@@ -28,6 +46,22 @@ const BlingAuthModal = ({ show, onAuthenticate, isLoading }) => {
   
   const handleAuthenticate = () => {
     setAuthAttempts(prev => prev + 1);
+    
+    // Salvar tentativa de autenticação para este usuário
+    const usuarioSalvo = localStorage.getItem("usuarioLogado");
+    if (usuarioSalvo) {
+      try {
+        const usuario = JSON.parse(usuarioSalvo);
+        const userId = usuario?.id;
+        if (userId) {
+          const blingAuthKey = `bling_auth_${userId}`;
+          localStorage.setItem(blingAuthKey, 'authenticating');
+        }
+      } catch (error) {
+        console.error('Erro ao salvar status de autenticação:', error);
+      }
+    }
+    
     onAuthenticate();
   };
   
