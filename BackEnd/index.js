@@ -26,6 +26,9 @@ if (missingVars.length > 0) {
 // Criação do app Express
 const app = express();
 
+// Configurar trust proxy para Coolify/Docker
+app.set('trust proxy', true);
+
 // Segurança HTTP com Helmet
 app.use(
   helmet({
@@ -89,14 +92,18 @@ const corsOptions = {
 // CORS deve vir ANTES do rate limiting para permitir requisições OPTIONS
 app.use(cors(corsOptions));
 
-// Rate limiting global
+// Rate limiting global - ajustado para formulários complexos
 app.use(
   rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 100,
+    windowMs: 5 * 60 * 1000, // 5 minutos (janela menor)
+    max: 500, // 500 requests por 5min (mais generoso)
     message: { error: 'Muitas requisições deste IP, tente novamente mais tarde.' },
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => {
+      // Pular rate limit para health check e arquivos estáticos
+      return req.path === '/health' || req.path.startsWith('/uploads');
+    }
   })
 );
 
