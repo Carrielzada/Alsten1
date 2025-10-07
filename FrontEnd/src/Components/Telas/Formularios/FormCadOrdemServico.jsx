@@ -548,28 +548,30 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ordemServico.dataAprovacaoOrcamento, ordemServico.diasReparo]);
 
-    const handleInputChange = (e) => {
-        markDirty();
-        const { name, value } = e.target;
-        
-        // Tratamento especial para campos numéricos
-        if (name === 'diasReparo' || name === 'valor') {
-    // Garante que value sempre seja string antes de usar trim
-    const strValue = value !== null && value !== undefined ? String(value) : '';
-    const processedValue = strValue.trim() === '' ? null : value;
-    
-    console.log(
-        `Campo ${name} processado: valor original='${value}', processado=${
-            processedValue === null ? 'null' : processedValue
-        }`
-    );
+const handleInputChange = (e) => {
+    markDirty();
 
-    setOrdemServico(prevState => ({
-        ...prevState,
-        [name]: processedValue
-    }));
-}
-    };
+    // compatível com qualquer formato (campo de texto, número ou custom component)
+    const { name, value } = e.target || {};
+
+    // garantir que value é sempre string antes de usar .trim()
+    const stringValue = value !== null && value !== undefined ? String(value) : '';
+
+    // campos numéricos tratados separadamente
+    if (name === 'diasReparo' || name === 'valor') {
+        const processedValue = stringValue.trim() === '' ? null : stringValue;
+        setOrdemServico(prevState => ({
+            ...prevState,
+            [name]: processedValue
+        }));
+    } else {
+        // todos os outros campos — texto normal
+        setOrdemServico(prevState => ({
+            ...prevState,
+            [name]: stringValue
+        }));
+    }
+};
 
     const handleCheckboxChange = (e) => {
         markDirty();
