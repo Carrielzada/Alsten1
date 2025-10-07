@@ -554,19 +554,21 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         
         // Tratamento especial para campos numéricos
         if (name === 'diasReparo' || name === 'valor') {
-            // Se o valor estiver vazio, definir como null para evitar erro de conversão no banco
-            const processedValue = value.trim() === '' ? null : value;
-            console.log(`Campo ${name} processado: valor original='${value}', processado=${processedValue === null ? 'null' : processedValue}`);
-            setOrdemServico(prevState => ({
-                ...prevState,
-                [name]: processedValue
-            }));
-        } else {
-            setOrdemServico(prevState => ({
-                ...prevState,
-                [name]: value
-            }));
-        }
+    // Garante que value sempre seja string antes de usar trim
+    const strValue = value !== null && value !== undefined ? String(value) : '';
+    const processedValue = strValue.trim() === '' ? null : value;
+    
+    console.log(
+        `Campo ${name} processado: valor original='${value}', processado=${
+            processedValue === null ? 'null' : processedValue
+        }`
+    );
+
+    setOrdemServico(prevState => ({
+        ...prevState,
+        [name]: processedValue
+    }));
+}
     };
 
     const handleCheckboxChange = (e) => {
