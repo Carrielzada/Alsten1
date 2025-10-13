@@ -1,5 +1,21 @@
 /* CSS para FormCadOrdemServico.jsx */
 
+/* Campos inválidos (visual forte e responsivo) */
+.campo-invalido {
+  border: 2px solid #dc3545 !important;
+  border-radius: 4px;
+}
+
+.campo-invalido .form-control,
+.campo-invalido .form-select {
+  border-color: #dc3545 !important;
+}
+
+.invalid-hint {
+  color: #dc3545;
+  font-size: 0.8rem;
+}
+
 .form-cad-os {
   max-width: 1000px !important;
 }

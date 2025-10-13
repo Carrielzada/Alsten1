@@ -70,9 +70,10 @@ export const anexarArquivo = (osId, arquivo) => {
  */
 export const anexarComprovante = (osId, arquivo) => {
     const formData = new FormData();
-    formData.append('comprovante', arquivo);
+    // Backend espera o campo 'arquivo' na rota /ordem-servico/:id/comprovante
+    formData.append('arquivo', arquivo);
 
-    return fetchAutenticado(`/ordem-servico/anexar-comprovante/${osId}`, {
+    return fetchAutenticado(`/ordem-servico/${osId}/comprovante`, {
         method: 'POST',
         body: formData,
     });
@@ -129,5 +130,13 @@ export const verificarLockOS = (osId) => {
 
 export const liberarLockOS = (osId) => {
     return fetchAutenticado(`/ordem-servico/${osId}/lock`, { method: 'DELETE' });
+};
+
+export const refreshLockOS = (osId) => {
+    return fetchAutenticado(`/ordem-servico/${osId}/lock/refresh`, { method: 'POST' });
+};
+
+export const buscarLocksOS = () => {
+    return fetchAutenticado(`/ordem-servico/locks`, { method: 'GET' });
 };
 

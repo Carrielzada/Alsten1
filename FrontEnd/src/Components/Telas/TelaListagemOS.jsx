@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Resizable } from 'react-resizable';
-import { buscarTodasOrdensServico } from '../../Services/ordemServicoService';
+import { buscarTodasOrdensServico, buscarLocksOS } from '../../Services/ordemServicoService';
 // Layout será fornecido pelo LayoutModerno - não importar aqui
 import { Modal as BootstrapModal, Badge, Tooltip, OverlayTrigger } from 'react-bootstrap';
-import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope, FaSearch, FaTimes } from 'react-icons/fa';
+import { FaEdit, FaHistory, FaPlus, FaIdCard, FaPhone, FaEnvelope, FaSearch, FaTimes, FaLock } from 'react-icons/fa';
 import FormCadOrdemServico from './Formularios/FormCadOrdemServico';
 import TelaLogsOS from './TelaLogsOS';
 import ClienteInfoModal from '../busca/ClienteInfoModal';
@@ -93,26 +93,51 @@ const TelaListagemOS = () => {
         // Iniciar com a primeira página e poucos itens para carregamento rápido
         fetchOrdensServico(1, itensPorPagina, '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [itensPorPagina]); // Dependência adicionada para recarregar quando o número de itens por página mudar
+    }, [itensPorPagina]);
+
+    // Locks em tempo real para mostrar cadeado e dono
+    const [locks, setLocks] = useState({});
+    const carregarLocks = async () => {
+        try {
+            const resp = await buscarLocksOS();
+            setLocks(resp?.locks || {});
+        } catch (e) {
+            // silencioso
+        }
+    };
+    useEffect(() => {
+        carregarLocks();
+        const intv = setInterval(carregarLocks, 15000); // a cada 15s
+        return () => clearInterval(intv);
+    }, []);
+
+    const isConcluida = (os) => {
+        const etapaNome = (os?.etapaId?.nome || os?.etapa || '').toString().trim().toUpperCase();
+        // Abrangente: cobre "CONCLUÍDO", "CONCLUIDO", "CONCLUÍDA", "CONCLUIDA"
+        return etapaNome.includes('CONCLU');
+    };
 
     const fetchOrdensServico = async (pagina = paginaAtual, itens = itensPorPagina, termo = termoBusca) => {
         try {
             setLoading(true);
             const data = await buscarTodasOrdensServico(pagina, itens, termo);
-            setOrdensServico(data.listaOrdensServico || []);
+            const lista = data.listaOrdensServico || [];
+            const listaSemConcluidas = lista.filter((os) => !isConcluida(os));
+            setOrdensServico(listaSemConcluidas);
             
-            // Atualizar informações de paginação
+            // Atualizar informações de paginação (mantemos informações do backend)
             if (data.paginacao) {
                 setPaginaAtual(data.paginacao.pagina);
                 setTotalPaginas(data.paginacao.totalPaginas);
-                setTotalRegistros(data.paginacao.totalRegistros);
+                // Exibir total de registros da página após filtro para melhor clareza
+                setTotalRegistros(listaSemConcluidas.length);
             }
             
             setError(null);
             
             // Mostrar toast de sucesso apenas se foi uma busca específica
             if (termo && termo.trim()) {
-                toast.success(`Encontrados ${data.listaOrdensServico?.length || 0} resultados para "${termo}"`);
+                toast.success(`Encontrados ${listaSemConcluidas?.length || 0} resultados (após filtrar concluídas) para "${termo}"`);
             }
         } catch (err) {
             console.error('Erro ao buscar ordens de serviço:', err);
@@ -189,6 +214,17 @@ const TelaListagemOS = () => {
     const getRowClassName = (etapa) => {
         const sanitizedEtapa = (etapa || '').replace(/\s+/g, '-').toLowerCase();
         return `etapa-${sanitizedEtapa}`;
+    };
+
+    const getUrgenciaClass = (urgenciaText) => {
+        const u = (urgenciaText || '').toString().trim().toLowerCase();
+        if (!u) return '';
+        if (u.includes('emerg')) return 'urg-emergencia';
+        if (u.includes('muito')) return 'urg-muito-urgente';
+        if (u === 'urgente') return 'urg-urgente';
+        if (u.includes('pouco')) return 'urg-pouco-urgente';
+        if (u.includes('nao') || u.includes('não')) return 'urg-nao-urgente';
+        return '';
     };
 
     const formatarDocumento = (documento) => {
@@ -337,8 +373,12 @@ const TelaListagemOS = () => {
                         border-right-color: rgba(255, 255, 255, 0.8);
                     }
 
+                    /* Aparência geral da tabela no estilo legado */
+                    .os-lista.table { font-size: 0.9rem; }
+                    .os-lista thead.table-dark th { background-color: #343a40; }
+
                     /* CORES DAS ETAPAS - aplica em todas as células da linha */
-                    .etapa-previsto > td { background-color: #fff !important; }
+                    .etapa-previsto > td { background-color: #ffffff !important; }
                     .etapa-recebido > td { background-color: #ffe4ec !important; }
                     .etapa-em-análise > td, .etapa-em-analise > td { background-color: #ffd6d6 !important; }
                     .etapa-analisado > td { background-color: #ff6b6b !important; color: #fff !important; }
@@ -347,6 +387,13 @@ const TelaListagemOS = () => {
                     .etapa-expedição > td, .etapa-expedicao > td { background-color: #fffbe0 !important; }
                     .etapa-despacho > td { background-color: #d4f7d4 !important; }
                     .etapa-aguardando-informação > td, .etapa-aguardando-informacao > td { background-color: #ffe5b4 !important; }
+
+                    /* URGÊNCIA - aplica no TD para lembrar o legado */
+                    td.urg-nao-urgente { background-color: #e3f0ff !important; color: #212529 !important; }
+                    td.urg-pouco-urgente { background-color: #d4f7d4 !important; color: #212529 !important; }
+                    td.urg-urgente { background-color: #fffbe0 !important; color: #212529 !important; }
+                    td.urg-muito-urgente { background-color: #ffe5b4 !important; color: #212529 !important; }
+                    td.urg-emergencia { background-color: #ff6b6b !important; color: #fff !important; }
 
                     /* Custom styles for extra small action buttons */
                     .action-btn {
@@ -448,7 +495,7 @@ const TelaListagemOS = () => {
                 </div>
 
                 <div className="table-responsive">
-                    <table className="table table-striped table-hover table-sm resizable-table">
+                    <table className="table table-bordered table-hover table-sm resizable-table os-lista">
                         <thead className="table-dark">
                             <tr>
                                 {columns.map((col, index) => (
@@ -468,6 +515,13 @@ const TelaListagemOS = () => {
                                     <tr key={os.id} className={getRowClassName(os.etapaId?.nome || os.etapa)}>
                                         <td style={{width: columns[0].width}}>
                                             <div>
+                                                {locks[os.id] && !locks[os.id].expirado && (
+                                                    <OverlayTrigger placement="top" overlay={<Tooltip id={`lk-${os.id}`}>Em edição por: {locks[os.id].userNome || 'Usuário'}</Tooltip>}>
+                                                        <span className="me-1" title="Em edição">
+                                                            <FaLock color="#dc3545" />
+                                                        </span>
+                                                    </OverlayTrigger>
+                                                )}
                                                 <button className="action-btn" onClick={() => handleEditarOS(os.id)} title="Editar OS">
                                                     <FaEdit />
                                                 </button>
@@ -522,18 +576,13 @@ const TelaListagemOS = () => {
     : (os.tipoTransporteTexto || '')}
 </td>
                                         <td style={{width: columns[12].width}}>{os.transporteCifFob || ''}</td>
-                                        <td style={{width: columns[13].width}}>
+                                        <td style={{width: columns[13].width}}
+                                            className={getUrgenciaClass(typeof os.urgencia === 'string' ? os.urgencia : (os.urgencia?.urgencia || ''))}
+                                        >
                                             {(() => {
                                                 const u = typeof os.urgencia === 'string' ? os.urgencia : (os.urgencia?.urgencia || '');
-                                                const uUpper = (u || '').toUpperCase();
-                                                let bg = '#e9ecef', color = '#212529';
-                                                if (uUpper.includes('NÃO URGENTE') || uUpper.includes('NAO URGENTE')) { bg = '#e3f0ff'; }
-                                                else if (uUpper.includes('POUCO')) { bg = '#d4f7d4'; }
-                                                else if (uUpper === 'URGENTE') { bg = '#fffbe0'; }
-                                                else if (uUpper.includes('MUITO')) { bg = '#ffe5b4'; }
-                                                else if (uUpper.includes('EMERG')) { bg = '#ff6b6b'; color = '#fff'; }
                                                 return (
-                                                    <span className="badge" style={{ backgroundColor: bg, color, fontWeight: 600 }} title={u}>
+                                                    <span className="badge bg-light text-dark fw-semibold" title={u}>
                                                         {u || ''}
                                                     </span>
                                                 );

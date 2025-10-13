@@ -13,7 +13,7 @@ import { buscarTiposLacre } from '../../../Services/tipoLacreService';
 import { buscarTiposLimpeza } from '../../../Services/tipoLimpezaService';
 import { buscarTiposTransporte } from '../../../Services/tipoTransporteService';
 import { buscarPagamento } from '../../../Services/pagamentoService';
-import { gravarOrdemServico, anexarArquivo, removerArquivo, transicionarEtapa } from '../../../Services/ordemServicoService';
+import { gravarOrdemServico, anexarArquivo, removerArquivo, transicionarEtapa, anexarComprovante } from '../../../Services/ordemServicoService';
 import diasPagamentoService from '../../../Services/diasPagamentoService';
 import checklistItemService from '../../../Services/checklistItemService';
 import etapaOSService from '../../../Services/etapaOSService';
@@ -298,6 +298,7 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     });
     const [dirty, setDirty] = useState(false);
     const [faltandoCampos, setFaltandoCampos] = useState([]);
+    const isFaltando = (campo) => faltandoCampos.includes(campo);
     const [loadingFormData, setLoadingFormData] = useState(true);
     const [savingForm, setSavingForm] = useState(false);
 
@@ -773,10 +774,15 @@ const handleInputChange = (e) => {
         const dadosParaValidacao = JSON.parse(JSON.stringify(ordemServico));
         
         // Validar com os dados originais (antes de processar)
-        const faltando = validarCamposObrigatorios(etapaAtual, dadosParaValidacao);
+const faltando = validarCamposObrigatorios(etapaAtual, dadosParaValidacao);
         setFaltandoCampos(faltando); // <-- Salva os campos faltando para destacar
         if (faltando.length > 0) {
             toast.error("Preencha os campos obrigatórios: " + faltando.join(", "));
+            // Rola até o primeiro campo inválido para ajudar o usuário
+            setTimeout(() => {
+                const el = document.querySelector('.campo-invalido, .is-invalid');
+                if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 0);
             return;
         }
         
@@ -1033,8 +1039,7 @@ const handleInputChange = (e) => {
                         <Form.Group controlId="cliente">
                             <Form.Label className="fw-semibold">Cliente (Bling) *</Form.Label>
                             <div 
-                                className={`cliente-search-container ${ordemServico.cliente ? 'cliente-selected' : ''}`}
-                                style={faltandoCampos.includes('cliente') ? { border: '2px solid red', borderRadius: 4, padding: 2 } : {}}
+                                className={`cliente-search-container ${ordemServico.cliente ? 'cliente-selected' : ''} ${isFaltando('cliente') ? 'campo-invalido p-1' : ''}`}
                             >
                                 <ClienteSearchAdvanced
                                     onClienteSelect={handleClienteSelect}
@@ -1105,15 +1110,19 @@ const handleInputChange = (e) => {
                     <Col md={4} sm={12}>
                         <Form.Group controlId="fabricante">
                             <Form.Label className="fw-semibold">Fabricante</Form.Label>
-                            <CaixaSelecaoPesquisavel
-                                dados={fabricantes}
-                                campoChave="id"
-                                campoExibir="nome_fabricante"
-                                valorSelecionado={ordemServico.fabricante?.id || ''}
-                                onChange={handleSelectChange}
-                                name="fabricante"
-                                style={faltandoCampos.includes('fabricante') ? { border: '2px solid red' } : {}}
-                            />
+<div className={`${isFaltando('fabricante') ? 'campo-invalido p-1 rounded' : ''}`}>
+                                <CaixaSelecaoPesquisavel
+                                    dados={fabricantes}
+                                    campoChave="id"
+                                    campoExibir="nome_fabricante"
+                                    valorSelecionado={ordemServico.fabricante?.id || ''}
+                                    onChange={handleSelectChange}
+                                    name="fabricante"
+                                />
+                                </div>
+                                {isFaltando('fabricante') && (
+                                    <div className="invalid-hint mt-1">Selecione um fabricante.</div>
+                                )}
                         </Form.Group>
                     </Col>
                 </Row>
@@ -1123,28 +1132,31 @@ const handleInputChange = (e) => {
                     <Col md={6} sm={12}>
                         <Form.Group controlId="defeitoAlegado">
                             <Form.Label className="fw-semibold">Defeito Alegado e Considerações *</Form.Label>
-                            <Form.Control
+<Form.Control
                                 as="textarea"
                                 name="defeitoAlegado"
                                 value={ordemServico.defeitoAlegado || ''}
                                 onChange={handleInputChange}
                                 rows={4}
                                 placeholder="Descreva o defeito alegado pelo cliente..."
-                                style={faltandoCampos.includes('defeitoAlegado') ? { border: '2px solid red' } : {}}
+                                isInvalid={isFaltando('defeitoAlegado')}
                             />
+                            <Form.Control.Feedback type="invalid">
+                                Campo obrigatório.
+                            </Form.Control.Feedback>
                         </Form.Group>
                     </Col>
                     <Col md={6} sm={12}>
                         <Form.Group controlId="informacoesConfidenciais">
                             <Form.Label className="fw-semibold">Informações Confidenciais</Form.Label>
-                            <Form.Control
+<Form.Control
                                 as="textarea"
                                 name="informacoesConfidenciais"
                                 rows={4}
                                 placeholder="Informações internas ou observações confidenciais..."
                                 value={ordemServico.informacoesConfidenciais || ''}
                                 onChange={handleInputChange}
-                                style={faltandoCampos.includes('informacoesConfidenciais') ? { border: '2px solid red' } : {}}
+                                isInvalid={isFaltando('informacoesConfidenciais')}
                             />
                         </Form.Group>
                     </Col>
@@ -1155,11 +1167,11 @@ const handleInputChange = (e) => {
                     <Col md={3} sm={6} xs={12}>
                         <Form.Group controlId="transporte">
                             <Form.Label className="fw-semibold">Transporte *</Form.Label>
-                            <Form.Select
+<Form.Select
                                 name="transporteCifFob"
                                 value={ordemServico.transporteCifFob || ''}
                                 onChange={handleInputChange}
-                                style={faltandoCampos.includes('transporteCifFob') ? { border: '2px solid red' } : {}}
+                                isInvalid={isFaltando('transporteCifFob')}
                             >
                                 <option value="">Selecione...</option>
                                 <option value="FOB">FOB</option>
@@ -1170,26 +1182,51 @@ const handleInputChange = (e) => {
                     <Col md={3} sm={6} xs={12}>
                         <Form.Group controlId="valor">
                             <Form.Label className="fw-semibold">Valor *</Form.Label>
+<div className={`${isFaltando('valor') ? 'campo-invalido p-1 rounded' : ''}`}>
                             <CampoValor
                                 name="valor"
                                 value={ordemServico.valor || ''}
                                 onChange={handleInputChange}
-                                style={faltandoCampos.includes('valor') ? { border: '2px solid red' } : {}}
                             />
+                            </div>
+                            {isFaltando('valor') && (
+                                <div className="invalid-hint mt-1">Informe o valor do orçamento.</div>
+                            )}
                         </Form.Group>
                     </Col>
                     <Col md={6} xs={12}>
                         <ComprovanteUploadMelhorado
                             label="Comprovante de Aprovação"
-                            comprovanteFile={comprovanteFile}
-                            comprovantePreview={comprovantePreview}
-                            onFileChange={handleComprovanteChange}
-                            onRemove={() => {
-                                setComprovanteFile(null);
-                                setComprovantePreview(null);
-                                setOrdemServico({...ordemServico, comprovanteAprovacao: null});
+                            arquivo={ordemServico.comprovanteAprovacao}
+                            acceptedTypes="image/*"
+                            disabled={!ordemServico.id}
+                            required={false}
+                            onFileSelect={async (file) => {
+                                if (!ordemServico.id) {
+                                    toast.warn('Salve a OS antes de anexar o comprovante.');
+                                    return;
+                                }
+                                try {
+                                    setSavingForm(true);
+                                    const resp = await anexarComprovante(ordemServico.id, file);
+                                    if (resp?.status) {
+                                        const nome = resp.caminho || '';
+                                        setOrdemServico(prev => ({ ...prev, comprovanteAprovacao: nome }));
+                                        toast.success('Comprovante anexado com sucesso!');
+                                    } else {
+                                        toast.error(resp?.mensagem || 'Falha ao anexar comprovante');
+                                    }
+                                } catch (e) {
+                                    console.error('Erro ao anexar comprovante:', e);
+                                    toast.error(e?.message || 'Erro ao anexar comprovante');
+                                } finally {
+                                    setSavingForm(false);
+                                }
                             }}
-                            error={faltandoCampos.includes('comprovanteAprovacao')}
+                            onFileRemove={() => {
+                                setOrdemServico(prev => ({ ...prev, comprovanteAprovacao: '' }));
+                            }}
+                            style={faltandoCampos.includes('comprovanteAprovacao') ? { border: '2px solid red' } : {}}
                         />
                     </Col>
                 </Row>
@@ -1227,6 +1264,7 @@ const handleInputChange = (e) => {
                     <Col md={4} sm={12} xs={12}>
                         <Form.Group controlId="tipoAnalise">
                             <Form.Label className="fw-semibold">Tipo de Análise</Form.Label>
+<div className={`${isFaltando('tipoAnalise') ? 'campo-invalido p-1 rounded' : ''}`}>
                             <CaixaSelecaoPesquisavel
                                 dados={tiposAnalise}
                                 campoChave="id"
@@ -1234,8 +1272,11 @@ const handleInputChange = (e) => {
                                 valorSelecionado={ordemServico.tipoAnalise?.id || ''}
                                 onChange={handleSelectChange}
                                 name="tipoAnalise"
-                                style={faltandoCampos.includes('tipoAnalise') ? { border: '2px solid red' } : {}}
                             />
+                            </div>
+                            {isFaltando('tipoAnalise') && (
+                                <div className="invalid-hint mt-1">Selecione o tipo de análise.</div>
+                            )}
                         </Form.Group>
                     </Col>
                 </Row>
@@ -1244,6 +1285,7 @@ const handleInputChange = (e) => {
                     <Col md={6} sm={12}>
                         <Form.Group controlId="tipoLimpeza">
                             <Form.Label className="fw-semibold">Tipo de Limpeza</Form.Label>
+<div className={`${isFaltando('tipoLimpeza') ? 'campo-invalido p-1 rounded' : ''}`}>
                             <CaixaSelecaoPesquisavel
                                 dados={tiposLimpeza}
                                 campoChave="id"
@@ -1251,8 +1293,11 @@ const handleInputChange = (e) => {
                                 valorSelecionado={ordemServico.tipoLimpeza?.id || ''}
                                 onChange={handleSelectChange}
                                 name="tipoLimpeza"
-                                style={faltandoCampos.includes('tipoLimpeza') ? { border: '2px solid red' } : {}}
                             />
+                            </div>
+                            {isFaltando('tipoLimpeza') && (
+                                <div className="invalid-hint mt-1">Selecione o tipo de limpeza.</div>
+                            )}
                         </Form.Group>
                     </Col>
                     <Col md={6} sm={12}>
@@ -1408,15 +1453,18 @@ const handleInputChange = (e) => {
                     <Col md={4} sm={6} xs={12}>
                         <Form.Group controlId="diasReparo">
                             <Form.Label className="fw-semibold">Dias para o Reparo</Form.Label>
-                            <Form.Control
+<Form.Control
                                 type="text"
                                 name="diasReparo"
                                 value={ordemServico.diasReparo || ''}
                                 onChange={handleInputChange}
                                 placeholder="Ex: 5"
                                 size="sm"
-                                style={faltandoCampos.includes('diasReparo') ? { border: '2px solid red' } : {}}
+                                isInvalid={isFaltando('diasReparo')}
                             />
+                            <Form.Control.Feedback type="invalid">
+                                Informe os dias de reparo.
+                            </Form.Control.Feedback>
                         </Form.Group>
                     </Col>
                     <Col md={4} sm={6} xs={12}>
@@ -1457,7 +1505,7 @@ const handleInputChange = (e) => {
                     <Col md={3}>
                         <Form.Group controlId="checklist">
                             <Form.Label>Checklist</Form.Label>
-                            <div className="border rounded p-2" style={{ maxHeight: '120px', overflowY: 'auto', border: faltandoCampos.includes('checklistItems') ? '2px solid red' : undefined }}>
+<div className={`border rounded p-2 ${isFaltando('checklistItems') ? 'campo-invalido' : ''}`} style={{ maxHeight: '120px', overflowY: 'auto' }}>
                                 {checklistItems.map((item) => (
                                     <Form.Check
                                         key={item.id}
@@ -1598,14 +1646,18 @@ const handleInputChange = (e) => {
                                     </option>
                                 ))}
                             </Form.Select>
-                            <Form.Control
+<Form.Control
                                 as="textarea"
                                 name="defeitoConstatado"
-                                style={{ height: '80px', ...(faltandoCampos.includes('defeitoConstatado') ? { border: '2px solid red' } : {}) }}
                                 value={ordemServico.defeitoConstatado || ''}
                                 onChange={handleInputChange}
                                 placeholder="Descreva o defeito constatado..."
+                                isInvalid={isFaltando('defeitoConstatado')}
+                                style={{ height: '80px' }}
                             />
+                            <Form.Control.Feedback type="invalid">
+                                Informe o defeito constatado.
+                            </Form.Control.Feedback>
                         </Form.Group>
                     </Col>
                     <Col md={6}>
@@ -1631,14 +1683,18 @@ const handleInputChange = (e) => {
                                     </option>
                                 ))}
                             </Form.Select>
-                            <Form.Control
+<Form.Control
                                 as="textarea"
                                 name="servicoRealizar"
-                                style={{ height: '80px', ...(faltandoCampos.includes('servicoRealizar') ? { border: '2px solid red' } : {}) }}
                                 value={ordemServico.servicoRealizar || ''}
                                 onChange={handleInputChange}
                                 placeholder="Descreva o serviço a realizar..."
+                                isInvalid={isFaltando('servicoRealizar')}
+                                style={{ height: '80px' }}
                             />
+                            <Form.Control.Feedback type="invalid">
+                                Descreva o serviço a realizar.
+                            </Form.Control.Feedback>
                         </Form.Group>
                     </Col>
                 </Row>

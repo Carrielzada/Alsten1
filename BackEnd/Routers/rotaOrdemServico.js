@@ -39,7 +39,9 @@ rotaOrdemServico.get("/:id/logs", ordemServicoCtrl.consultarLogs);
 
 // --- LOCK DE EDIÇÃO CONCORRENTE ---
 rotaOrdemServico.post('/:id/lock', verificarAutenticacao, ordemServicoCtrl.criarLock);
+rotaOrdemServico.post('/:id/lock/refresh', verificarAutenticacao, ordemServicoCtrl.refrescarLock);
 rotaOrdemServico.get('/:id/lock', verificarAutenticacao, ordemServicoCtrl.verificarLock);
 rotaOrdemServico.delete('/:id/lock', verificarAutenticacao, ordemServicoCtrl.removerLock);
+rotaOrdemServico.get('/locks', verificarAutenticacao, ordemServicoCtrl.listarLocks);
 
 export default rotaOrdemServico;

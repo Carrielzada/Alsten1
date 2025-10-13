@@ -3,7 +3,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
-import { consultarOrdemServicoPorId, adquirirLockOS, liberarLockOS } from '../../Services/ordemServicoService';
+import { consultarOrdemServicoPorId, adquirirLockOS, liberarLockOS, refreshLockOS } from '../../Services/ordemServicoService';
 import { useToast } from '../../hooks/useToast';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import ErrorBoundary from '../ErrorBoundary';
@@ -61,6 +61,18 @@ const TelaCadOrdemServico = () => {
             }
         };
     }, [id]);
+
+    // Mantém o lock vivo enquanto o formulário estiver aberto
+    useEffect(() => {
+        if (!id) return;
+        let interval;
+        if (lockAdquirido.current) {
+            interval = setInterval(() => {
+                refreshLockOS(id).catch(() => {});
+            }, 2 * 60 * 1000); // a cada 2 minutos
+        }
+        return () => { if (interval) clearInterval(interval); };
+    }, [id, lockAdquirido.current]);
 
     // Intercepta fechamento da aba/janela
     useEffect(() => {

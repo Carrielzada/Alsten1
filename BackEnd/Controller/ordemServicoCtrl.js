@@ -1,7 +1,7 @@
 import OrdemServico from "../Model/OrdemServico.js";
 import OrdemServicoDAO from "../Service/OrdemServicoDAO.js";
 import OrdemServicoLogDAO from "../Service/OrdemServicoLogDAO.js";
-import { criarLock, verificarLock, removerLock } from '../Service/OrdemServicoLockService.js';
+import { criarLock, verificarLock, removerLock, refreshLock, listarLocks } from '../Service/OrdemServicoLockService.js';
 
 class OrdemServicoCtrl {
     constructor() {
@@ -554,32 +554,44 @@ osAtualizada.diasPagamento,
         }
     }
 
-    async criarLock(req, res) {
+async criarLock(req, res) {
         const osId = req.params.id;
         const userId = req.user?.id;
+        const userNome = req.user?.nome || req.user?.email || 'Usuário';
         if (!userId) return res.status(401).json({ status: false, mensagem: 'Usuário não autenticado!' });
-        const ok = criarLock(osId, userId);
-        if (ok) res.json({ status: true, mensagem: 'Lock adquirido com sucesso!' });
-        else {
-            const lock = verificarLock(osId);
-            res.status(409).json({ status: false, mensagem: 'OS já está sendo editada por outro usuário!', lock });
-        }
+        const resultado = criarLock(osId, userId, userNome);
+        if (resultado.ok) return res.json({ status: true, mensagem: 'Lock adquirido com sucesso!', lock: resultado.lock });
+        return res.status(409).json({ status: false, mensagem: 'OS já está sendo editada por outro usuário!', lock: resultado.lock });
     }
 
-    async verificarLock(req, res) {
+async verificarLock(req, res) {
         const osId = req.params.id;
         const lock = verificarLock(osId);
-        if (!lock) res.json({ status: false, livre: true });
-        else res.json({ status: true, livre: false, lock });
+        if (!lock) return res.json({ status: false, livre: true });
+        return res.json({ status: true, livre: false, lock });
     }
 
-    async removerLock(req, res) {
+async removerLock(req, res) {
         const osId = req.params.id;
         const userId = req.user?.id;
         if (!userId) return res.status(401).json({ status: false, mensagem: 'Usuário não autenticado!' });
         const ok = removerLock(osId, userId);
-        if (ok) res.json({ status: true, mensagem: 'Lock removido com sucesso!' });
-        else res.status(403).json({ status: false, mensagem: 'Você não possui o lock desta OS.' });
+        if (ok) return res.json({ status: true, mensagem: 'Lock removido com sucesso!' });
+        return res.status(403).json({ status: false, mensagem: 'Você não possui o lock desta OS.' });
+    }
+
+    async refrescarLock(req, res) {
+        const osId = req.params.id;
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ status: false, mensagem: 'Usuário não autenticado!' });
+        const lock = refreshLock(osId, userId);
+        if (!lock) return res.status(409).json({ status: false, mensagem: 'Não foi possível renovar o lock.' });
+        return res.json({ status: true, lock });
+    }
+
+    async listarLocks(req, res) {
+        const locks = listarLocks();
+        return res.json({ status: true, locks });
     }
 
     async registrarLogsAlteracoes(dadosAntigos, dadosNovos, usuarioId, logDAO) {

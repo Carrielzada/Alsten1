@@ -406,7 +406,8 @@ class OrdemServicoDAO {
                     servicoRealizar: registro.servico_realizar,
                     valor: registro.valor,
                     etapaId: registro.etapa_id ? { id: registro.etapa_id, nome: registro.etapa_nome } : null,
-                    notaFiscal: registro.nota_fiscal,
+notaFiscal: registro.nota_fiscal,
+                    comprovanteAprovacao: registro.comprovante_aprovacao,
                     comprovante: registro.comprovante
                 };
                 
@@ -678,7 +679,8 @@ class OrdemServicoDAO {
                     servicoRealizar: registro.servico_realizar,
                     valor: registro.valor,
                     etapaId: registro.etapa_id ? { id: registro.etapa_id, nome: registro.etapa_nome } : null,
-                    notaFiscal: registro.nota_fiscal,
+notaFiscal: registro.nota_fiscal,
+                    comprovanteAprovacao: registro.comprovante_aprovacao,
                     comprovante: registro.comprovante
                 };
                 return os;
@@ -793,8 +795,8 @@ class OrdemServicoDAO {
                 return false; // OS não encontrada
             }
             
-            // Atualize o campo comprovante
-            const sql = "UPDATE ordem_servico SET comprovante = ? WHERE id = ?";
+// Atualize o campo comprovante de aprovação
+            const sql = "UPDATE ordem_servico SET comprovante_aprovacao = ? WHERE id = ?";
             await conexao.query(sql, [nomeArquivo, osId]);
             
             return true;

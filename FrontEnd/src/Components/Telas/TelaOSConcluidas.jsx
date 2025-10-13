@@ -52,6 +52,11 @@ const TelaOSConcluidas = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [paginaAtual, itensPorPagina]);
 
+    const isConcluida = (os) => {
+        const etapaNome = (os?.etapaId?.nome || os?.etapa || '').toString().trim().toUpperCase();
+        return etapaNome.includes('CONCLU');
+    };
+
     const fetchOrdensServico = async () => {
         try {
             setLoading(true);
@@ -59,17 +64,15 @@ const TelaOSConcluidas = () => {
             // Buscar todas as OS e filtrar apenas as concluídas
             const data = await buscarTodasOrdensServico(paginaAtual, itensPorPagina, '');
             
-            // Filtrar apenas OS com etapa "CONCLUÍDO"
-            const osConcluidas = (data.listaOrdensServico || []).filter(os => 
-                (os.etapaId?.nome || os.etapa) === 'CONCLUÍDO'
-            );
+            // Filtrar OS concluídas de forma tolerante a variações
+            const osConcluidas = (data.listaOrdensServico || []).filter(isConcluida);
             
             // Aplicar filtros adicionais
             const osFiltradas = aplicarFiltros(osConcluidas);
             
             setOrdensServico(osFiltradas);
             
-            // Atualizar informações de paginação
+            // Atualizar informações de paginação (baseado no resultado filtrado)
             if (data.paginacao) {
                 setTotalPaginas(Math.ceil(osFiltradas.length / itensPorPagina));
                 setTotalRegistros(osFiltradas.length);
@@ -289,8 +292,47 @@ const TelaOSConcluidas = () => {
         );
     };
 
+    // Helpers de classe para etapas e (futuro) urgência
+    const getRowClassName = (etapa) => {
+        const sanitizedEtapa = (etapa || '').replace(/\s+/g, '-').toLowerCase();
+        return `etapa-${sanitizedEtapa}`;
+    };
+    const getUrgenciaClass = (urgenciaText) => {
+        const u = (urgenciaText || '').toString().trim().toLowerCase();
+        if (!u) return '';
+        if (u.includes('emerg')) return 'urg-emergencia';
+        if (u.includes('muito')) return 'urg-muito-urgente';
+        if (u === 'urgente') return 'urg-urgente';
+        if (u.includes('pouco')) return 'urg-pouco-urgente';
+        if (u.includes('nao') || u.includes('não')) return 'urg-nao-urgente';
+        return '';
+    };
+
     return (
         <div className="container-fluid px-4">
+                <style>{`
+                    /* Aparência geral da tabela no estilo legado */
+                    .os-lista.table { font-size: 0.9rem; }
+                    .os-lista thead.table-dark th { background-color: #343a40; }
+
+                    /* CORES DAS ETAPAS (linhas) - manter consistência com /ordens-servico */
+                    .etapa-previsto > td { background-color: #ffffff !important; }
+                    .etapa-recebido > td { background-color: #ffe4ec !important; }
+                    .etapa-em-análise > td, .etapa-em-analise > td { background-color: #ffd6d6 !important; }
+                    .etapa-analisado > td { background-color: #ff6b6b !important; color: #fff !important; }
+                    .etapa-aprovado > td, .etapa-pré-aprovado > td, .etapa-pre-aprovado > td, .etapa-sem-custo > td { background-color: #e3f0ff !important; }
+                    .etapa-reprovado > td { background-color: #003366 !important; color: #fff !important; }
+                    .etapa-expedição > td, .etapa-expedicao > td { background-color: #fffbe0 !important; }
+                    .etapa-despacho > td { background-color: #d4f7d4 !important; }
+                    .etapa-aguardando-informação > td, .etapa-aguardando-informacao > td { background-color: #ffe5b4 !important; }
+
+                    /* URGÊNCIA (aplicável se a coluna for adicionada futuramente) */
+                    td.urg-nao-urgente { background-color: #e3f0ff !important; color: #212529 !important; }
+                    td.urg-pouco-urgente { background-color: #d4f7d4 !important; color: #212529 !important; }
+                    td.urg-urgente { background-color: #fffbe0 !important; color: #212529 !important; }
+                    td.urg-muito-urgente { background-color: #ffe5b4 !important; color: #212529 !important; }
+                    td.urg-emergencia { background-color: #ff6b6b !important; color: #fff !important; }
+                `}</style>
                 <Card className="mb-4 shadow-sm">
                 <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 className="mb-0">Ordens de Serviço Concluídas</h5>
@@ -515,8 +557,8 @@ const TelaOSConcluidas = () => {
                     ) : (
                         <>
                             <div className="table-responsive">
-                                <Table striped bordered hover size="sm">
-                                    <thead className="bg-light">
+                                <Table bordered hover size="sm" className="os-lista table">
+                                    <thead className="table-dark">
                                         <tr>
                                             <th>ID</th>
                                             <th>Cliente</th>
@@ -534,7 +576,7 @@ const TelaOSConcluidas = () => {
                                     </thead>
                                     <tbody>
                                         {ordensServico.map((os) => (
-                                            <tr key={os.id}>
+                                            <tr key={os.id} className={getRowClassName(os.etapaId?.nome || os.etapa)}>
                                                 <td><strong>#{os.id}</strong></td>
                                                 <td>
                                                     <div>
