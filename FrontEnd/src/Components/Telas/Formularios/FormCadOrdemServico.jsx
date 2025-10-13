@@ -299,7 +299,24 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     const [dirty, setDirty] = useState(false);
     const [faltandoCampos, setFaltandoCampos] = useState([]);
     const isFaltando = (campo) => faltandoCampos.includes(campo);
-    const [loadingFormData, setLoadingFormData] = useState(true);
+
+    // Handler para campos numéricos com higienização e faixa
+    const handleNumericChange = (name, rawValue, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) => {
+        markDirty();
+        const clean = (rawValue || '').replace(/\D/g, '');
+        if (clean === '') {
+            setOrdemServico(prev => ({ ...prev, [name]: '' }));
+            setNumericErrors(prev => ({ ...prev, [name]: false }));
+            return;
+        }
+        const num = parseInt(clean, 10);
+        const outOfRange = Number.isNaN(num) || num < min || num > max;
+        setNumericErrors(prev => ({ ...prev, [name]: outOfRange }));
+        setOrdemServico(prev => ({ ...prev, [name]: num }));
+    };
+    const [savingForm, setSavingForm] = useState(false);
+    // Erros numéricos por campo (ex.: diasReparo fora de faixa)
+    const [numericErrors, setNumericErrors] = useState({});
     const [savingForm, setSavingForm] = useState(false);
 
     // Detecta alterações no formulário
@@ -1457,13 +1474,15 @@ const faltando = validarCamposObrigatorios(etapaAtual, dadosParaValidacao);
                                 type="text"
                                 name="diasReparo"
                                 value={ordemServico.diasReparo || ''}
-                                onChange={handleInputChange}
+                                onChange={(e) => handleNumericChange('diasReparo', e.target.value, { min: 0, max: 365 })}
                                 placeholder="Ex: 5"
                                 size="sm"
-                                isInvalid={isFaltando('diasReparo')}
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                isInvalid={isFaltando('diasReparo') || !!numericErrors.diasReparo}
                             />
                             <Form.Control.Feedback type="invalid">
-                                Informe os dias de reparo.
+                                {numericErrors.diasReparo ? 'Informe um número entre 0 e 365.' : 'Informe os dias de reparo.'}
                             </Form.Control.Feedback>
                         </Form.Group>
                     </Col>
@@ -1565,20 +1584,6 @@ const faltando = validarCamposObrigatorios(etapaAtual, dadosParaValidacao);
 
                 {/* Linha 8: Tipo de Transporte, Transporte e Pedido de Compras */}
                 <Row className="mb-3">
-                    <Col md={3}>
-                        <Form.Group controlId="tipoTransporte">
-                            <Form.Label>Tipo de Transporte</Form.Label>
-                            <CaixaSelecaoPesquisavel
-                                dados={tiposTransporte}
-                                campoChave="id"
-                                campoExibir="tipo_transporte"
-                                valorSelecionado={ordemServico.tipoTransporte?.id || ''}
-                                onChange={handleSelectChange}
-                                name="tipoTransporte"
-                                style={faltandoCampos.includes('tipoTransporte') ? { border: '2px solid red' } : {}}
-                            />
-                        </Form.Group>
-                    </Col>
                     <Col md={3}>
                         <Form.Group controlId="transporteCifFob">
                             <Form.Label>Transporte</Form.Label>
