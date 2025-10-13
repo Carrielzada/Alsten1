@@ -14,6 +14,7 @@ class OrdemServicoCtrl {
         this.removerArquivo = this.removerArquivo.bind(this);
         this.consultarLogs = this.consultarLogs.bind(this);
         this.registrarLogsAlteracoes = this.registrarLogsAlteracoes.bind(this);
+        this.transicionarEtapa = this.transicionarEtapa.bind(this);
     }
 
     async gravar(req, res) {
@@ -358,6 +359,183 @@ class OrdemServicoCtrl {
                 status: false,
                 mensagem: "Método não permitido."
             });
+        }
+    }
+
+    // --- TRANSIÇÃO DE ETAPAS COM VALIDAÇÕES ---
+    async transicionarEtapa(req, res) {
+        res.type("application/json");
+        try {
+            const osId = req.params.id;
+            const { novaEtapa, novaEtapaId } = req.body || {};
+
+            if (!osId) {
+                return res.status(400).json({ status: false, mensagem: 'OS id não informado' });
+            }
+            if (!novaEtapa && !novaEtapaId) {
+                return res.status(400).json({ status: false, mensagem: 'Informe novaEtapa (nome) ou novaEtapaId' });
+            }
+
+            const osDAO = new OrdemServicoDAO();
+            const logDAO = new OrdemServicoLogDAO();
+            const osAtual = await osDAO.consultarPorId(osId);
+            if (!osAtual) {
+                return res.status(404).json({ status: false, mensagem: 'OS não encontrada' });
+            }
+
+            // Resolver nome da etapa e id via tabela etapa_os
+            let etapaNomeDestino = novaEtapa;
+            let etapaIdDestino = novaEtapaId;
+            if (!etapaNomeDestino || !etapaIdDestino) {
+                const { default: EtapaOSDAO } = await import('../Service/EtapaOSDAO.js');
+                const etapaDAO = new EtapaOSDAO();
+                const lista = await etapaDAO.consultar('');
+                if (!lista || lista.length === 0) {
+                    return res.status(500).json({ status: false, mensagem: 'Tabela de etapas não configurada' });
+                }
+                if (etapaIdDestino) {
+                    const match = lista.find(e => e.id === parseInt(etapaIdDestino));
+                    etapaNomeDestino = match?.nome;
+                } else if (etapaNomeDestino) {
+                    const match = lista.find(e => (e.nome || '').toUpperCase() === etapaNomeDestino.toUpperCase());
+                    etapaIdDestino = match?.id;
+                }
+                if (!etapaNomeDestino || !etapaIdDestino) {
+                    return res.status(400).json({ status: false, mensagem: 'Etapa destino inválida' });
+                }
+            }
+
+            // RBAC básico por etapa
+            const role = req.user?.role; // 1-Admin, 2-Diretoria, 3-PCM, 4-Comercial, 5-Logística, 6-Técnico
+            const allowAll = [1, 2].includes(role);
+            const mapaPermissao = {
+                'PREVISTO': [1,2,5],
+                'RECEBIDO': [1,2,5],
+                'EM ANÁLISE': [1,2,6],
+                'ANALISADO': [1,2,6],
+                'AGUARDANDO APROVAÇÃO': [1,2,3,4],
+                'PRÉ-APROVADO': [1,2,3,4],
+                'APROVADO': [1,2,3,4],
+                'REPROVADO': [1,2,3,4],
+                'AGUARDANDO INFORMAÇÃO': [1,2,3,4,6],
+                'SEM CUSTO': [1,2,3,4],
+                'EXPEDIÇÃO': [1,2,5,6],
+                'DESPACHO': [1,2,5],
+                'CONCLUÍDO': [1,2,5]
+            };
+            const permitidos = mapaPermissao[etapaNomeDestino] || [];
+            if (!allowAll && !permitidos.includes(role)) {
+                return res.status(403).json({ status: false, mensagem: 'Sem permissão para definir esta etapa' });
+            }
+
+            // Regras de obrigatoriedade (gate)
+            const faltando = [];
+            const exige = {
+                'PREVISTO': ['cliente','modeloEquipamento','fabricante','defeitoAlegado'],
+                'RECEBIDO': ['arquivosAnexados'],
+                'EM ANÁLISE': ['tipoAnalise','checklistItems','tipoLimpeza','defeitoConstatado','servicoRealizar','diasReparo'],
+                'AGUARDANDO APROVAÇÃO': ['comprovanteAprovacao'],
+                'PRÉ-APROVADO': ['comprovanteAprovacao'],
+                'APROVADO': ['comprovanteAprovacao'],
+                'REPROVADO': ['comprovanteAprovacao']
+            };
+            const exigirCampos = exige[etapaNomeDestino] || [];
+
+            const temValor = (campo) => {
+                const v = osAtual[campo];
+                if (campo === 'arquivosAnexados' || campo === 'checklistItems') return Array.isArray(v) && v.length > 0;
+                if (typeof v === 'object') return !!v && (v.id || Object.keys(v).length > 0);
+                return v !== undefined && v !== null && String(v).trim() !== '';
+            };
+
+            exigirCampos.forEach(c => { if (!temValor(c)) faltando.push(c); });
+            if (faltando.length > 0) {
+                return res.status(400).json({ status: false, mensagem: 'Campos obrigatórios ausentes para esta etapa', faltando });
+            }
+
+            // Cálculo de data de entrega (dias úteis) ao aprovar
+            const calcularDataUtil = (inicioISO, dias) => {
+                if (!inicioISO || !dias || dias <= 0) return null;
+                let d = new Date(inicioISO);
+                let adicionados = 0;
+                while (adicionados < dias) {
+                    d.setDate(d.getDate() + 1);
+                    const wd = d.getDay(); // 0-dom,6-sab
+                    if (wd !== 0 && wd !== 6) adicionados++;
+                }
+                return d.toISOString().slice(0,10);
+            };
+
+            // Atualizar a OS com a nova etapa e efeitos colaterais
+            const osAtualizada = { ...osAtual };
+            osAtualizada.etapa = etapaNomeDestino;
+            osAtualizada.etapaId = { id: etapaIdDestino, nome: etapaNomeDestino };
+
+            if (etapaNomeDestino === 'APROVADO') {
+                const base = osAtual.dataAprovacaoOrcamento || new Date().toISOString().slice(0,10);
+                const uteis = parseInt(osAtual.diasReparo || 0);
+                if (uteis > 0) {
+                    osAtualizada.dataEntrega = calcularDataUtil(base, uteis);
+                }
+            }
+
+            // Persistir
+            const osParaSalvar = new OrdemServico(
+                osAtualizada.id,
+                osAtualizada.cliente,
+                osAtualizada.modeloEquipamento,
+                osAtualizada.defeitoAlegado,
+                osAtualizada.numeroSerie,
+                osAtualizada.fabricante,
+                osAtualizada.urgencia,
+                osAtualizada.tipoAnalise,
+                osAtualizada.tipoLacre,
+                osAtualizada.tipoLimpeza,
+                osAtualizada.tipoTransporte,
+                osAtualizada.formaPagamento,
+                osAtualizada.arquivosAnexados,
+                osAtualizada.etapa,
+                osAtualizada.dataCriacao,
+                osAtualizada.vendedor,
+osAtualizada.diasPagamento,
+                osAtualizada.dataEntrega,
+                osAtualizada.dataAprovacaoOrcamento,
+                osAtualizada.diasReparo,
+                osAtualizada.dataEquipamentoPronto,
+                osAtualizada.informacoesConfidenciais,
+                osAtualizada.checklistItems,
+                osAtualizada.agendado,
+                osAtualizada.possuiAcessorio,
+                osAtualizada.tipoTransporteTexto,
+                osAtualizada.transporteCifFob,
+                osAtualizada.pedidoCompras,
+                osAtualizada.defeitoConstatado,
+                osAtualizada.servicoRealizar,
+                osAtualizada.valor,
+                osAtualizada.etapaId,
+                osAtualizada.comprovanteAprovacao,
+                osAtualizada.notaFiscal,
+                osAtualizada.comprovante
+            );
+
+            const dadosAntigos = osAtual;
+            await osDAO.gravar(osParaSalvar);
+
+            // Registrar log da mudança de etapa
+            const usuarioId = req.user?.id;
+            await logDAO.registrarLog(
+                osParaSalvar.id,
+                usuarioId,
+                'etapa',
+                dadosAntigos.etapaId?.nome || dadosAntigos.etapa || 'N/A',
+                etapaNomeDestino,
+                `Etapa alterada para "${etapaNomeDestino}"`
+            );
+
+            return res.status(200).json({ status: true, mensagem: 'Etapa atualizada com sucesso!', os_id: osParaSalvar.id, etapa: etapaNomeDestino });
+        } catch (error) {
+            console.error('Erro na transição de etapa:', error);
+            return res.status(500).json({ status: false, mensagem: 'Erro na transição de etapa: ' + error.message });
         }
     }
 

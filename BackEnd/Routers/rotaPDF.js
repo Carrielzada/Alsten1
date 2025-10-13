@@ -1,11 +1,11 @@
 import express from 'express';
 import pdfCtrl from '../Controller/pdfCtrl.js';
-import { verificarToken } from '../Middleware/verificarToken.js';
+import { verificarAutenticacao } from '../Security/autenticar.js';
 
 const router = express.Router();
 
 // Middleware de autenticação para todas as rotas de PDF
-router.use(verificarToken);
+router.use(verificarAutenticacao);
 
 // Rota para gerar e baixar PDF do orçamento
 // GET /pdf/orcamento/:id?incluirVendedor=true&incluirTecnico=true&formato=download

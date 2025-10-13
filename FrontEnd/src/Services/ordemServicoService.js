@@ -90,6 +90,18 @@ export const removerArquivo = (osId, nomeArquivo) => {
 };
 
 /**
+ * Transiciona a etapa de uma Ordem de Serviço, com validações de negócio no servidor.
+ * @param {string|number} osId
+ * @param {{ novaEtapa?: string, novaEtapaId?: number }} payload
+ */
+export const transicionarEtapa = (osId, payload) => {
+    return fetchAutenticado(`/ordem-servico/${osId}/transition`, {
+        method: 'POST',
+        body: payload,
+    });
+};
+
+/**
  * Exclui uma Ordem de Serviço pelo ID.
  * @param {string|number} id - O ID da OS a ser excluída.
  */

@@ -523,10 +523,21 @@ const TelaListagemOS = () => {
 </td>
                                         <td style={{width: columns[12].width}}>{os.transporteCifFob || ''}</td>
                                         <td style={{width: columns[13].width}}>
-                                            {os.urgencia ? (
-                                                typeof os.urgencia === 'string' ? os.urgencia :
-                                                (os.urgencia.urgencia || '')
-                                            ) : ''}
+                                            {(() => {
+                                                const u = typeof os.urgencia === 'string' ? os.urgencia : (os.urgencia?.urgencia || '');
+                                                const uUpper = (u || '').toUpperCase();
+                                                let bg = '#e9ecef', color = '#212529';
+                                                if (uUpper.includes('NÃO URGENTE') || uUpper.includes('NAO URGENTE')) { bg = '#e3f0ff'; }
+                                                else if (uUpper.includes('POUCO')) { bg = '#d4f7d4'; }
+                                                else if (uUpper === 'URGENTE') { bg = '#fffbe0'; }
+                                                else if (uUpper.includes('MUITO')) { bg = '#ffe5b4'; }
+                                                else if (uUpper.includes('EMERG')) { bg = '#ff6b6b'; color = '#fff'; }
+                                                return (
+                                                    <span className="badge" style={{ backgroundColor: bg, color, fontWeight: 600 }} title={u}>
+                                                        {u || ''}
+                                                    </span>
+                                                );
+                                            })()}
                                         </td>
                                     </tr>
                                 ))

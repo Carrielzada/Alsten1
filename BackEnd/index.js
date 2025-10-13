@@ -154,6 +154,7 @@ import rotaDiasPagamento from './Routers/rotaDiasPagamento.js';
 import rotaChecklistItem from './Routers/rotaChecklistItem.js';
 import rotaEtapaOS from './Routers/rotaEtapaOS.js';
 import rotaServicoPadrao from './Routers/rotaServicoPadrao.js';
+import rotaPDF from './Routers/rotaPDF.js';
 // Bling
 import blingRoutes from './Routers/blingRoutes.js';
 import contatosRoutes from './Routers/contatosRoutes.js';
@@ -182,6 +183,9 @@ app.use('/dias-pagamento', verificarAutenticacao, rotaDiasPagamento);
 app.use('/checklist-item', verificarAutenticacao, rotaChecklistItem);
 app.use('/etapa-os', verificarAutenticacao, rotaEtapaOS);
 app.use('/servico-padrao', verificarAutenticacao, rotaServicoPadrao);
+
+// PDF / Relatórios
+app.use('/pdf', verificarAutenticacao, rotaPDF);
 
 // Bling Routes
 app.use('/bling', blingRoutes);

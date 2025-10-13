@@ -22,14 +22,17 @@ rotaOrdemServico.get('/:id', ordemServicoCtrl.consultarPorId);
 // Aplica o middleware de upload antes do controlador
 rotaOrdemServico.post('/anexar-arquivo/:id', upload.single('arquivo'), ordemServicoCtrl.anexarArquivo);
 
-// Rota específica para anexar comprovante (UMA imagem)
-rotaOrdemServico.post('/anexar-comprovante/:id', upload.single('comprovante'), ordemServicoCtrl.anexarComprovante);
+// Rota específica para anexar comprovante de aprovação/reprovação (apenas imagens)
+rotaOrdemServico.post('/:id/comprovante', upload.single('arquivo'), ordemServicoCtrl.anexarComprovante);
 
 // Rota para remover um arquivo de uma OS
 rotaOrdemServico.delete('/:id/arquivo/:nomeArquivo', ordemServicoCtrl.removerArquivo);
 
-// Rota de exclusão de OS - apenas Admin e Diretoria
-rotaOrdemServico.delete("/:id", verificarRole([1, 2]), ordemServicoCtrl.excluir);
+// Rota para transição de etapas com validações de negócio (gate de anexos/campos)
+rotaOrdemServico.post('/:id/transition', ordemServicoCtrl.transicionarEtapa);
+
+// Rota de exclusão de OS
+rotaOrdemServico.delete("/:id", ordemServicoCtrl.excluir);
 
 // Rota para consultar logs de uma OS
 rotaOrdemServico.get("/:id/logs", ordemServicoCtrl.consultarLogs);

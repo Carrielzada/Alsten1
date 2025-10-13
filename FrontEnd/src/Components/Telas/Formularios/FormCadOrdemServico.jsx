@@ -13,7 +13,7 @@ import { buscarTiposLacre } from '../../../Services/tipoLacreService';
 import { buscarTiposLimpeza } from '../../../Services/tipoLimpezaService';
 import { buscarTiposTransporte } from '../../../Services/tipoTransporteService';
 import { buscarPagamento } from '../../../Services/pagamentoService';
-import { gravarOrdemServico, anexarArquivo, removerArquivo } from '../../../Services/ordemServicoService';
+import { gravarOrdemServico, anexarArquivo, removerArquivo, transicionarEtapa } from '../../../Services/ordemServicoService';
 import diasPagamentoService from '../../../Services/diasPagamentoService';
 import checklistItemService from '../../../Services/checklistItemService';
 import etapaOSService from '../../../Services/etapaOSService';
@@ -432,6 +432,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         carregarDadosCadastrais();
     }, []);
 
+    const originalEtapaIdRef = useRef(null);
+
     useEffect(() => {
         if (modoEdicao && ordemServicoEmEdicao) {
             // Garantir que campos de texto nunca sejam null ou undefined, mas não sobrescrever se for 0 ou string válida
@@ -464,6 +466,8 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
                     : []
             };
             setOrdemServico(ordemServicoLimpa);
+            // Guardar etapa original para comparar durante o submit
+            originalEtapaIdRef.current = ordemServicoLimpa?.etapaId?.id || null;
         }
     }, [modoEdicao, ordemServicoEmEdicao]);
 
@@ -815,6 +819,29 @@ const handleInputChange = (e) => {
 
         try {
             setSavingForm(true);
+
+            // Se for edição e a etapa mudou, primeiro realizar a transição no backend
+            if (dadosProcessados.id && originalEtapaIdRef.current !== (dadosProcessados.etapaId?.id || null)) {
+                try {
+                    const respTrans = await transicionarEtapa(dadosProcessados.id, { novaEtapaId: dadosProcessados.etapaId?.id });
+                    if (!respTrans?.status) {
+                        // Caso o serviço padronize status=true/false
+                        if (respTrans?.faltando) {
+                            setFaltandoCampos(respTrans.faltando);
+                        }
+                        throw new Error(respTrans?.mensagem || 'Falha ao transicionar etapa');
+                    }
+                    // Atualizar etapa original após sucesso para evitar reprocessar
+                    originalEtapaIdRef.current = dadosProcessados.etapaId?.id || null;
+                } catch (e) {
+                    // Se o backend retornou faltando[], destacar no formulário
+                    const serverMsg = e?.message || 'Falha ao transicionar etapa';
+                    toast.error(serverMsg);
+                    setSavingForm(false);
+                    return;
+                }
+            }
+
             const response = await gravarOrdemServico(dadosProcessados);
 
             if (response.status) {
@@ -1741,6 +1768,26 @@ const handleInputChange = (e) => {
                         >
                             <FaVial className="me-2" />
                             Validar
+                        </Button>
+
+                        <Button
+                            variant="outline-success"
+                            size="sm"
+                            onClick={() => gerarPDF({ incluirVendedor: true, incluirTecnico: true, acao: 'visualizar' })}
+                            title="Abrir orçamento em PDF (visualizar)"
+                            disabled={!ordemServico.id}
+                        >
+                            PDF (Visualizar)
+                        </Button>
+
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => gerarPDF({ incluirVendedor: true, incluirTecnico: true, acao: 'download' })}
+                            title="Baixar orçamento em PDF"
+                            disabled={!ordemServico.id}
+                        >
+                            PDF (Download)
                         </Button>
                         
                         {!modoEdicao && (
