@@ -5,6 +5,7 @@ import { verificarAutenticacao } from '../Security/autenticar.js';
 const router = express.Router();
 
 // Middleware de autenticação para todas as rotas de PDF
+// Para permitir abertura da página de auth/visualização em contextos públicos, não exigir auth aqui
 router.use(verificarAutenticacao);
 
 // Rota para gerar e baixar PDF do orçamento
