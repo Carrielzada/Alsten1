@@ -258,7 +258,7 @@ app.use((err, req, res, next) => {
 
 // ==== Inicializar servidor ====
 const host = '0.0.0.0';
-const porta = process.env.PORT || 4000;
+const porta = process.env.PORT || 3001;
 
 app.listen(porta, host, () => {
   console.log(`✅ Servidor escutando em http://${host}:${porta}`);
