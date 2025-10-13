@@ -15,6 +15,14 @@ rotaOrdemServico.put('/:id', ordemServicoCtrl.gravar);
 // Rota de consulta de todas as OS
 rotaOrdemServico.get('/', ordemServicoCtrl.consultar);
 
+// --- LOCK DE EDIÇÃO CONCORRENTE ---
+// Importante: declare rotas estáticas antes de rotas com parâmetro ":id" para evitar colisões (ex.: "/locks" não virar id="locks").
+rotaOrdemServico.get('/locks', verificarAutenticacao, ordemServicoCtrl.listarLocks);
+rotaOrdemServico.post('/:id/lock', verificarAutenticacao, ordemServicoCtrl.criarLock);
+rotaOrdemServico.post('/:id/lock/refresh', verificarAutenticacao, ordemServicoCtrl.refrescarLock);
+rotaOrdemServico.get('/:id/lock', verificarAutenticacao, ordemServicoCtrl.verificarLock);
+rotaOrdemServico.delete('/:id/lock', verificarAutenticacao, ordemServicoCtrl.removerLock);
+
 // Rota de consulta de OS por ID
 rotaOrdemServico.get('/:id', ordemServicoCtrl.consultarPorId);
 
@@ -37,12 +45,5 @@ rotaOrdemServico.delete("/:id", ordemServicoCtrl.excluir);
 // Rota para consultar logs de uma OS
 rotaOrdemServico.get("/:id/logs", ordemServicoCtrl.consultarLogs);
 
-// --- LOCK DE EDIÇÃO CONCORRENTE ---
-// Importante: declare rotas estáticas antes de rotas com parâmetro ":id" para evitar colisões (ex.: "/locks" não virar id="locks").
-rotaOrdemServico.get('/locks', verificarAutenticacao, ordemServicoCtrl.listarLocks);
-rotaOrdemServico.post('/:id/lock', verificarAutenticacao, ordemServicoCtrl.criarLock);
-rotaOrdemServico.post('/:id/lock/refresh', verificarAutenticacao, ordemServicoCtrl.refrescarLock);
-rotaOrdemServico.get('/:id/lock', verificarAutenticacao, ordemServicoCtrl.verificarLock);
-rotaOrdemServico.delete('/:id/lock', verificarAutenticacao, ordemServicoCtrl.removerLock);
 
 export default rotaOrdemServico;
