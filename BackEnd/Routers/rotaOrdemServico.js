@@ -38,10 +38,11 @@ rotaOrdemServico.delete("/:id", ordemServicoCtrl.excluir);
 rotaOrdemServico.get("/:id/logs", ordemServicoCtrl.consultarLogs);
 
 // --- LOCK DE EDIÇÃO CONCORRENTE ---
+// Importante: declare rotas estáticas antes de rotas com parâmetro ":id" para evitar colisões (ex.: "/locks" não virar id="locks").
+rotaOrdemServico.get('/locks', verificarAutenticacao, ordemServicoCtrl.listarLocks);
 rotaOrdemServico.post('/:id/lock', verificarAutenticacao, ordemServicoCtrl.criarLock);
 rotaOrdemServico.post('/:id/lock/refresh', verificarAutenticacao, ordemServicoCtrl.refrescarLock);
 rotaOrdemServico.get('/:id/lock', verificarAutenticacao, ordemServicoCtrl.verificarLock);
 rotaOrdemServico.delete('/:id/lock', verificarAutenticacao, ordemServicoCtrl.removerLock);
-rotaOrdemServico.get('/locks', verificarAutenticacao, ordemServicoCtrl.listarLocks);
 
 export default rotaOrdemServico;

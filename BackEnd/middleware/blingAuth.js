@@ -26,24 +26,26 @@ class BlingAuth {
         // ==================== INÍCIO DA CORREÇÃO ====================
         // Definindo um conjunto de permissões (scopes) mais completo e correto.
         // As permissões são separadas por espaço.
-        const permissions = [
-            'contatos_read', 'contatos_write',
-            'produtos_read', 'produtos_write',
-            'pedidos_read', 'pedidos_write',
-            'notas_fiscais_read', 'notas_fiscais_write'
-        ].join(' ');
+        // Permissões controladas por variável de ambiente para evitar recusas do OAuth.
+        // Se BLING_SCOPE não estiver definida, não enviaremos o parâmetro "scope".
+        const envScope = process.env.BLING_SCOPE && process.env.BLING_SCOPE.trim() !== ''
+            ? process.env.BLING_SCOPE.trim()
+            : null;
 
-        const params = new URLSearchParams({
+        const baseParams = {
             response_type: 'code',
             client_id: this.clientId,
             redirect_uri: this.redirectUri,
-            state: state,
-            scope: permissions // <-- USANDO AS PERMISSÕES CORRETAS
-        });
+            state: state
+        };
+        const params = new URLSearchParams(baseParams);
+        if (envScope) {
+            params.append('scope', envScope);
+        }
         // ===================== FIM DA CORREÇÃO ======================
         console.log(params.toString())
         console.log("🔗 Enviando redirect_uri para Bling:", this.redirectUri);
-        return `https://bling.com.br/Api/v3/oauth/authorize?${params.toString()}`;
+        return `https://www.bling.com.br/Api/v3/oauth/authorize?${params.toString()}`;
     }
 
     // ... O restante do arquivo permanece exatamente igual ...
@@ -69,7 +71,7 @@ class BlingAuth {
                 code: code
             };
 
-            const response = await axios.post('https://bling.com.br/Api/v3/oauth/token', 
+            const response = await axios.post('https://www.bling.com.br/Api/v3/oauth/token', 
                 requestBody,
                 {
                     headers: { 
@@ -102,7 +104,7 @@ class BlingAuth {
             const credentials = `${this.clientId}:${this.clientSecret}`;
             const authHeader = `Basic ${Buffer.from(credentials).toString('base64')}`;
 
-            const response = await axios.post('https://bling.com.br/Api/v3/oauth/token', {
+            const response = await axios.post('https://www.bling.com.br/Api/v3/oauth/token', {
                 grant_type: 'refresh_token',
                 refresh_token: this.tokens.refreshToken
             }, {

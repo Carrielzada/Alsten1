@@ -9,6 +9,12 @@ const blingAuth = new BlingAuth();
 // Rota para iniciar o processo de autenticação
 router.get('/auth', (req, res) => {
     try {
+        // Se a redirectUri não estiver definida via env, derive da requisição atual
+        if (!blingAuth.redirectUri) {
+            const derived = `${req.protocol}://${req.get('host')}/bling/callback`;
+            blingAuth.redirectUri = derived;
+            console.log('⚙️ BLING_REDIRECT_URI ausente. Usando derivada:', derived);
+        }
         const authUrl = blingAuth.getAuthorizationUrl();
         
         // Se for uma requisição AJAX, retorna a URL
