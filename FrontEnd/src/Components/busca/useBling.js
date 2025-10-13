@@ -74,66 +74,62 @@ export const useBling = () => {
             setIsLoading(true);
             setError(null);
             
-            // Envia informações do ambiente atual para o backend
+            // Usar navegação/popup direta para evitar CORS em redirect
             const envInfo = getEnvironmentInfo();
             console.log('Enviando informações do ambiente para o backend:', envInfo);
+
+            const baseApi = envInfo.api;
+            const params = new URLSearchParams({
+                frontendUrl: envInfo.frontend,
+                successUrl: envInfo.blingSuccess
+            }).toString();
+
+            // Abre a URL de autenticação da API (o backend fará o redirect ao Bling)
+            const authUrl = `${baseApi}/bling/auth?${params}`;
+            const authWindow = window.open(
+                authUrl,
+                'bling-auth',
+                'width=600,height=700,scrollbars=yes,resizable=yes'
+            );
             
-            const response = await blingApi.get('/bling/auth', {
-                params: {
-                    frontendUrl: envInfo.frontend,
-                    successUrl: envInfo.blingSuccess
+            // TIMEOUT para evitar loading infinito
+            const authTimeout = setTimeout(() => {
+                console.log('Timeout de autenticação atingido');
+                setIsLoading(false);
+                if (authWindow && !authWindow.closed) {
+                    authWindow.close();
                 }
-            });
-            
-            if (response.data.success && response.data.authUrl) {
-                // Abre a URL de autenticação em uma nova janela
-                const authWindow = window.open(
-                    response.data.authUrl,
-                    'bling-auth',
-                    'width=600,height=700,scrollbars=yes,resizable=yes'
-                );
-                
-                // TIMEOUT para evitar loading infinito
-                const authTimeout = setTimeout(() => {
-                    console.log('Timeout de autenticação atingido');
-                    setIsLoading(false);
-                    if (authWindow && !authWindow.closed) {
-                        authWindow.close();
-                    }
-                }, 60000); // 60 segundos timeout
+            }, 60000); // 60 segundos timeout
 
-                // Listener para receber mensagem da popup
-                const handleMessage = (event) => {
-                    if (event.data === 'bling-auth-success') {
-                        clearTimeout(authTimeout);
-                        clearInterval(checkClosed);
-                        window.removeEventListener('message', handleMessage);
-                        if (authWindow && !authWindow.closed) authWindow.close();
-                        setTimeout(() => {
-                            checkAuthStatus();
-                        }, 500);
-                    }
-                };
-                window.addEventListener('message', handleMessage);
+            // Listener para receber mensagem da popup (enviada pela página /bling/success)
+            const handleMessage = (event) => {
+                if (event.data === 'bling-auth-success') {
+                    clearTimeout(authTimeout);
+                    clearInterval(checkClosed);
+                    window.removeEventListener('message', handleMessage);
+                    if (authWindow && !authWindow.closed) authWindow.close();
+                    setTimeout(() => {
+                        checkAuthStatus();
+                    }, 500);
+                }
+            };
+            window.addEventListener('message', handleMessage);
 
-                // Monitora o fechamento da janela - COM TIMEOUT
-                const checkClosed = setInterval(() => {
-                    if (!authWindow || authWindow.closed) {
-                        clearTimeout(authTimeout);
-                        clearInterval(checkClosed);
-                        window.removeEventListener('message', handleMessage);
-                        console.log('Janela de autenticação fechada');
-                        setIsLoading(false); // IMPORTANTE: parar o loading
-                        setTimeout(() => {
-                            checkAuthStatus();
-                        }, 1000);
-                    }
-                }, 1000);
+            // Monitora o fechamento da janela - COM TIMEOUT
+            const checkClosed = setInterval(() => {
+                if (!authWindow || authWindow.closed) {
+                    clearTimeout(authTimeout);
+                    clearInterval(checkClosed);
+                    window.removeEventListener('message', handleMessage);
+                    console.log('Janela de autenticação fechada');
+                    setIsLoading(false); // IMPORTANTE: parar o loading
+                    setTimeout(() => {
+                        checkAuthStatus();
+                    }, 1000);
+                }
+            }, 1000);
 
-                return true;
-            } else {
-                throw new Error('Não foi possível obter URL de autenticação');
-            }
+            return true;
         } catch (err) {
             console.error('Erro na autenticação:', err);
             setError(err.response?.data?.message || 'Erro ao iniciar autenticação');
