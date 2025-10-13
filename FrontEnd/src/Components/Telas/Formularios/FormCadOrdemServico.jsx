@@ -315,9 +315,9 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
         setOrdemServico(prev => ({ ...prev, [name]: num }));
     };
     const [savingForm, setSavingForm] = useState(false);
+    const [loadingFormData, setLoadingFormData] = useState(true);
     // Erros numéricos por campo (ex.: diasReparo fora de faixa)
     const [numericErrors, setNumericErrors] = useState({});
-    const [savingForm, setSavingForm] = useState(false);
 
     // Detecta alterações no formulário
     useEffect(() => {
