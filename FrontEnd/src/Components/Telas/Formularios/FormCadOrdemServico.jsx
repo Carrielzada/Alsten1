@@ -336,8 +336,6 @@ const FormCadOrdemServico = ({ onFormSubmit, modoEdicao, ordemServicoEmEdicao, o
     const [tiposTransporte, setTiposTransporte] = useState([]);
     const [formasPagamento, setFormasPagamento] = useState([]);
     const [arquivoParaUpload, setArquivoParaUpload] = useState(null);
-    const [comprovanteFile, setComprovanteFile] = useState(null);
-    const [comprovantePreview, setComprovantePreview] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false); // Para controlar se pode editar o ID
     const [userRole, setUserRole] = useState(null); // Nível de acesso do usuário
     const [etapasPermitidas, setEtapasPermitidas] = useState([]); // Etapas que o usuário pode acessar
@@ -730,37 +728,6 @@ const handleInputChange = (e) => {
         }
     };
     
-    const handleComprovanteChange = (e) => {
-        markDirty();
-        const file = e.target.files[0];
-        if (file) {
-            // Validar se é uma imagem
-            if (!file.type.startsWith('image/')) {
-                toast.error('Por favor, selecione apenas arquivos de imagem.');
-                e.target.value = '';
-                return;
-            }
-            // Validar tamanho (máximo 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error('A imagem deve ter no máximo 5MB.');
-                e.target.value = '';
-                return;
-            }
-            setComprovanteFile(file);
-            
-            // Criar preview da imagem
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setComprovantePreview(e.target.result);
-            };
-            reader.readAsDataURL(file);
-            
-            setOrdemServico(prevState => ({
-                ...prevState,
-                comprovanteAprovacao: file
-            }));
-        }
-    };
 
     // Função de teste para verificar validação
     const testarValidacao = () => {

@@ -17,6 +17,7 @@ const TelaCadOrdemServico = () => {
     const [lockError, setLockError] = useState(null);
     const [dirty, setDirty] = useState(false);
     const lockAdquirido = useRef(false);
+    const [lockAtivo, setLockAtivo] = useState(false);
 
     useEffect(() => {
         let ignore = false;
@@ -29,6 +30,7 @@ const TelaCadOrdemServico = () => {
                         // Tenta adquirir o lock primeiro
                         await adquirirLockOS(id);
                         lockAdquirido.current = true;
+                        setLockAtivo(true);
                         const os = await consultarOrdemServicoPorId(id);
                         if (!ignore) setOrdemServicoEmEdicao(os);
                         return os;
@@ -58,21 +60,19 @@ const TelaCadOrdemServico = () => {
         return () => {
             if (id && lockAdquirido.current) {
                 liberarLockOS(id).catch(() => {});
+                setLockAtivo(false);
             }
         };
     }, [id]);
 
     // Mantém o lock vivo enquanto o formulário estiver aberto
     useEffect(() => {
-        if (!id) return;
-        let interval;
-        if (lockAdquirido.current) {
-            interval = setInterval(() => {
-                refreshLockOS(id).catch(() => {});
-            }, 2 * 60 * 1000); // a cada 2 minutos
-        }
-        return () => { if (interval) clearInterval(interval); };
-    }, [id, lockAdquirido.current]);
+        if (!id || !lockAtivo) return;
+        const interval = setInterval(() => {
+            refreshLockOS(id).catch(() => {});
+        }, 2 * 60 * 1000); // a cada 2 minutos
+        return () => clearInterval(interval);
+    }, [id, lockAtivo]);
 
     // Intercepta fechamento da aba/janela
     useEffect(() => {

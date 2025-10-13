@@ -297,16 +297,6 @@ const TelaOSConcluidas = () => {
         const sanitizedEtapa = (etapa || '').replace(/\s+/g, '-').toLowerCase();
         return `etapa-${sanitizedEtapa}`;
     };
-    const getUrgenciaClass = (urgenciaText) => {
-        const u = (urgenciaText || '').toString().trim().toLowerCase();
-        if (!u) return '';
-        if (u.includes('emerg')) return 'urg-emergencia';
-        if (u.includes('muito')) return 'urg-muito-urgente';
-        if (u === 'urgente') return 'urg-urgente';
-        if (u.includes('pouco')) return 'urg-pouco-urgente';
-        if (u.includes('nao') || u.includes('não')) return 'urg-nao-urgente';
-        return '';
-    };
 
     return (
         <div className="container-fluid px-4">
