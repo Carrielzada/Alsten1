@@ -110,15 +110,15 @@ class OrdemServicoDAO {
 } else {
                 // Lógica para ALTERAR uma OS existente
                 const sql = `
-                    UPDATE ordem_servico 
-                    SET cliente = ?, modeloEquipamento = ?, defeitoAlegado = ?, 
-                    numeroSerie = ?, fabricante = ?, urgencia_id = ?, tipo_analise_id = ?, 
-                    tipo_lacre_id = ?, tipo_limpeza_id = ?, tipo_transporte_id = ?, pagamento_id = ?,
-                    etapa = ?, arquivosAnexados = ?, vendedor_id = ?, dias_pagamento_id = ?, data_entrega = ?,
-                    data_aprovacao_orcamento = ?, dias_reparo = ?, data_equipamento_pronto = ?, informacoes_confidenciais = ?,
-                    checklist_items = ?, agendado = ?, possui_acessorio = ?, tipo_transporte_texto = ?, transporte_cif_fob = ?,
-                    pedido_compras = ?, defeito_constatado = ?, servico_realizar = ?, valor = ?, etapa_id = ?, comprovante_aprovacao = ?, nota_fiscal = ?, comprovante = ?
-                    WHERE id = ?
+                    UPDATE \`ordem_servico\`
+                    SET \`cliente\` = ?, \`modeloEquipamento\` = ?, \`defeitoAlegado\` = ?,
+                    \`numeroSerie\` = ?, \`fabricante\` = ?, \`urgencia_id\` = ?, \`tipo_analise_id\` = ?,
+                    \`tipo_lacre_id\` = ?, \`tipo_limpeza_id\` = ?, \`tipo_transporte_id\` = ?, \`pagamento_id\` = ?,
+                    \`etapa\` = ?, \`arquivosAnexados\` = ?, \`vendedor_id\` = ?, \`dias_pagamento_id\` = ?, \`data_entrega\` = ?,
+                    \`data_aprovacao_orcamento\` = ?, \`dias_reparo\` = ?, \`data_equipamento_pronto\` = ?, \`informacoes_confidenciais\` = ?,
+                    \`checklist_items\` = ?, \`agendado\` = ?, \`possui_acessorio\` = ?, \`tipo_transporte_texto\` = ?, \`transporte_cif_fob\` = ?,
+                    \`pedido_compras\` = ?, \`defeito_constatado\` = ?, \`servico_realizar\` = ?, \`valor\` = ?, \`etapa_id\` = ?, \`comprovante_aprovacao\` = ?, \`nota_fiscal\` = ?, \`comprovante\` = ?
+                    WHERE \`id\` = ?
                 `;
                 const valores = [
                     ordemServico.cliente?.id || ordemServico.cliente,
@@ -133,7 +133,7 @@ class OrdemServicoDAO {
                     ordemServico.tipoTransporte?.id || ordemServico.tipoTransporte,
                     ordemServico.formaPagamento?.id || ordemServico.formaPagamento,
                     ordemServico.etapa,
-                    JSON.stringify(ordemServico.arquivosAnexados),
+JSON.stringify(ordemServico.arquivosAnexados || []),
                     ordemServico.vendedor?.id || ordemServico.vendedor,
                     ordemServico.diasPagamento?.id || ordemServico.diasPagamento,
                     toDateOrNull(ordemServico.dataEntrega),

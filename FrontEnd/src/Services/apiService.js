@@ -54,3 +54,44 @@ const fetchAutenticado = async (endpoint, options = {}) => {
 };
 
 export default fetchAutenticado;
+
+// Faz uma requisição autenticada esperando Blob (ex.: PDF)
+export const fetchAutenticadoBlob = async (endpoint, options = {}) => {
+    const token = getToken();
+    if (!token) {
+        toast.error("Sessão expirada. Por favor, faça o login novamente.");
+        setTimeout(() => { window.location.href = '/'; }, 2000);
+        throw new Error('Token de autenticação não encontrado. Faça o login novamente.');
+    }
+
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Accept': options.accept || 'application/pdf',
+        ...options.headers,
+    };
+
+    // Não force Content-Type aqui; para blob não é necessário.
+
+    try {
+        const response = await fetch(`${API_URL}${endpoint}`, {
+            ...options,
+            headers,
+        });
+
+        if (!response.ok) {
+            // Tentar extrair mensagem JSON de erro se for o caso
+            let message = `Erro no servidor: ${response.status} ${response.statusText}`;
+            try {
+                const errJson = await response.json();
+                if (errJson?.mensagem) message = errJson.mensagem;
+            } catch (_) {}
+            throw new Error(message);
+        }
+
+        return await response.blob();
+    } catch (error) {
+        console.error(`Erro (blob) na chamada da API para ${endpoint}:`, error);
+        toast.error(error.message || 'Erro de comunicação com o servidor.');
+        throw error;
+    }
+};

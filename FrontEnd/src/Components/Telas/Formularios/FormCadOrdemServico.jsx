@@ -854,7 +854,7 @@ const faltando = validarCamposObrigatorios(etapaAtual, dadosParaValidacao);
         }
     };
 
-    // Funções para geração de PDF
+    // Funções para geração de PDF (com token via fetch)
     // eslint-disable-next-line no-unused-vars
     const gerarPDF = async (opcoes = {}) => {
         if (!ordemServico.id) {
@@ -864,29 +864,33 @@ const faltando = validarCamposObrigatorios(etapaAtual, dadosParaValidacao);
 
         try {
             const { incluirVendedor = true, incluirTecnico = true, acao = 'download' } = opcoes;
-            
-            const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-            const url = `${baseUrl}/pdf/orcamento/${ordemServico.id}${
-                acao === 'visualizar' ? '/visualizar' : ''
-            }?incluirVendedor=${incluirVendedor}&incluirTecnico=${incluirTecnico}&formato=${acao === 'visualizar' ? 'inline' : 'download'}`;
-            
+            const qs = `?incluirVendedor=${incluirVendedor}&incluirTecnico=${incluirTecnico}`;
+            const endpoint = acao === 'visualizar'
+                ? `/pdf/orcamento/${ordemServico.id}/visualizar${qs}`
+                : `/pdf/orcamento/${ordemServico.id}${qs}`;
+
+            // Busca como Blob com Authorization
+            const pdfBlob = await (await import('../../../Services/apiService')).fetchAutenticadoBlob(endpoint);
+
+            const blobUrl = URL.createObjectURL(pdfBlob);
             if (acao === 'visualizar') {
-                // Abrir em nova aba para visualizar
-                window.open(url, '_blank');
+                window.open(blobUrl, '_blank');
                 toast.info('PDF aberto em nova aba!');
             } else {
-                // Download direto
                 const link = document.createElement('a');
-                link.href = url;
+                link.href = blobUrl;
                 link.download = `Orcamento_OS_${ordemServico.id}.pdf`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 toast.success('PDF baixado com sucesso!');
             }
+
+            // Liberar URL depois
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
         } catch (error) {
             console.error('Erro ao gerar PDF:', error);
-            toast.error('Erro ao gerar PDF.');
+            toast.error(error.message || 'Erro ao gerar PDF.');
         }
     };
 
@@ -1338,17 +1342,20 @@ const faltando = validarCamposObrigatorios(etapaAtual, dadosParaValidacao);
                         </Form.Group>
                     </Col>
                     <Col md={6}>
-                        {ordemServico.comprovante && (
+{(ordemServico.comprovanteAprovacao || ordemServico.comprovante) && (
                             <div className="mt-4">
-                                <p className="mb-2"><strong>Imagem selecionada:</strong></p>
+                                <p className="mb-2"><strong>Comprovante anexado:</strong></p>
                                 <div className="d-flex align-items-center">
                                     <img 
-                                        src={typeof ordemServico.comprovante === 'string' ? 
-                                            `${process.env.REACT_APP_API_URL}/uploads/${ordemServico.comprovante}` : 
-                                            URL.createObjectURL(ordemServico.comprovante)
-                                        } 
+                                        src={(() => {
+                                            const file = ordemServico.comprovanteAprovacao || ordemServico.comprovante;
+                                            if (typeof file === 'string') {
+                                                return `${process.env.REACT_APP_API_URL}/uploads/${file}`;
+                                            }
+                                            return URL.createObjectURL(file);
+                                        })()} 
                                         alt="Comprovante" 
-                                        style={{ maxWidth: '100px', maxHeight: '100px', marginRight: '10px' }}
+                                        style={{ maxWidth: '120px', maxHeight: '120px', marginRight: '10px' }}
                                         className="border rounded"
                                     />
                                     <Button 
@@ -1357,11 +1364,12 @@ const faltando = validarCamposObrigatorios(etapaAtual, dadosParaValidacao);
                                         title="Remover imagem"
                                         onClick={() => {
                                             markDirty();
-                                            setOrdemServico(prevState => ({
+setOrdemServico(prevState => ({
                                                 ...prevState,
-                                                comprovante: ''
+                                                comprovanteAprovacao: ''
                                             }));
-                                            document.querySelector('input[name="comprovante"]').value = '';
+                                            const el = document.querySelector('input[name="comprovante"]');
+                                            if (el) el.value = '';
                                         }}
                                     >
                                         <FaTimes />
