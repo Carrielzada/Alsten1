@@ -35,6 +35,8 @@ app.use(
   helmet({
     contentSecurityPolicy: false, // ajuste se React der erro em dev
     crossOriginEmbedderPolicy: false,
+    // Permitir carregar recursos (imagens/PDF) de outros domínios (ex.: api.alsten.online -> alsten.online)
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
 
@@ -132,7 +134,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Arquivos estáticos (uploads)
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
+  setHeaders: (res) => {
+    // Garantir que navegadores aceitem carregar recursos de origem diferente
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    // Opcional: sinalizar tipo de arquivo para proxies/CDN (não estritamente necessário aqui)
+  }
+}));
 
 // ==== Importar Rotas ==== //
 import rotaAutenticacao from './Routers/rotaAutenticacao.js';

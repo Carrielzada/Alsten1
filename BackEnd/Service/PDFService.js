@@ -56,9 +56,7 @@ class PDFService {
         // Condições e valores
         this.adicionarCondicoesValores(doc, ordemServico);
 
-        // Finalizar documento
-        doc.end();
-
+        // OBS: não finalizar aqui; o controller fará doc.end() após pipe(res)
         return doc;
     }
 

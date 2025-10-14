@@ -30,7 +30,7 @@ class BlingApiService {
         await rateLimitBling(); // Aplica o controle de taxa antes de cada requisição
         try {
             const token = await this.blingAuth.getValidToken();
-            
+
             const config = {
                 method: options.method || 'GET',
                 url: `${this.baseUrl}${endpoint}`,
@@ -38,7 +38,7 @@ class BlingApiService {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    ...options.headers
+                    ...(options.headers || {})
                 },
                 ...options
             };
@@ -47,23 +47,43 @@ class BlingApiService {
             return response.data;
         } catch (error) {
             console.error(`Erro na requisição para ${endpoint}:`, error.response?.data || error.message);
-            
+
             if (error.response?.status === 401) {
                 try {
                     console.log('Token expirado, tentando renovar...');
                     await this.blingAuth.refreshAccessToken();
-                    
+
                     const newToken = await this.blingAuth.getValidToken();
-                    const retryConfig = { ...config, headers: { ...config.headers, 'Authorization': `Bearer ${newToken}` } };
-                    
+                    const retryConfig = {
+                        method: options.method || 'GET',
+                        url: `${this.baseUrl}${endpoint}`,
+                        headers: {
+                            'Authorization': `Bearer ${newToken}`,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            ...(options.headers || {})
+                        },
+                        ...options
+                    };
+
                     const retryResponse = await axios(retryConfig);
                     return retryResponse.data;
                 } catch (refreshError) {
-                    console.error('Erro ao renovar token:', refreshError);
+                    console.error('Erro ao renovar token:', refreshError.response?.data || refreshError.message);
                     throw new Error('Token expirado e não foi possível renovar. Faça login novamente.');
                 }
             }
-            
+
+            // Propagar detalhes de 403 para facilitar diagnóstico no frontend
+            if (error.response?.status === 403) {
+                const details = error.response?.data || {};
+                const description = details?.error?.description || details?.message || 'Não permitido pelo Bling.';
+                const err = new Error(description);
+                err.code = 403;
+                err.details = details;
+                throw err;
+            }
+
             throw error;
         }
     }

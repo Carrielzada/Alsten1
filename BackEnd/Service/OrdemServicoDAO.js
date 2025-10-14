@@ -107,57 +107,65 @@ class OrdemServicoDAO {
     ];
     const resultado = await conexao.query(sql, valores);
     ordemServico.id = resultado[0].insertId;
-} else {
-                // Lógica para ALTERAR uma OS existente
-                const sql = `
-                    UPDATE \`ordem_servico\`
-                    SET \`cliente\` = ?, \`modeloEquipamento\` = ?, \`defeitoAlegado\` = ?,
-                    \`numeroSerie\` = ?, \`fabricante\` = ?, \`urgencia_id\` = ?, \`tipo_analise_id\` = ?,
-                    \`tipo_lacre_id\` = ?, \`tipo_limpeza_id\` = ?, \`tipo_transporte_id\` = ?, \`pagamento_id\` = ?,
-                    \`etapa\` = ?, \`arquivosAnexados\` = ?, \`vendedor_id\` = ?, \`dias_pagamento_id\` = ?, \`data_entrega\` = ?,
-                    \`data_aprovacao_orcamento\` = ?, \`dias_reparo\` = ?, \`data_equipamento_pronto\` = ?, \`informacoes_confidenciais\` = ?,
-                    \`checklist_items\` = ?, \`agendado\` = ?, \`possui_acessorio\` = ?, \`tipo_transporte_texto\` = ?, \`transporte_cif_fob\` = ?,
-                    \`pedido_compras\` = ?, \`defeito_constatado\` = ?, \`servico_realizar\` = ?, \`valor\` = ?, \`etapa_id\` = ?, \`comprovante_aprovacao\` = ?, \`nota_fiscal\` = ?, \`comprovante\` = ?
-                    WHERE \`id\` = ?
-                `;
-                const valores = [
-                    ordemServico.cliente?.id || ordemServico.cliente,
-                    ordemServico.modeloEquipamento?.id || ordemServico.modeloEquipamento,
-                    ordemServico.defeitoAlegado,
-                    ordemServico.numeroSerie,
-                    ordemServico.fabricante?.id || ordemServico.fabricante,
-                    ordemServico.urgencia?.id || ordemServico.urgencia,
-                    ordemServico.tipoAnalise?.id || ordemServico.tipoAnalise,
-                    ordemServico.tipoLacre?.id || ordemServico.tipoLacre,
-                    ordemServico.tipoLimpeza?.id || ordemServico.tipoLimpeza,
-                    ordemServico.tipoTransporte?.id || ordemServico.tipoTransporte,
-                    ordemServico.formaPagamento?.id || ordemServico.formaPagamento,
-                    ordemServico.etapa,
-JSON.stringify(ordemServico.arquivosAnexados || []),
-                    ordemServico.vendedor?.id || ordemServico.vendedor,
-                    ordemServico.diasPagamento?.id || ordemServico.diasPagamento,
-                    toDateOrNull(ordemServico.dataEntrega),
-                    toDateOrNull(ordemServico.dataAprovacaoOrcamento),
-                    ordemServico.diasReparo,
-                    toDateOrNull(ordemServico.dataEquipamentoPronto),
-                    ordemServico.informacoesConfidenciais,
-                    JSON.stringify(ordemServico.checklistItems || []),
-                    ordemServico.agendado ? 1 : 0,
-                    ordemServico.possuiAcessorio ? 1 : 0,
-                    ordemServico.tipoTransporteTexto,
-                    ordemServico.transporteCifFob,
-                    ordemServico.pedidoCompras,
-                    ordemServico.defeitoConstatado,
-                    ordemServico.servicoRealizar,
-                    ordemServico.valor,
-                    ordemServico.etapaId?.id || ordemServico.etapaId,
-                    ordemServico.comprovanteAprovacao,
-                    ordemServico.notaFiscal,
-                    ordemServico.comprovante,
-                    ordemServico.id
+            } else {
+                // Lógica para ALTERAR uma OS existente (construção dinâmica e segura do SET)
+                const safeComprovante = (typeof ordemServico.comprovante === 'string' && ordemServico.comprovante.trim() !== '')
+                    ? ordemServico.comprovante
+                    : null;
+
+                const fields = [
+                    ['cliente', ordemServico.cliente?.id || ordemServico.cliente],
+                    ['modeloEquipamento', ordemServico.modeloEquipamento?.id || ordemServico.modeloEquipamento],
+                    ['defeitoAlegado', ordemServico.defeitoAlegado],
+                    ['numeroSerie', ordemServico.numeroSerie],
+                    ['fabricante', ordemServico.fabricante?.id || ordemServico.fabricante],
+                    ['urgencia_id', ordemServico.urgencia?.id || ordemServico.urgencia],
+                    ['tipo_analise_id', ordemServico.tipoAnalise?.id || ordemServico.tipoAnalise],
+                    ['tipo_lacre_id', ordemServico.tipoLacre?.id || ordemServico.tipoLacre],
+                    ['tipo_limpeza_id', ordemServico.tipoLimpeza?.id || ordemServico.tipoLimpeza],
+                    ['tipo_transporte_id', ordemServico.tipoTransporte?.id || ordemServico.tipoTransporte],
+                    ['pagamento_id', ordemServico.formaPagamento?.id || ordemServico.formaPagamento],
+                    ['etapa', ordemServico.etapa],
+                    ['arquivosAnexados', JSON.stringify(ordemServico.arquivosAnexados || [])],
+                    ['vendedor_id', ordemServico.vendedor?.id || ordemServico.vendedor],
+                    ['dias_pagamento_id', ordemServico.diasPagamento?.id || ordemServico.diasPagamento],
+                    ['data_entrega', toDateOrNull(ordemServico.dataEntrega)],
+                    ['data_aprovacao_orcamento', toDateOrNull(ordemServico.dataAprovacaoOrcamento)],
+                    ['dias_reparo', ordemServico.diasReparo],
+                    ['data_equipamento_pronto', toDateOrNull(ordemServico.dataEquipamentoPronto)],
+                    ['informacoes_confidenciais', ordemServico.informacoesConfidenciais],
+                    ['checklist_items', JSON.stringify(ordemServico.checklistItems || [])],
+                    ['agendado', ordemServico.agendado ? 1 : 0],
+                    ['possui_acessorio', ordemServico.possuiAcessorio ? 1 : 0],
+                    ['tipo_transporte_texto', ordemServico.tipoTransporteTexto],
+                    ['transporte_cif_fob', ordemServico.transporteCifFob],
+                    ['pedido_compras', ordemServico.pedidoCompras],
+                    ['defeito_constatado', ordemServico.defeitoConstatado],
+                    ['servico_realizar', ordemServico.servicoRealizar],
+                    ['valor', ordemServico.valor],
+                    ['etapa_id', ordemServico.etapaId?.id || ordemServico.etapaId],
+                    ['comprovante_aprovacao', ordemServico.comprovanteAprovacao],
+                    ['nota_fiscal', ordemServico.notaFiscal],
+                    ['comprovante', safeComprovante]
                 ];
 
-                await conexao.query(sql, valores);
+                const setParts = [];
+                const params = [];
+                for (const [col, val] of fields) {
+                    if (typeof val === 'undefined') continue; // pula undefined, mas mantém null
+                    setParts.push(`\`${col}\` = ?`);
+                    params.push(val);
+                }
+
+                if (setParts.length === 0) {
+                    // Nada para atualizar; apenas retorna OS
+                    return ordemServico;
+                }
+
+                const sql = `UPDATE \`ordem_servico\` SET ${setParts.join(', ')} WHERE \`id\` = ?`;
+                params.push(ordemServico.id);
+
+                await conexao.query(sql, params);
             }
             return ordemServico;
         } catch (error) {
